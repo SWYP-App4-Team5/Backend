@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{HH:mm:ss.SSS} %highlight(%-5level) %magenta([%15.15thread]) %yellow([%X{traceId:-no-id}]) %cyan(%-40.40logger{39}) : %msg%n"/>
+
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="SERVER_CONSOLE">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender class="ch.qos.logback.classic.AsyncAppender" name="ASYNC_SERVER_CONSOLE">
+        <appender-ref ref="SERVER_CONSOLE"/>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <queueSize>512</queueSize>
+        <includeCallerData>true</includeCallerData>
+    </appender>
+
+    <springProfile name="local">
+        <!--
+        todo: swyp -> team_name으로 변경
+        -->
+        <logger level="DEBUG" name="swyp"/>
+        <logger level="DEBUG" name="jdbc.sqltiming"/>
+        <logger level="DEBUG" name="jdbc.resultsettable"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_SERVER_CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="dev, stg">
+        <logger level="DEBUG" name="on"/>
+        <logger level="OFF" name="jdbc.sqlonly"/>
+        <logger level="OFF" name="jdbc.audit"/>
+        <logger level="OFF" name="jdbc.resultset"/>
+        <logger level="OFF" name="jdbc.connection"/>
+        <logger level="DEBUG" name="jdbc.sqltiming"/>
+        <logger level="DEBUG" name="jdbc.resultsettable"/>
+        <logger level="WARN" name="io.lettuce.core.protocol"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_SERVER_CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger level="INFO" name="org.springframework"/>
+        <logger level="WARN" name="org.hibernate.SQL"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_SERVER_CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>

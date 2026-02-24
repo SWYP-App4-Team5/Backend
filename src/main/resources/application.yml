@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: server
+  profiles:
+    default: local
+  config:
+    import:
+      - optional:config/flyway.yml
