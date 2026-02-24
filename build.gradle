@@ -43,7 +43,10 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8"
+
+	implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 }
 
 tasks.named('test') {
