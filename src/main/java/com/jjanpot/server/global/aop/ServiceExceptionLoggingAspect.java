@@ -20,7 +20,6 @@ public class ServiceExceptionLoggingAspect {
 	@Pointcut("execution(* com.jjanpot.server..service..*(..))")
 	public void serviceLayer() {
 	}
-
 	@AfterThrowing(pointcut = "serviceLayer()", throwing = "ex")
 	public void logServiceException(JoinPoint joinPoint, Exception ex) {
 		if (ex instanceof BusinessException)
