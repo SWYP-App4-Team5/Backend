@@ -12,14 +12,14 @@
 
     <appender class="ch.qos.logback.classic.AsyncAppender" name="ASYNC_SERVER_CONSOLE">
         <appender-ref ref="SERVER_CONSOLE"/>
+        <queueSize>2048</queueSize>
         <discardingThreshold>0</discardingThreshold>
-        <neverBlock>true</neverBlock>
-        <queueSize>512</queueSize>
-        <includeCallerData>true</includeCallerData>
+        <neverBlock>false</neverBlock>
+        <includeCallerData>false</includeCallerData>
     </appender>
 
     <springProfile name="local">
-        <logger level="DEBUG" name="jjanpot"/>
+        <logger level="DEBUG" name="com.jjanpot"/>
         <logger level="DEBUG" name="jdbc.sqltiming"/>
         <logger level="DEBUG" name="jdbc.resultsettable"/>
         <root level="INFO">
@@ -28,7 +28,7 @@
     </springProfile>
 
     <springProfile name="dev,stg">
-        <logger level="DEBUG" name="on"/>
+        <logger level="DEBUG" name="com.jjanpot"/>
         <logger level="OFF" name="jdbc.sqlonly"/>
         <logger level="OFF" name="jdbc.audit"/>
         <logger level="OFF" name="jdbc.resultset"/>
@@ -42,6 +42,7 @@
     </springProfile>
 
     <springProfile name="prod">
+        <logger level="INFO" name="com.jjanpot"/>
         <logger level="INFO" name="org.springframework"/>
         <logger level="WARN" name="org.hibernate.SQL"/>
         <root level="INFO">
