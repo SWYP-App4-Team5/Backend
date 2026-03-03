@@ -1,9 +1,9 @@
-package com.swyp.server.global.common.dto;
+package com.jjanpot.server.global.common.dto;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.swyp.server.global.aop.MdcTraceId;
+import com.jjanpot.server.global.aop.MdcTraceId;
 
 import lombok.AccessLevel;
 import lombok.Builder;

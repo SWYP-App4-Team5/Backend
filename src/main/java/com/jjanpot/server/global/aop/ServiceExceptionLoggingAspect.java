@@ -1,4 +1,4 @@
-package com.swyp.server.global.aop;
+package com.jjanpot.server.global.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import com.swyp.server.global.exception.BusinessException;
+import com.jjanpot.server.global.exception.BusinessException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Order(2)
 public class ServiceExceptionLoggingAspect {
 
-	@Pointcut("execution(* com.swyp.server..service..*(..))")
+	@Pointcut("execution(* com.jjanpot.server..service..*(..))")
 	public void serviceLayer() {}
 
 	@AfterThrowing(pointcut = "serviceLayer()", throwing = "ex")

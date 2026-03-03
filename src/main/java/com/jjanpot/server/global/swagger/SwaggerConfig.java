@@ -1,4 +1,4 @@
-package com.swyp.server.global.swagger;
+package com.jjanpot.server.global.swagger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
 
-import com.swyp.server.global.common.dto.ErrorResponse;
-import com.swyp.server.global.exception.ErrorCode;
-import com.swyp.server.global.swagger.annotation.ApiErrorCodeExample;
-import com.swyp.server.global.swagger.annotation.ApiErrorCodeExamples;
-import com.swyp.server.global.swagger.annotation.ExampleHolder;
+import com.jjanpot.server.global.common.dto.ErrorResponse;
+import com.jjanpot.server.global.exception.ErrorCode;
+import com.jjanpot.server.global.swagger.annotation.ApiErrorCodeExample;
+import com.jjanpot.server.global.swagger.annotation.ApiErrorCodeExamples;
+import com.jjanpot.server.global.swagger.annotation.ExampleHolder;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -42,12 +42,11 @@ public class SwaggerConfig {
 
 		SecurityRequirement securityRequirement = new SecurityRequirement().addList("JWT TOKEN");
 
-		//todo: 프로젝트 이름으로 변경
 		return new OpenAPI()
 			.components(new Components().addSecuritySchemes("JWT TOKEN", securityScheme))
 			.addSecurityItem(securityRequirement)
 			.info(new Info()
-				.title("API 명세서")
+				.title("Jjanpot(짠팟) API 명세서")
 				.version("1.0")
 				.description("🔐토큰 인증이 필요한 API는 상단의 Authorize 버튼을 클릭한 뒤, `토큰`만 입력해주세요"))
 			.servers(List.of(

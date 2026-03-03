@@ -1,4 +1,4 @@
-package com.swyp.server.global.exception;
+package com.jjanpot.server.global.exception;
 
 import org.springframework.http.HttpStatus;
 

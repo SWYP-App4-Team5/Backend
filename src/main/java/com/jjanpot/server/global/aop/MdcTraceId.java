@@ -1,4 +1,4 @@
-package com.swyp.server.global.aop;
+package com.jjanpot.server.global.aop;
 
 import java.util.UUID;
 

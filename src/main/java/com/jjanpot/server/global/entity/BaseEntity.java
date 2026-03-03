@@ -1,4 +1,4 @@
-package com.swyp.server.global.entity;
+package com.jjanpot.server.global.entity;
 
 import java.time.LocalDateTime;
 

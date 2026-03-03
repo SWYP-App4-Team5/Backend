@@ -1,4 +1,4 @@
-package com.swyp.server.global.common.dto;
+package com.jjanpot.server.global.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

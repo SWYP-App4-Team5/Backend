@@ -1,4 +1,4 @@
-package com.swyp.server.global.swagger.annotation;
+package com.jjanpot.server.global.swagger.annotation;
 
 
 import io.swagger.v3.oas.models.examples.Example;

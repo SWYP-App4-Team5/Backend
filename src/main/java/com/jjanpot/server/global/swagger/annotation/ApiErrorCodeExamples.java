@@ -1,11 +1,11 @@
-package com.swyp.server.global.swagger.annotation;
+package com.jjanpot.server.global.swagger.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.swyp.server.global.exception.ErrorCode;
+import com.jjanpot.server.global.exception.ErrorCode;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

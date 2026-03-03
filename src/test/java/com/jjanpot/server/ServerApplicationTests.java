@@ -1,4 +1,4 @@
-package com.swyp.server;
+package com.jjanpot.server;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

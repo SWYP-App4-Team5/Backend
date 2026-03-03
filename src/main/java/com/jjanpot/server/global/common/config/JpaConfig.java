@@ -1,4 +1,4 @@
-package com.swyp.server.global.common.config;
+package com.jjanpot.server.global.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
