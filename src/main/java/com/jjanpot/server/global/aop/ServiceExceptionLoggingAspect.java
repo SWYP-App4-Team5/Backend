@@ -1,4 +1,4 @@
-package com.jjanpot.server.global.aop;
+package com.swyp.server.global.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
