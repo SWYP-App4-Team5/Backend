@@ -25,4 +25,5 @@ spring:
 
 app:
   version: test
-  env: tests
+  env: test
+
