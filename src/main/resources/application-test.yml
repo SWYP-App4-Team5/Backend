@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: server
+  profiles:
+    default: local
+  config:
+    import:
+      - optional:config/flyway.yml
+  datasource:
+    url: jdbc:mysql://localhost:3306/jjanpot_test?useSSL=false&allowPublicKeyRetrieval=true
+    username: test
+    password: test
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+app:
+  version: local
+  env: local

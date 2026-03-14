@@ -6,3 +6,7 @@ spring:
   config:
     import:
       - optional:config/flyway.yml
+
+app:
+  version: local
+  env: local
