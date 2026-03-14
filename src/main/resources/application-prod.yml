@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: server
+  config:
+    import:
+      - optional:config/flyway.yml
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+app:
+  version: prod
+  env: prod
