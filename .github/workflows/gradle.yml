@@ -28,7 +28,7 @@ jobs:
 
     - name: Build with Gradle
       env:
-        SPRING_PROFILES_ACTIVE: test
+        SPRING_PROFILES_ACTIVE: prod
       run: ./gradlew build -x test
 
     - name: Login Docker Hub
