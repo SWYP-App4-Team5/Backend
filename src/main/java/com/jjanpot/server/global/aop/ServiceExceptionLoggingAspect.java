@@ -18,11 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ServiceExceptionLoggingAspect {
 
 	@Pointcut("execution(* com.jjanpot.server..service..*(..))")
-	public void serviceLayer() {}
+	public void serviceLayer() {
+	}
 
 	@AfterThrowing(pointcut = "serviceLayer()", throwing = "ex")
 	public void logServiceException(JoinPoint joinPoint, Exception ex) {
-		if (ex instanceof BusinessException) return;
+		if (ex instanceof BusinessException)
+			return;
 
 		log.error("[SERVICE-ERROR] method={} message={}",
 			joinPoint.getSignature().toShortString(),

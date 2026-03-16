@@ -8,12 +8,11 @@ import com.jjanpot.server.global.exception.ErrorCode;
 public enum Provider {
 	KAKAO,
 	GOOGLE,
-	NAVER,
 	APPLE;
 
 	public static Provider from(String value) {
 
-		if(value == null || value.trim().isEmpty()) {
+		if (value == null || value.trim().isEmpty()) {
 			throw new BusinessException(
 				ErrorCode.INVALID_INPUT, "소셜로그인 플랫폼 입력은 필수입니다. ");
 		}

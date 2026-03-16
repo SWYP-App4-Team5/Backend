@@ -24,7 +24,7 @@ public class SecurityConfig {
 				"/v3/api-docs/**",
 				"/v3/api-docs.yaml")
 			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-			.csrf(csrf-> csrf.disable())
+			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		return http.build();
 	}

@@ -26,9 +26,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
 		ensureTraceId();
 
-		if(e.getErrorCode().getStatus().is4xxClientError()){
+		if (e.getErrorCode().getStatus().is4xxClientError()) {
 			log.warn("[BUSINESS-WARN] errorCode={} message={}", e.getErrorCode().name(), e.getMessage());
-		}else{
+		} else {
 			log.error("[BUSINESS-ERROR] errorCode={}", e.getErrorCode().name(), e);
 		}
 

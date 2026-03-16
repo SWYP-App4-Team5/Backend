@@ -7,7 +7,8 @@ import org.slf4j.MDC;
 public class MdcTraceId {
 	private static final String TRACE_ID = "traceId";
 
-	private MdcTraceId() {}
+	private MdcTraceId() {
+	}
 
 	public static String generate() {
 		return UUID.randomUUID().toString().substring(0, 8);

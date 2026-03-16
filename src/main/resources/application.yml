@@ -6,7 +6,13 @@ spring:
   config:
     import:
       - optional:config/flyway.yml
-
+oauth:
+  kakao:
+    user-info-url: https://kapi.kakao.com/v2/user/me
+jwt:
+  expiration: 3600000
+  refresh-expiration: 2592000000
+  secret: ${JWT_SECRET}
 app:
   version: local
   env: local

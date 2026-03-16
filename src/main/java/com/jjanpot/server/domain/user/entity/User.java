@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 		@UniqueConstraint(columnNames = {"provider", "provider_id"})
 	},
 	indexes = {
-		@Index(name = "idx_provider",columnList = "provider, provider_id"),
+		@Index(name = "idx_provider", columnList = "provider, provider_id"),
 		@Index(name = "idx_email", columnList = "email")
 	}
 )
@@ -55,7 +55,7 @@ public class User extends BaseEntity {
 	private String providerId;
 
 	@Builder.Default
-	@Column(name = "notification_all_enabled", nullable = false ,columnDefinition = "TINYINT(1)")
+	@Column(name = "notification_all_enabled", nullable = false, columnDefinition = "TINYINT(1)")
 	private boolean notificationAllEnabled = false;
 
 	@Builder.Default

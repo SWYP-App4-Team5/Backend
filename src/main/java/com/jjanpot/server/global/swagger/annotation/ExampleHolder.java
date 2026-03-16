@@ -1,6 +1,5 @@
 package com.jjanpot.server.global.swagger.annotation;
 
-
 import io.swagger.v3.oas.models.examples.Example;
 import lombok.Builder;
 import lombok.Getter;
