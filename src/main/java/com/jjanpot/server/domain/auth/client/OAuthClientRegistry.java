@@ -16,12 +16,15 @@ public class OAuthClientRegistry {
 
 	public OAuthClientRegistry(
 		KakaoApiClient kakaoApiClient,
-		GoogleApiClient googleApiClient
+		GoogleApiClient googleApiClient,
+		AppleApiClient appleApiClient
 
 	) {
 		this.clients = new EnumMap<>(Provider.class);
 		clients.put(Provider.KAKAO, kakaoApiClient);
 		clients.put(Provider.GOOGLE, googleApiClient);
+		clients.put(Provider.APPLE, appleApiClient);
+
 	}
 
 	public OAuthClient getAuthClient(Provider provider) {
