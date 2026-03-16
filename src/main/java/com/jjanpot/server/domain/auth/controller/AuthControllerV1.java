@@ -13,6 +13,7 @@ import com.jjanpot.server.domain.auth.service.AuthService;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,7 +24,8 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 	private final AuthService authService;
 
 	@PostMapping("/login/{provider}")
-	public SuccessResponse<LoginResponse> login(@PathVariable String provider, @RequestBody LoginRequest request) {
+	public SuccessResponse<LoginResponse> login(@PathVariable String provider,
+		@Valid @RequestBody LoginRequest request) {
 		LoginResponse response = authService.login(Provider.from(provider), request.accessToken());
 		return SuccessResponse.of(response);
 	}

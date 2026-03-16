@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.auth.account;
+package com.jjanpot.server.domain.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

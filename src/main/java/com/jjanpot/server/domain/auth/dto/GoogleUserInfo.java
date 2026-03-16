@@ -8,35 +8,42 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class KakaoUserInfo implements OAuthUser {
+public class GoogleUserInfo implements OAuthUser {
 
-	private Long id;
+	@JsonProperty("sub")
+	private String providerId;
 
-	@JsonProperty("kakao_account")
-	private KakaoAccount kakaoAccount;
+	@JsonProperty("email")
+	private String email;
+
+	@JsonProperty("name")
+	private String name;
+
+	@JsonProperty("picture")
+	private String profileImageUrl;
 
 	@Override
 	public Provider getProvider() {
-		return Provider.KAKAO;
+		return Provider.GOOGLE;
 	}
 
 	@Override
 	public String getProviderId() {
-		return String.valueOf(id);
+		return providerId;
 	}
 
 	@Override
 	public String getNickname() {
-		return kakaoAccount.getProfile().getNickname();
+		return name;
 	}
 
 	@Override
 	public String getEmail() {
-		return kakaoAccount.getEmail();
+		return email;
 	}
 
 	@Override
 	public String getProfileImageUrl() {
-		return kakaoAccount.getProfile().getProfileImageUrl();
+		return profileImageUrl;
 	}
 }
