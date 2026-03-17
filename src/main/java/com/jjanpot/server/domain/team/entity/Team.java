@@ -47,5 +47,6 @@ public class Team extends BaseEntity {
 	private Integer minMemberCount = 2;
 
 	@Column(name = "max_member_count", nullable = false)
-	private Integer maxMemberCount;
+	@Builder.Default
+	private Integer maxMemberCount = 8;
 }
