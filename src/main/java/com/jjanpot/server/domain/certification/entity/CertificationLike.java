@@ -1,6 +1,7 @@
 package com.jjanpot.server.domain.certification.entity;
 
 import com.jjanpot.server.domain.user.entity.User;
+import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class CertificationLike {
+public class CertificationLike extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,11 +54,6 @@ public class CertificationLike {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-
-	@PrePersist
-	public void prePersist() {
-		this.createdAt = java.time.LocalDateTime.now();
-	}
 
 	// 좋아요 취소 (Soft Delete)
 	public void delete() {
