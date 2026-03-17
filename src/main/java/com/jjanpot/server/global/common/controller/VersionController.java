@@ -1,4 +1,4 @@
-package com.swyp.server.global.common.controller;
+package com.jjanpot.server.global.common.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
