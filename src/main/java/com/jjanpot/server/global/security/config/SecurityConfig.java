@@ -18,7 +18,6 @@ public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-
 	@Bean
 	@Order(1)
 	public SecurityFilterChain filterChainSwagger(HttpSecurity http) throws Exception {
@@ -40,8 +39,7 @@ public class SecurityConfig {
 
 	@Bean
 	@Order(2)
-	public SecurityFilterChain filterChainApi(HttpSecurity http) throws
-		Exception {
+	public SecurityFilterChain filterChainApi(HttpSecurity http) throws Exception {
 		http
 			.csrf(csrf -> csrf.disable())
 			.formLogin(form -> form.disable())
@@ -55,6 +53,6 @@ public class SecurityConfig {
 					"/api/auth/v1/refresh"
 				).permitAll()
 				.anyRequest().authenticated());
-		return http.build();
+	return http.build();
 	}
 }
