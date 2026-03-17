@@ -10,11 +10,14 @@ import com.jjanpot.server.domain.auth.client.OAuthClientRegistry;
 import com.jjanpot.server.domain.auth.dto.LoginResponse;
 import com.jjanpot.server.domain.auth.dto.LoginUserInfo;
 import com.jjanpot.server.domain.auth.dto.OAuthUser;
+import com.jjanpot.server.domain.auth.dto.RefreshResponse;
 import com.jjanpot.server.domain.auth.entity.RefreshToken;
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.repository.UserRepository;
+import com.jjanpot.server.global.exception.BusinessException;
+import com.jjanpot.server.global.exception.ErrorCode;
 import com.jjanpot.server.global.security.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthService {
 
 	private static final int REFRESH_TOKEN_EXPIRES_DAYS = 30; //최대 수명
-	private static final int REFRESH_TOKEN_REFRESH_DAYS = 2; //재발급
+	private static final int REFRESH_TOKEN_REISSUE_THRESHOLD_DAYS = 2; //재발급
 
 	private final OAuthClientRegistry oAuthClientRegistry;
 	private final UserRepository userRepository;
@@ -44,7 +47,7 @@ public class AuthService {
 		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
 
-		LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+		LocalDateTime expiresAt = LocalDateTime.now().plusDays(REFRESH_TOKEN_EXPIRES_DAYS);
 
 		refreshTokenRepository.findByUser(user)
 			.ifPresentOrElse(
@@ -54,6 +57,34 @@ public class AuthService {
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
 		return LoginResponse.of(accessToken, refreshToken, userInfo, isNewUser);
 
+	}
+
+	@Transactional
+	public RefreshResponse refreshToken(String token) {
+		RefreshToken refreshToken = findRefreshToken(token);
+		validateRefreshToken(refreshToken);
+
+		User user = refreshToken.getUser();
+
+		String newAccessToken = jwtTokenProvider.generateToken(user.getUserId());
+
+		if (isRefreshTokenExpiringSoon(refreshToken)) {
+			String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
+			updateRefreshToken(refreshToken, newRefreshToken);
+			log.info("만료 임박 리프레시 토큰 갱신");
+
+			return RefreshResponse.of(
+				user.getUserId(),
+				newAccessToken,
+				newRefreshToken
+			);
+
+		}
+		return RefreshResponse.of(
+			user.getUserId(),
+			newAccessToken,
+			refreshToken.getToken()
+		);
 	}
 
 	private User findOrCreateUser(Provider provider, OAuthUser oauthUser) {
@@ -85,4 +116,26 @@ public class AuthService {
 		RefreshToken refreshToken = RefreshToken.createRefreshToken(user, token, expiresAt);
 		refreshTokenRepository.save(refreshToken);
 	}
+
+	private RefreshToken findRefreshToken(String token) {
+		return refreshTokenRepository.findByToken(token)
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
+	}
+
+	private void validateRefreshToken(RefreshToken refreshToken) {
+		if (refreshToken.isExpired()) {
+			throw new BusinessException(ErrorCode.EXPIRED_REFRESH_TOKEN);
+		}
+	}
+
+	private boolean isRefreshTokenExpiringSoon(RefreshToken refreshToken) {
+		LocalDateTime threshold = LocalDateTime.now().plusDays(REFRESH_TOKEN_REISSUE_THRESHOLD_DAYS);
+		return refreshToken.getExpiresAt().isAfter(threshold);
+	}
+
+	private void updateRefreshToken(RefreshToken refreshToken, String newRefreshToken) {
+		LocalDateTime newExpireTime = LocalDateTime.now().plusDays(REFRESH_TOKEN_EXPIRES_DAYS);
+		refreshToken.updateToken(newRefreshToken, newExpireTime);
+	}
+
 }

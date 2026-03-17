@@ -6,6 +6,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.jjanpot.server.global.security.jwt.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,20 +25,33 @@ public class SecurityConfig {
 				"/swagger-ui/**",
 				"/v3/api-docs",
 				"/v3/api-docs/**",
-				"/v3/api-docs.yaml")
+				"/v3/api-docs.yaml"
+			)
 			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 			.csrf(csrf -> csrf.disable())
+			.formLogin(form -> form.disable())
+			.httpBasic(httpBasic -> httpBasic.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		return http.build();
 	}
 
 	@Bean
 	@Order(2)
-	public SecurityFilterChain filterChainApi(HttpSecurity http) throws Exception {
+	public SecurityFilterChain filterChainApi(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws
+		Exception {
 		http
 			.csrf(csrf -> csrf.disable())
 			.formLogin(form -> form.disable())
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			)
+			.httpBasic(httpBasic -> httpBasic.disable())
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(
+					"/api/auth/v1/login/**",
+					"/api/auth/v1/refresh"
+				).permitAll()
+				.anyRequest().authenticated());
 		return http.build();
 	}
 }
