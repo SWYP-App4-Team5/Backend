@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -43,25 +44,31 @@ public class ChallengeMemberResult extends BaseEntity {
 	private Long resultId;
 
 	@Column(name = "total_saved_amount", nullable = false)
+	@Comment("개인 합산 절약 금액")
 	private Long totalSavedAmount;
 
-	@Column(name = "cert_count", nullable = false)
-	private Integer certCount;
+	@Column(name = "total_cert_count", nullable = false)
+	@Comment("개인 총 인증 횟수")
+	private Integer totalCertCount;
 
 	@Column(name = "is_personal_success", nullable = false)
+	@Comment("개인 최소 금액 충족 여부")
 	private Boolean isPersonalSuccess;
 
 	@Column(name = "is_rule_violated", nullable = false)
 	@Builder.Default
+	@Comment("규칙 위반 여부")
 	private Boolean isRuleViolated = false;
 
 	@Column(name = "streak_days", nullable = false)
 	@Builder.Default
+	@Comment("연속 활동일")
 	private Integer streakDays = 0;
 
 	@Column(name = "weekly_participation_rate",
 		nullable = false, precision = 5, scale = 2)
 	@Builder.Default
+	@Comment("주간 참여율 (%)")
 	private BigDecimal weeklyParticipationRate = BigDecimal.ZERO;
 
 	@ManyToOne(fetch = FetchType.LAZY)

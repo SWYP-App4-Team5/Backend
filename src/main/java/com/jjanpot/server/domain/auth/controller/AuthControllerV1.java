@@ -29,7 +29,7 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 	public SuccessResponse<LoginResponse> login(@PathVariable String provider,
 		@Valid @RequestBody LoginRequest request) {
 		LoginResponse response = authService.login(Provider.from(provider), request.accessToken());
-		return SuccessResponse.of(response);
+		return SuccessResponse.ok(response);
 	}
 
 	@PostMapping("/refresh")

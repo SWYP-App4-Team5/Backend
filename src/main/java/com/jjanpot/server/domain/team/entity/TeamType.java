@@ -1,6 +1,6 @@
-package com.jjanpot.server.domain.challenge.entity;
+package com.jjanpot.server.domain.team.entity;
 
-public enum ChallengeType {
+public enum TeamType {
     FRIEND,   // 친구
     COUPLE,   // 연인
     FAMILY,   // 가족

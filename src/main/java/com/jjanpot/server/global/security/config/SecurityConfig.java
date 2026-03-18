@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+
 	@Bean
 	@Order(1)
 	public SecurityFilterChain filterChainSwagger(HttpSecurity http) throws Exception {
@@ -37,7 +40,7 @@ public class SecurityConfig {
 
 	@Bean
 	@Order(2)
-	public SecurityFilterChain filterChainApi(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws
+	public SecurityFilterChain filterChainApi(HttpSecurity http) throws
 		Exception {
 		http
 			.csrf(csrf -> csrf.disable())
