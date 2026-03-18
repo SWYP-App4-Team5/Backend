@@ -53,7 +53,7 @@ public class ChallengeWeek extends BaseEntity {
 
 	@Column(name = "week_saved_amount", nullable = false)
 	@Builder.Default
-	@Comment("실제 절약 금액")
+	@Comment("실제 절약 금액 (팀 전체의 누적 절약 금액)")
 	private int weekSavedAmount = 0;
 
 	@Column(name = "start_date", nullable = false)
@@ -82,11 +82,29 @@ public class ChallengeWeek extends BaseEntity {
 			.build();
 	}
 
+	// 인증 생성 시 활용
 	public void addSavedAmount(int amount) {
 		this.weekSavedAmount += amount;
 	}
 
+	// 인증 삭제 시 활용
 	public void subtractSavedAmount(int amount) {
 		this.weekSavedAmount -= amount;
 	}
 }
+
+/*
+ weekSavedAmount는 팀 전체의 누적 절약 금액이고,
+ 이 값을 weekGoalAmount와 비교해서 챌린지 달성 여부를 판단하는 데 사용됨
+*/
+
+/* 인증 예시
+	팀 목표 절약 금액: 200,000원
+	이번 주 weekSavedAmount: 0원
+	→ 유저A가 외식비 30,000원 절약 등록
+	addSavedAmount(30,000) → weekSavedAmount = 30,000원
+	→ 유저B가 교통비 15,000원 절약 등록
+	addSavedAmount(15,000) → weekSavedAmount = 45,000원
+	→ 유저A가 기록 잘못 입력해서 삭제
+	subtractSavedAmount(30,000) → weekSavedAmount = 15,000원
+*/
