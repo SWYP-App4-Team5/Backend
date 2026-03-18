@@ -4,6 +4,8 @@ import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -37,16 +40,41 @@ public class Team extends BaseEntity {
 	private Long teamId;
 
 	@Column(name = "team_name", nullable = false, length = 100)
+	@Comment("팀 명")
 	private String teamName;
 
 	@Column(name = "invite_code", nullable = false, length = 30)
+	@Comment("팀 초대코드")
 	private String inviteCode;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "type", nullable = false)
+	@Comment("팀 유형 (친구/연인/가족/소모임/기타)")
+	private TeamType type;
+
+	@Column(name = "current_member_count", nullable = false)
+	@Builder.Default
+	@Comment("현재 참여 인원. 챌린지 생성자(팀장) 포함")
+	private Integer currentMemberCount = 1;
 
 	@Column(name = "min_member_count", nullable = false)
 	@Builder.Default
+	@Comment("최소 참여 인원")
 	private Integer minMemberCount = 2;
 
 	@Column(name = "max_member_count", nullable = false)
 	@Builder.Default
+	@Comment("최대 참여 인원")
 	private Integer maxMemberCount = 8;
+
+
+	// 팀원 합류 시
+	public void increaseMemberCount() {
+		this.currentMemberCount++;
+	}
+
+	// 팀원 탈퇴 시
+	public void decreaseMemberCount() {
+		this.currentMemberCount--;
+	}
 }

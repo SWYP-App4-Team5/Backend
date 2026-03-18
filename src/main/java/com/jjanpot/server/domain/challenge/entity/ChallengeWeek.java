@@ -12,11 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -40,20 +42,25 @@ public class ChallengeWeek extends BaseEntity {
 	private Long weekId;
 
 	@Column(name = "week_number", nullable = false)
+	@Comment("주차 숫자")
 	private Integer weekNumber;
 
 	@Column(name = "week_goal_amount", nullable = false)
+	@Comment("이번주 목표 금액")
 	private Long weekGoalAmount;
 
 	@Column(name = "week_saved_amount", nullable = false)
 	@Builder.Default
+	@Comment("실제 절약 금액")
 	private Long weekSavedAmount = 0L;
 
 	@Column(name = "start_date", nullable = false)
-	private java.time.LocalDateTime startDate;
+	@Comment("시작 일시")
+	private LocalDateTime startDate;
 
 	@Column(name = "end_date", nullable = false)
-	private java.time.LocalDateTime endDate;
+	@Comment("종료 일시")
+	private LocalDateTime endDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "challenge_id", nullable = false)

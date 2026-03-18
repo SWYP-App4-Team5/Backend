@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "challenge_category")
@@ -38,5 +39,6 @@ public class ChallengeCategory {
 	private Category category;
 
 	@Column(name = "amount", nullable = false)
+	@Comment("챌린지 생성 시 설정한 해당 카테고리의 기준 금액")
 	private Long amount;
 }

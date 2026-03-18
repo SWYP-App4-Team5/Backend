@@ -14,11 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "challenge")
@@ -34,30 +36,33 @@ public class Challenge extends BaseEntity {
 	private Long challengeId;
 
 	@Column(name = "title", nullable = false, length = 100)
+	@Comment("챌린지 제목")
 	private String title;
 
-	@Column(name = "memo", length = 100)
-	private String memo;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "type", nullable = false)
-	private ChallengeType type;
+	@Column(name = "memo", length = 200)
+	@Comment("챌린지 설명")
+	private String description;
 
 	@Column(name = "goal_amount", nullable = false)
+	@Comment("팀 전체 목표 절약 금액")
 	private Long goalAmount;
 
 	@Column(name = "min_personal_goal_amount", nullable = false)
+	@Comment("인당 최소 목표 절약 금액")
 	private Long minPersonalGoalAmount;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
+	@Comment("챌린지 상태")
 	private ChallengeStatus status;
 
 	@Column(name = "start_date", nullable = false)
-	private java.time.LocalDateTime startDate;
+	@Comment("시작 일시")
+	private LocalDateTime startDate;
 
 	@Column(name = "end_date", nullable = false)
-	private java.time.LocalDateTime endDate;
+	@Comment("종료 일시")
+	private LocalDateTime endDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "team_id", nullable = false)
