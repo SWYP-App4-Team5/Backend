@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.Comment;
 
 import com.jjanpot.server.global.entity.BaseEntity;
+import com.jjanpot.server.global.exception.BusinessException;
+import com.jjanpot.server.global.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -84,11 +86,20 @@ public class ChallengeWeek extends BaseEntity {
 
 	// 인증 생성 시 활용
 	public void addSavedAmount(int amount) {
+		if (amount < 0) {
+			throw new BusinessException(ErrorCode.INVALID_SAVED_AMOUNT);
+		}
 		this.weekSavedAmount += amount;
 	}
 
 	// 인증 삭제 시 활용
 	public void subtractSavedAmount(int amount) {
+		if (amount < 0) {
+			throw new BusinessException(ErrorCode.INVALID_SAVED_AMOUNT);
+		}
+		if (this.weekSavedAmount < amount) {
+			throw new BusinessException(ErrorCode.SAVED_AMOUNT_UNDERFLOW);
+		}
 		this.weekSavedAmount -= amount;
 	}
 }
