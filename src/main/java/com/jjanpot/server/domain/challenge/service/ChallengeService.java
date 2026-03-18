@@ -57,22 +57,29 @@ public class ChallengeService {
 	@Transactional
 	public CreateChallengeResponse createChallenge(User user, CreateChallengeRequest request) {
 
+		// 1. ChallengeMinGoalPolicy 조회
 		validateGoalAmount(request.memberCount(), request.goalAmount());
 
+		// 2. 초대코드 생성
 		String inviteCode = generateUniqueInviteCode();
 
+		// 3. Team 저장
 		Team team = teamRepository.save(
 			Team.of(request.teamName(), inviteCode, request.teamType(), request.memberCount()));
 
+		// 4. TeamMembers 저장
 		teamMembersRepository.save(TeamMembers.ofLeader(team, user));
 
 		LocalDateTime startDateTime = request.startDate().atStartOfDay();
 		LocalDateTime endDateTime = startDateTime.plusWeeks(CHALLENGE_DURATION_WEEKS);
 
+		// 5. Challenge 저장
 		Challenge challenge = challengeRepository.save(Challenge.from(request, team, startDateTime, endDateTime));
 
+		// 6. ChallengeWeek 저장
 		challengeWeekRepository.save(ChallengeWeek.firstWeek(challenge, startDateTime, endDateTime));
 
+		// 7. Category 조회 + ChallengeCategory 저장
 		List<ChallengeCategory> challengeCategories = saveChallengeCategories(challenge, request.categories());
 
 		return CreateChallengeResponse.from(challenge, team, challengeCategories);
