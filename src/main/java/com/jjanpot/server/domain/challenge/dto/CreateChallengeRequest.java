@@ -29,7 +29,7 @@ public record CreateChallengeRequest(
 	@NotNull(message = "최대 참여 인원은 필수입니다.")
 	@Min(value = 2, message = "최대 참여 인원은 최소 2명 이상이어야 합니다.")
 	@Max(value = 8, message = "최대 참여 인원은 최대 8명까지 가능합니다.")
-	Integer memberCount,
+	Integer maxMemberCount,
 
 	@Schema(description = "챌린지 시작 날짜", example = "2026-04-05")
 	@NotNull(message = "챌린지 시작 날짜는 필수입니다.")

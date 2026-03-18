@@ -23,7 +23,7 @@ public interface ChallengeControllerV1Docs {
 		summary = "챌린지 생성",
 		description = """
 			챌린지 생성 API입니다.
-
+			
 			로그인한 유저가 팀을 구성하여 챌린지를 생성합니다.
 			- 챌린지 생성자는 자동으로 팀장(LEADER)이 됩니다.
 			- 팀 생성과 동시에 초대 코드가 발급됩니다.

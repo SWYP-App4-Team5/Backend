@@ -2,6 +2,8 @@ package com.jjanpot.server.domain.challenge.entity;
 
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -19,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -44,24 +45,24 @@ public class ChallengeTeamResult extends BaseEntity {
 
 	@Column(name = "goal_amount", nullable = false)
 	@Comment("목표 금액")
-	private Long goalAmount;
+	private int goalAmount;
 
 	@Column(name = "total_saved_amount", nullable = false)
 	@Comment("팀 합산 절약 금액")
-	private Long totalSavedAmount;
+	private int totalSavedAmount;
 
 	@Column(name = "total_cert_count", nullable = false)
 	@Comment("팀 전체 인증 횟수")
-	private Integer totalCertCount;
+	private int totalCertCount;
 
 	@Column(name = "is_team_success", nullable = false)
 	@Comment("팀 성공 여부")
-	private Boolean isTeamSuccess;
+	private boolean isTeamSuccess;
 
 	@Column(name = "team_streak_days", nullable = false)
 	@Builder.Default
 	@Comment("팀 연속 활동일")
-	private Integer teamStreakDays = 0;
+	private int teamStreakDays = 0;
 
 	@Column(name = "achievement_rate", nullable = false,
 		precision = 5, scale = 2)

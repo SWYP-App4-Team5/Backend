@@ -139,9 +139,9 @@ class ChallengeServiceTest {
 			assertThat(response.challengeId()).isEqualTo(1L);
 			assertThat(response.teamName()).isEqualTo("절약왕팀");
 			assertThat(response.inviteCode()).isEqualTo("AB3K9P");
-			assertThat(response.goalAmount()).isEqualTo(200_000L);
+			assertThat(response.goalAmount()).isEqualTo(200_000);
 			assertThat(response.categories()).hasSize(1);
-			assertThat(response.categories().get(0).categoryId()).isEqualTo(1L);
+			assertThat(response.categories().get(0).categoryId()).isEqualTo(1);
 		}
 
 		@Test

@@ -42,7 +42,7 @@ public class Challenge extends BaseEntity {
 	@Comment("챌린지 제목")
 	private String title;
 
-	@Column(name = "memo", length = 200)
+	@Column(name = "description", length = 255)
 	@Comment("챌린지 설명")
 	private String description;
 

@@ -58,14 +58,14 @@ public class ChallengeService {
 	public CreateChallengeResponse createChallenge(User user, CreateChallengeRequest request) {
 
 		// 1. ChallengeMinGoalPolicy 조회
-		validateGoalAmount(request.memberCount(), request.goalAmount());
+		validateGoalAmount(request.maxMemberCount(), request.goalAmount());
 
 		// 2. 초대코드 생성
 		String inviteCode = generateUniqueInviteCode();
 
 		// 3. Team 저장
 		Team team = teamRepository.save(
-			Team.of(request.teamName(), inviteCode, request.teamType(), request.memberCount()));
+			Team.of(request.teamName(), inviteCode, request.teamType(), request.maxMemberCount()));
 
 		// 4. TeamMembers 저장
 		teamMembersRepository.save(TeamMembers.ofLeader(team, user));
@@ -86,7 +86,7 @@ public class ChallengeService {
 	}
 
 	// 인원 수에 따른 팀 전체 목표 금액 최소 기준 검증
-	private void validateGoalAmount(int memberCount, long goalAmount) {
+	private void validateGoalAmount(int memberCount, int goalAmount) {
 		ChallengeMinGoalPolicy policy = challengeMinGoalPolicyRepository
 			.findByMemberCount(memberCount)
 			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_MIN_GOAL_POLICY_NOT_FOUND));

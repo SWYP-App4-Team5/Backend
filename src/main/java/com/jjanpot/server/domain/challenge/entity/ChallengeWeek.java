@@ -82,11 +82,11 @@ public class ChallengeWeek extends BaseEntity {
 			.build();
 	}
 
-	public void addSavedAmount(long amount) {
+	public void addSavedAmount(int amount) {
 		this.weekSavedAmount += amount;
 	}
 
-	public void subtractSavedAmount(long amount) {
+	public void subtractSavedAmount(int amount) {
 		this.weekSavedAmount -= amount;
 	}
 }
