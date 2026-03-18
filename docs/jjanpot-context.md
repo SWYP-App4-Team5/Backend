@@ -35,10 +35,10 @@ Nginx → 현재 활성 포트로 upstream 전환
 
 ### 관련 엔드포인트
 
-| 엔드포인트 | 설명 |
-|---|---|
-| `GET /env` | 현재 활성 서버 환경 확인 (`app.env` 값 반환) |
-| `GET /health` | 헬스체크 - Nginx가 정상 여부 판단 |
+| 엔드포인트          | 설명                                       |
+|----------------|------------------------------------------|
+| `GET /env`     | 현재 활성 서버 환경 확인 (`app.env` 값 반환)          |
+| `GET /health`  | 헬스체크 - Nginx가 정상 여부 판단                   |
 | `GET /version` | 현재 배포된 애플리케이션 버전 확인 (`app.version` 값 반환) |
 
 ### 환경변수 주입 (배포 시)
@@ -176,7 +176,6 @@ team_name             VARCHAR(100) NOT NULL
 invite_code           VARCHAR(30) NOT NULL UNIQUE
 type                  ENUM('FRIEND','COUPLE','FAMILY','CLUB','OTHER') NOT NULL  -- 팀 유형
 current_member_count  INT NOT NULL DEFAULT 1  -- 현재 참여 인원 (팀장 포함)
-min_member_count      INT NOT NULL DEFAULT 2
 max_member_count      INT NOT NULL  -- 유저가 설정, 2~8명
 created_at            DATETIME NOT NULL
 updated_at            DATETIME NOT NULL

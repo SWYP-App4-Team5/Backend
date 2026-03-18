@@ -59,7 +59,7 @@ CREATE TABLE category_amount_option
 CREATE TABLE challenge_min_goal_policy
 (
     policy_id    BIGINT      NOT NULL AUTO_INCREMENT,
-    member_count INT         NOT NULL,
+    member_count INT         NOT NULL UNIQUE,
     min_amount   BIGINT      NOT NULL,
     created_at   DATETIME(6) NOT NULL,
     updated_at   DATETIME(6) NOT NULL,
@@ -76,7 +76,8 @@ CREATE TABLE team
     max_member_count     INT                                             NOT NULL DEFAULT 8,
     created_at           DATETIME(6)                                     NOT NULL,
     updated_at           DATETIME(6)                                     NOT NULL,
-    PRIMARY KEY (team_id)
+    PRIMARY KEY (team_id),
+    CONSTRAINT UQ_invite_code UNIQUE (invite_code)
 );
 
 CREATE TABLE team_members
