@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -13,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "challenge_min_goal_policy")
@@ -31,9 +32,9 @@ public class ChallengeMinGoalPolicy extends BaseEntity {
 
 	@Column(name = "member_count", nullable = false, unique = true)
 	@Comment("인원 수")
-	private Integer memberCount;
+	private int memberCount;
 
 	@Column(name = "min_amount", nullable = false)
 	@Comment("최소 목표 금액")
-	private Long minAmount;
+	private int minAmount;
 }

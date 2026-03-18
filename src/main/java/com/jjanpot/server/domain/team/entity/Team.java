@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.team.entity;
 
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -16,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -55,18 +56,20 @@ public class Team extends BaseEntity {
 	@Column(name = "current_member_count", nullable = false)
 	@Builder.Default
 	@Comment("현재 참여 인원. 챌린지 생성자(팀장) 포함")
-	private Integer currentMemberCount = 1;
-
-	@Column(name = "min_member_count", nullable = false)
-	@Builder.Default
-	@Comment("최소 참여 인원")
-	private Integer minMemberCount = 2;
+	private int currentMemberCount = 1;
 
 	@Column(name = "max_member_count", nullable = false)
-	@Builder.Default
-	@Comment("최대 참여 인원")
-	private Integer maxMemberCount = 8;
+	@Comment("팀장이 설정한 최대 참여 인원")
+	private int maxMemberCount;
 
+	public static Team of(String teamName, String inviteCode, TeamType type, int maxMemberCount) {
+		return Team.builder()
+			.teamName(teamName)
+			.inviteCode(inviteCode)
+			.type(type)
+			.maxMemberCount(maxMemberCount)
+			.build();
+	}
 
 	// 팀원 합류 시
 	public void increaseMemberCount() {

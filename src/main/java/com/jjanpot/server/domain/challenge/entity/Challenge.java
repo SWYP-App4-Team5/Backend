@@ -1,5 +1,10 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.Comment;
+
+import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.global.entity.BaseEntity;
 
@@ -14,13 +19,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "challenge")
@@ -45,11 +48,11 @@ public class Challenge extends BaseEntity {
 
 	@Column(name = "goal_amount", nullable = false)
 	@Comment("팀 전체 목표 절약 금액")
-	private Long goalAmount;
+	private int goalAmount;
 
 	@Column(name = "min_personal_goal_amount", nullable = false)
 	@Comment("인당 최소 목표 절약 금액")
-	private Long minPersonalGoalAmount;
+	private int minPersonalGoalAmount;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
@@ -68,11 +71,28 @@ public class Challenge extends BaseEntity {
 	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
 
+	public static Challenge from(
+		CreateChallengeRequest request,
+		Team team,
+		LocalDateTime startDateTime,
+		LocalDateTime endDateTime
+	) {
+		return Challenge.builder()
+			.title(request.teamName())
+			.goalAmount(request.goalAmount())
+			.minPersonalGoalAmount(request.minPersonalGoalAmount())
+			.status(ChallengeStatus.WAITING)
+			.startDate(startDateTime)
+			.endDate(endDateTime)
+			.team(team)
+			.build();
+	}
+
 	public void updateStatus(ChallengeStatus status) {
 		this.status = status;
 	}
 
-	public void updateGoalAmount(Long goalAmount) {
+	public void updateGoalAmount(int goalAmount) {
 		this.goalAmount = goalAmount;
 	}
 }

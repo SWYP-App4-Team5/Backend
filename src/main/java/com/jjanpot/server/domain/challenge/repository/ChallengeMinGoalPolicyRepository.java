@@ -8,5 +8,5 @@ import com.jjanpot.server.domain.challenge.entity.ChallengeMinGoalPolicy;
 
 public interface ChallengeMinGoalPolicyRepository extends JpaRepository<ChallengeMinGoalPolicy, Long> {
 
-	Optional<ChallengeMinGoalPolicy> findByMemberCount(Integer memberCount);
+	Optional<ChallengeMinGoalPolicy> findByMemberCount(int memberCount);
 }

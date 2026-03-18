@@ -51,6 +51,24 @@ public class TeamMembers {
 	@Comment("합류 일시")
 	private LocalDateTime joinedAt;
 
+	public static TeamMembers ofLeader(Team team, User user) {
+		return TeamMembers.builder()
+			.id(new TeamMembersId(team.getTeamId(), user.getUserId()))
+			.team(team)
+			.user(user)
+			.role(TeamRole.LEADER)
+			.build();
+	}
+
+	public static TeamMembers ofMember(Team team, User user) {
+		return TeamMembers.builder()
+			.id(new TeamMembersId(team.getTeamId(), user.getUserId()))
+			.team(team)
+			.user(user)
+			.role(TeamRole.MEMBER)
+			.build();
+	}
+
 	@PrePersist
 	public void prePersist() {
 		this.joinedAt = java.time.LocalDateTime.now();

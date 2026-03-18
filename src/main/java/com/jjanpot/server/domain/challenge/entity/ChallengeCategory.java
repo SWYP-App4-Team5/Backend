@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.domain.category.entity.Category;
 
 import jakarta.persistence.Column;
@@ -15,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "challenge_category")
@@ -40,5 +41,14 @@ public class ChallengeCategory {
 
 	@Column(name = "amount", nullable = false)
 	@Comment("챌린지 생성 시 설정한 해당 카테고리의 기준 금액")
-	private Long amount;
+	private int amount;
+
+	public static ChallengeCategory of(Challenge challenge, Category category, int amount) {
+		return ChallengeCategory.builder()
+			.id(new ChallengeCategoryId(challenge.getChallengeId(), category.getCategoryId()))
+			.challenge(challenge)
+			.category(category)
+			.amount(amount)
+			.build();
+	}
 }

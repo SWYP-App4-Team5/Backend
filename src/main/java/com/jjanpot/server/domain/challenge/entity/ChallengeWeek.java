@@ -1,5 +1,9 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -12,13 +16,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -43,16 +45,16 @@ public class ChallengeWeek extends BaseEntity {
 
 	@Column(name = "week_number", nullable = false)
 	@Comment("주차 숫자")
-	private Integer weekNumber;
+	private int weekNumber;
 
 	@Column(name = "week_goal_amount", nullable = false)
 	@Comment("이번주 목표 금액")
-	private Long weekGoalAmount;
+	private int weekGoalAmount;
 
 	@Column(name = "week_saved_amount", nullable = false)
 	@Builder.Default
 	@Comment("실제 절약 금액")
-	private Long weekSavedAmount = 0L;
+	private int weekSavedAmount = 0;
 
 	@Column(name = "start_date", nullable = false)
 	@Comment("시작 일시")
@@ -66,11 +68,25 @@ public class ChallengeWeek extends BaseEntity {
 	@JoinColumn(name = "challenge_id", nullable = false)
 	private Challenge challenge;
 
-	public void addSavedAmount(Long amount) {
+	public static ChallengeWeek firstWeek(
+		Challenge challenge,
+		LocalDateTime startDateTime,
+		LocalDateTime endDateTime
+	) {
+		return ChallengeWeek.builder()
+			.weekNumber(1)
+			.weekGoalAmount(challenge.getGoalAmount())
+			.startDate(startDateTime)
+			.endDate(endDateTime)
+			.challenge(challenge)
+			.build();
+	}
+
+	public void addSavedAmount(long amount) {
 		this.weekSavedAmount += amount;
 	}
 
-	public void subtractSavedAmount(Long amount) {
+	public void subtractSavedAmount(long amount) {
 		this.weekSavedAmount -= amount;
 	}
 }
