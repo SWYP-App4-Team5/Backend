@@ -37,22 +37,21 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	@Bean
-	@Order(2)
-	public SecurityFilterChain filterChainApi(HttpSecurity http) throws Exception {
-		http
-			.csrf(csrf -> csrf.disable())
-			.formLogin(form -> form.disable())
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			)
-			.httpBasic(httpBasic -> httpBasic.disable())
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(
-					"/api/auth/v1/login/**",
-					"/api/auth/v1/refresh"
-				).permitAll()
-				.anyRequest().authenticated());
+@Bean
+@Order(2)
+public SecurityFilterChain filterChainApi(HttpSecurity http) throws Exception {
+	http
+		.csrf(csrf -> csrf.disable())
+		.formLogin(form -> form.disable())
+		.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+		.httpBasic(httpBasic -> httpBasic.disable())
+		.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+		.authorizeHttpRequests(auth -> auth
+			.requestMatchers(
+				"/api/auth/v1/login/**",
+				"/api/auth/v1/refresh"
+			).permitAll()
+			.anyRequest().authenticated());
 	return http.build();
-	}
+  }
 }
