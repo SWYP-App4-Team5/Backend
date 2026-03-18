@@ -1,6 +1,12 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
+import com.jjanpot.server.global.exception.BusinessException;
+import com.jjanpot.server.global.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,30 +46,76 @@ public class ChallengeWeek extends BaseEntity {
 	private Long weekId;
 
 	@Column(name = "week_number", nullable = false)
-	private Integer weekNumber;
+	@Comment("주차 숫자")
+	private int weekNumber;
 
 	@Column(name = "week_goal_amount", nullable = false)
-	private Long weekGoalAmount;
+	@Comment("이번주 목표 금액")
+	private int weekGoalAmount;
 
 	@Column(name = "week_saved_amount", nullable = false)
 	@Builder.Default
-	private Long weekSavedAmount = 0L;
+	@Comment("실제 절약 금액 (팀 전체의 누적 절약 금액)")
+	private int weekSavedAmount = 0;
 
 	@Column(name = "start_date", nullable = false)
-	private java.time.LocalDateTime startDate;
+	@Comment("시작 일시")
+	private LocalDateTime startDate;
 
 	@Column(name = "end_date", nullable = false)
-	private java.time.LocalDateTime endDate;
+	@Comment("종료 일시")
+	private LocalDateTime endDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "challenge_id", nullable = false)
 	private Challenge challenge;
 
-	public void addSavedAmount(Long amount) {
+	public static ChallengeWeek firstWeek(
+		Challenge challenge,
+		LocalDateTime startDateTime,
+		LocalDateTime endDateTime
+	) {
+		return ChallengeWeek.builder()
+			.weekNumber(1)
+			.weekGoalAmount(challenge.getGoalAmount())
+			.startDate(startDateTime)
+			.endDate(endDateTime)
+			.challenge(challenge)
+			.build();
+	}
+
+	// 인증 생성 시 활용
+	public void addSavedAmount(int amount) {
+		if (amount < 0) {
+			throw new BusinessException(ErrorCode.INVALID_SAVED_AMOUNT);
+		}
 		this.weekSavedAmount += amount;
 	}
 
-	public void subtractSavedAmount(Long amount) {
+	// 인증 삭제 시 활용
+	public void subtractSavedAmount(int amount) {
+		if (amount < 0) {
+			throw new BusinessException(ErrorCode.INVALID_SAVED_AMOUNT);
+		}
+		if (this.weekSavedAmount < amount) {
+			throw new BusinessException(ErrorCode.SAVED_AMOUNT_UNDERFLOW);
+		}
 		this.weekSavedAmount -= amount;
 	}
 }
+
+/*
+ weekSavedAmount는 팀 전체의 누적 절약 금액이고,
+ 이 값을 weekGoalAmount와 비교해서 챌린지 달성 여부를 판단하는 데 사용됨
+*/
+
+/* 인증 예시
+	팀 목표 절약 금액: 200,000원
+	이번 주 weekSavedAmount: 0원
+	→ 유저A가 외식비 30,000원 절약 등록
+	addSavedAmount(30,000) → weekSavedAmount = 30,000원
+	→ 유저B가 교통비 15,000원 절약 등록
+	addSavedAmount(15,000) → weekSavedAmount = 45,000원
+	→ 유저A가 기록 잘못 입력해서 삭제
+	subtractSavedAmount(30,000) → weekSavedAmount = 15,000원
+*/

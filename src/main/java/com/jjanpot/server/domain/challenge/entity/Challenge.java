@@ -1,5 +1,10 @@
 package com.jjanpot.server.domain.challenge.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.Comment;
+
+import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.global.entity.BaseEntity;
 
@@ -34,40 +39,60 @@ public class Challenge extends BaseEntity {
 	private Long challengeId;
 
 	@Column(name = "title", nullable = false, length = 100)
+	@Comment("챌린지 제목")
 	private String title;
 
-	@Column(name = "memo", length = 100)
-	private String memo;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "type", nullable = false)
-	private ChallengeType type;
+	@Column(name = "description", length = 255)
+	@Comment("챌린지 설명")
+	private String description;
 
 	@Column(name = "goal_amount", nullable = false)
-	private Long goalAmount;
+	@Comment("팀 전체 목표 절약 금액")
+	private int goalAmount;
 
 	@Column(name = "min_personal_goal_amount", nullable = false)
-	private Long minPersonalGoalAmount;
+	@Comment("인당 최소 목표 절약 금액")
+	private int minPersonalGoalAmount;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
+	@Comment("챌린지 상태")
 	private ChallengeStatus status;
 
 	@Column(name = "start_date", nullable = false)
-	private java.time.LocalDateTime startDate;
+	@Comment("시작 일시")
+	private LocalDateTime startDate;
 
 	@Column(name = "end_date", nullable = false)
-	private java.time.LocalDateTime endDate;
+	@Comment("종료 일시")
+	private LocalDateTime endDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
 
+	public static Challenge from(
+		CreateChallengeRequest request,
+		Team team,
+		LocalDateTime startDateTime,
+		LocalDateTime endDateTime
+	) {
+		return Challenge.builder()
+			.title(request.teamName())
+			.goalAmount(request.goalAmount())
+			.minPersonalGoalAmount(request.minPersonalGoalAmount())
+			.status(ChallengeStatus.WAITING)
+			.startDate(startDateTime)
+			.endDate(endDateTime)
+			.team(team)
+			.build();
+	}
+
 	public void updateStatus(ChallengeStatus status) {
 		this.status = status;
 	}
 
-	public void updateGoalAmount(Long goalAmount) {
+	public void updateGoalAmount(int goalAmount) {
 		this.goalAmount = goalAmount;
 	}
 }

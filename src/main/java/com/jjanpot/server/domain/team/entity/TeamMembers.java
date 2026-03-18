@@ -13,11 +13,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "team_members")
@@ -42,10 +44,30 @@ public class TeamMembers {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
+	@Comment("팀 내 역할(팀장/팀원")
 	private TeamRole role;
 
 	@Column(name = "joined_at", nullable = false)
-	private java.time.LocalDateTime joinedAt;
+	@Comment("합류 일시")
+	private LocalDateTime joinedAt;
+
+	public static TeamMembers ofLeader(Team team, User user) {
+		return TeamMembers.builder()
+			.id(new TeamMembersId(team.getTeamId(), user.getUserId()))
+			.team(team)
+			.user(user)
+			.role(TeamRole.LEADER)
+			.build();
+	}
+
+	public static TeamMembers ofMember(Team team, User user) {
+		return TeamMembers.builder()
+			.id(new TeamMembersId(team.getTeamId(), user.getUserId()))
+			.team(team)
+			.user(user)
+			.role(TeamRole.MEMBER)
+			.build();
+	}
 
 	@PrePersist
 	public void prePersist() {

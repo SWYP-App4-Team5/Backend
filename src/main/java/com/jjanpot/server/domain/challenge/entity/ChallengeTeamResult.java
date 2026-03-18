@@ -2,6 +2,8 @@ package com.jjanpot.server.domain.challenge.entity;
 
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.Comment;
+
 import com.jjanpot.server.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -42,34 +44,42 @@ public class ChallengeTeamResult extends BaseEntity {
 	private Long resultId;
 
 	@Column(name = "goal_amount", nullable = false)
-	private Long goalAmount;
+	@Comment("목표 금액")
+	private int goalAmount;
 
 	@Column(name = "total_saved_amount", nullable = false)
-	private Long totalSavedAmount;
+	@Comment("팀 합산 절약 금액")
+	private int totalSavedAmount;
 
 	@Column(name = "total_cert_count", nullable = false)
-	private Integer totalCertCount;
+	@Comment("팀 전체 인증 횟수")
+	private int totalCertCount;
 
 	@Column(name = "is_team_success", nullable = false)
-	private Boolean isTeamSuccess;
+	@Comment("팀 성공 여부")
+	private boolean isTeamSuccess;
 
 	@Column(name = "team_streak_days", nullable = false)
 	@Builder.Default
-	private Integer teamStreakDays = 0;
+	@Comment("팀 연속 활동일")
+	private int teamStreakDays = 0;
 
 	@Column(name = "achievement_rate", nullable = false,
 		precision = 5, scale = 2)
 	@Builder.Default
+	@Comment("팀 목표 달성율 (%)")
 	private BigDecimal achievementRate = BigDecimal.ZERO;
 
 	@Column(name = "avg_weekly_cert_count", nullable = false,
 		precision = 5, scale = 2)
 	@Builder.Default
+	@Comment("주간 인증 횟수 평균")
 	private BigDecimal avgWeeklyCertCount = BigDecimal.ZERO;
 
 	@Column(name = "avg_weekly_participation_rate",
 		nullable = false, precision = 5, scale = 2)
 	@Builder.Default
+	@Comment("주간 참여율 평균 (%)")
 	private BigDecimal avgWeeklyParticipationRate = BigDecimal.ZERO;
 
 	@OneToOne(fetch = FetchType.LAZY)

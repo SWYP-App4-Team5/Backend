@@ -35,10 +35,10 @@ Nginx → 현재 활성 포트로 upstream 전환
 
 ### 관련 엔드포인트
 
-| 엔드포인트 | 설명 |
-|---|---|
-| `GET /env` | 현재 활성 서버 환경 확인 (`app.env` 값 반환) |
-| `GET /health` | 헬스체크 - Nginx가 정상 여부 판단 |
+| 엔드포인트          | 설명                                       |
+|----------------|------------------------------------------|
+| `GET /env`     | 현재 활성 서버 환경 확인 (`app.env` 값 반환)          |
+| `GET /health`  | 헬스체크 - Nginx가 정상 여부 판단                   |
 | `GET /version` | 현재 배포된 애플리케이션 버전 확인 (`app.version` 값 반환) |
 
 ### 환경변수 주입 (배포 시)
@@ -53,21 +53,22 @@ app.version → 배포 버전 (예: 1.0.0)
 ```
 com.jjanpot.server
   ├── domain
-  │   ├── auth         (RefreshToken)
-  │   ├── user         (Users, UserDevice, UserAgreement)
-  │   ├── team         (Team, TeamMembers)
-  │   ├── challenge    (Challenge, ChallengeWeek, ChallengeCategory, ChallengeTeamResult, ChallengeMemberResult, ChallengeMinGoalPolicy)
-  │   ├── certification (Certification, CertificationLike)
-  │   ├── category     (Category, CategoryAmountOption)
-  │   ├── notification (Notification, NotificationTemplate)
-  │   ├── item         (Item)
-  │   └── terms        (Terms)
+  │   ├── auth         entity(RefreshToken) / controller / service / repository / dto / client
+  │   ├── user         entity(User) / repository
+  │   ├── team         entity(Team, TeamMembers, TeamType, TeamRole) / repository
+  │   ├── challenge    entity(Challenge, ChallengeWeek, ChallengeCategory, ...) / controller / service / repository / dto
+  │   ├── certification entity(Certification, CertificationLike, SpendType)
+  │   ├── category     entity(Category, CategoryAmountOption, CategoryName) / repository
+  │   ├── notification entity(Notification, NotificationTemplate, NotificationType)
+  │   ├── item         entity(Item)
+  │   └── terms        entity(Terms, TermsType)
   └── global
       ├── entity       (BaseEntity)
       ├── auth
+      ├── aop
       ├── config
-      ├── exception
-      ├── security
+      ├── exception    (BusinessException, ErrorCode, GlobalExceptionHandler)
+      ├── security     (JWT 인증 필터, JwtTokenProvider)
       └── swagger
 ```
 
@@ -171,12 +172,13 @@ user_id          BIGINT FK
 ```sql
 team_id
 BIGINT PK
-team_name         VARCHAR(100) NOT NULL
-invite_code       VARCHAR(30) NOT NULL UNIQUE
-min_member_count  INT NOT NULL DEFAULT 2
-max_member_count  INT NOT NULL  -- MVP: 8명
-created_at        DATETIME NOT NULL
-updated_at        DATETIME NOT NULL
+team_name             VARCHAR(100) NOT NULL
+invite_code           VARCHAR(30) NOT NULL UNIQUE
+type                  ENUM('FRIEND','COUPLE','FAMILY','CLUB','OTHER') NOT NULL  -- 팀 유형
+current_member_count  INT NOT NULL DEFAULT 1  -- 현재 참여 인원 (팀장 포함)
+max_member_count      INT NOT NULL  -- 유저가 설정, 2~8명
+created_at            DATETIME NOT NULL
+updated_at            DATETIME NOT NULL
 ```
 
 ### 6. team_members
@@ -196,9 +198,8 @@ joined_at DATETIME NOT NULL
 ```sql
 challenge_id
 BIGINT PK
-title                     VARCHAR(100) NOT NULL
-memo                      VARCHAR(100) NULL
-type                      ENUM('FRIEND','COUPLE','FAMILY','CLUB','OTHER') NOT NULL
+title                     VARCHAR(100) NOT NULL  -- 챌린지 제목 (MVP: 팀명과 동일)
+memo                      VARCHAR(200) NULL       -- 챌린지 메모 (컬럼명: memo, 필드명: description)
 goal_amount               BIGINT NOT NULL  -- 최소: 인원수별 정책, 최대: 3,000,000원
 min_personal_goal_amount  BIGINT NOT NULL  -- 최소: 5,000원, 최대: 300,000원
 status                    ENUM('WAITING','ONGOING','COMPLETED','FAILED') NOT NULL
@@ -208,6 +209,7 @@ created_at                DATETIME NOT NULL
 updated_at                DATETIME NOT NULL
 team_id                   BIGINT FK
 → team
+-- 주의: 이전 type 컬럼(ChallengeType)은 team.type(TeamType)으로 이동됨
 ```
 
 ### 8. challenge_week
@@ -486,7 +488,7 @@ public abstract class BaseEntity {
 ## ENUM 목록
 
 ```
-ChallengeType:    FRIEND, COUPLE, FAMILY, CLUB, OTHER
+TeamType:         FRIEND, COUPLE, FAMILY, CLUB, OTHER  -- (구 ChallengeType → team.type으로 이동)
 ChallengeStatus:  WAITING, ONGOING, COMPLETED, FAILED
 TeamRole:         LEADER, MEMBER
 SpendType:        SPEND, NO_SPEND

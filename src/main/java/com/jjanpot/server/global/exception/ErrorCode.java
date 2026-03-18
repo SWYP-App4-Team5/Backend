@@ -23,7 +23,21 @@ public enum ErrorCode {
 	GOOGLE_API_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "구글 API 호출에 실패했습니다."),
 	APPLE_API_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "애플 API 호출에 실패했습니다."),
 
-	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다");
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
+
+	// Challenge
+	CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "챌린지를 찾을 수 없습니다."),
+	CHALLENGE_NOT_JOINABLE(HttpStatus.BAD_REQUEST, "참여 가능한 챌린지가 없습니다. 이미 시작되었거나 종료된 챌린지입니다."),
+	CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
+	CHALLENGE_MIN_GOAL_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "최소 목표 금액 정책을 찾을 수 없습니다."),
+	GOAL_AMOUNT_BELOW_MINIMUM(HttpStatus.BAD_REQUEST, "팀 전체 목표 금액이 최소 기준에 미달합니다."),
+	INVALID_SAVED_AMOUNT(HttpStatus.BAD_REQUEST, "절약 금액은 0원 이상이어야 합니다."),
+	SAVED_AMOUNT_UNDERFLOW(HttpStatus.BAD_REQUEST, "누적 절약 금액보다 크게 차감할 수 없습니다."),
+
+	// Team
+	TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "팀을 찾을 수 없습니다."),
+	TEAM_ALREADY_FULL(HttpStatus.BAD_REQUEST, "팀 정원이 초과되었습니다."),
+	ALREADY_TEAM_MEMBER(HttpStatus.BAD_REQUEST, "이미 팀에 참여한 사용자입니다.");
 
 	private final HttpStatus status;
 	private final String message;
