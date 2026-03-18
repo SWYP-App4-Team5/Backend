@@ -35,6 +35,6 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 	@PostMapping("/refresh")
 	public SuccessResponse<RefreshResponse> refresh(@Valid @RequestBody RefreshRequest request) {
 		RefreshResponse refreshResponse = authService.refreshToken(request.refreshToken());
-		return SuccessResponse.of(refreshResponse);
+		return SuccessResponse.ok(refreshResponse);
 	}
 }
