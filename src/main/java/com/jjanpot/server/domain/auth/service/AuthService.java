@@ -124,6 +124,8 @@ public class AuthService {
 
 	private void validateRefreshToken(RefreshToken refreshToken) {
 		if (refreshToken.isExpired()) {
+			refreshTokenRepository.delete(refreshToken);
+			log.info("만료된 리프레시 {}토큰 삭제", refreshToken.getId());
 			throw new BusinessException(ErrorCode.EXPIRED_REFRESH_TOKEN);
 		}
 	}
