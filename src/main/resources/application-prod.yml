@@ -15,3 +15,7 @@ spring:
 app:
   version: prod
   env: prod
+cors:
+  allowed-origins:
+    - https://jjanpot.shop
+    - http://localhost:8080

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jjanpot.server.domain.auth.controller.docs.AuthControllerV1Docs;
 import com.jjanpot.server.domain.auth.dto.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.LoginResponse;
+import com.jjanpot.server.domain.auth.dto.RefreshRequest;
+import com.jjanpot.server.domain.auth.dto.RefreshResponse;
 import com.jjanpot.server.domain.auth.service.AuthService;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
@@ -28,5 +30,11 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 		@Valid @RequestBody LoginRequest request) {
 		LoginResponse response = authService.login(Provider.from(provider), request.accessToken());
 		return SuccessResponse.ok(response);
+	}
+
+	@PostMapping("/refresh")
+	public SuccessResponse<RefreshResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+		RefreshResponse refreshResponse = authService.refreshToken(request.refreshToken());
+		return SuccessResponse.ok(refreshResponse);
 	}
 }

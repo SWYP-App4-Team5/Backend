@@ -9,7 +9,9 @@ import com.jjanpot.server.global.security.jwt.JwtProperties;
 @Configuration
 @EnableConfigurationProperties({
 	OAuthProperties.class,
-	JwtProperties.class
+	JwtProperties.class,
+	CorsProperties.class,
+	AuthProperties.class
 })
 public class AppConfig {
 }

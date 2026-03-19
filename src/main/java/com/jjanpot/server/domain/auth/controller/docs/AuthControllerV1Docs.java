@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.jjanpot.server.domain.auth.dto.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.LoginResponse;
+import com.jjanpot.server.domain.auth.dto.RefreshRequest;
+import com.jjanpot.server.domain.auth.dto.RefreshResponse;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,5 +40,21 @@ public interface AuthControllerV1Docs {
 
 		@Parameter(description = "소셜 accessToken")
 		@RequestBody LoginRequest request
+	);
+
+	@Operation(
+		summary = "토큰 재발급",
+		description = """
+			refresh token을 사용하여 access token을 재발급하는 API 입니다.
+			
+			refresh token의 만료가 임박한 경우
+			새로운 refresh token도 함께 재발급합니다.
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "토큰 재발급 성공")
+	SuccessResponse<RefreshResponse> refresh(
+
+		@Parameter(description = "refresh token")
+		@RequestBody RefreshRequest request
 	);
 }

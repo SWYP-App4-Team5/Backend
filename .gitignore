@@ -5,7 +5,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.env
+local.env
 
 ### STS ###
 .apt_generated
@@ -36,4 +36,3 @@ out/
 /.nb-gradle/
 
 /src/main/resources/application-local.yml
-.env

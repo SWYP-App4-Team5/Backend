@@ -18,4 +18,6 @@ jwt:
 app:
   version: local
   env: local
-
+auth:
+  refresh-token-expires-days: ${EXPIRED_DAYS}
+  refresh-token-re-issue-threshold-days: ${THRESHOLD_DAYS}
