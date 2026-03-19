@@ -28,8 +28,8 @@ jobs:
 
     - name: Build with Gradle
       env:
-        SPRING_PROFILES_ACTIVE: prod
-      run: ./gradlew build -x test
+        SPRING_PROFILES_ACTIVE: test
+      run: ./gradlew build test
 
     - name: Login Docker Hub
       uses: docker/login-action@v4
