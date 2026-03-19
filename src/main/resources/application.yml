@@ -20,4 +20,4 @@ app:
   env: local
 auth:
   refresh-token-expires-days: ${EXPIRED_DAYS}
-  threshold-days: ${THRESHOLD_DAYS}
+  refresh-token-re-issue-threshold-days: ${THRESHOLD_DAYS}
