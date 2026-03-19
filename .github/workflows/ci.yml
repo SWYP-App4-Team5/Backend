@@ -3,7 +3,6 @@ name: CI - Test and Build
 on:
   pull_request:
     branches:
-      - main
       - develop
 
 jobs:
@@ -22,8 +21,6 @@ jobs:
           cache: 'gradle'
 
       - name: Build with Gradle
-        env:
-          SPRING_PROFILES_ACTIVE: test
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew build test
