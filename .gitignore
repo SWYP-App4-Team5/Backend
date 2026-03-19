@@ -36,4 +36,3 @@ out/
 /.nb-gradle/
 
 /src/main/resources/application-local.yml
-.env
