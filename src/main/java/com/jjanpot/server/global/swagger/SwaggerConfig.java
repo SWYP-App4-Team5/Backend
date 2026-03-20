@@ -50,7 +50,8 @@ public class SwaggerConfig {
 				.version("1.0")
 				.description("🔐토큰 인증이 필요한 API는 상단의 Authorize 버튼을 클릭한 뒤, `토큰`만 입력해주세요"))
 			.servers(List.of(
-				new Server().url("http://localhost:8080").description("Local server")
+				new Server().url("http://localhost:8080").description("Local server"),
+				new Server().url("https://jjanpot.shop/").description("Prod Server")
 			));
 	}
 

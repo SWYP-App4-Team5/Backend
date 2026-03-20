@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth/v1")
+@RequestMapping("api/auth/v1")
 public class AuthControllerV1 implements AuthControllerV1Docs {
 
 	private final AuthService authService;
@@ -27,6 +27,6 @@ public class AuthControllerV1 implements AuthControllerV1Docs {
 	public SuccessResponse<LoginResponse> login(@PathVariable String provider,
 		@Valid @RequestBody LoginRequest request) {
 		LoginResponse response = authService.login(Provider.from(provider), request.accessToken());
-		return SuccessResponse.ok(response);
+		return SuccessResponse.of(response);
 	}
 }
