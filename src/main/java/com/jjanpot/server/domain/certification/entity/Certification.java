@@ -46,6 +46,9 @@ public class Certification extends BaseEntity {
 	@Column(name = "saved_amount", nullable = false)
 	private Long savedAmount;
 
+	@Column(name = "memo", nullable = false, length = 100)
+	private String title;
+
 	@Column(name = "memo", nullable = false, length = 256)
 	private String memo;
 
