@@ -78,7 +78,8 @@ public class Challenge extends BaseEntity {
 		LocalDateTime endDateTime
 	) {
 		return Challenge.builder()
-			.title(request.teamName())
+			.title(request.title())
+			.description(request.description())
 			.goalAmount(request.goalAmount())
 			.minPersonalGoalAmount(request.minPersonalGoalAmount())
 			.status(ChallengeStatus.WAITING)
