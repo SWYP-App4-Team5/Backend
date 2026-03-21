@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jjanpot.server.domain.challenge.controller.docs.ChallengeControllerV1Docs;
+import com.jjanpot.server.domain.challenge.controller.docs.ChallengeControllerDocs;
 import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.service.ChallengeService;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/challenges/v1")
-public class ChallengeControllerV1 implements ChallengeControllerV1Docs {
+public class ChallengeController implements ChallengeControllerDocs {
 
 	private final ChallengeService challengeService;
 

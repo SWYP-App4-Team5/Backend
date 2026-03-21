@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Challenge", description = "챌린지 API")
 @SecurityRequirement(name = "bearerAuth")
-public interface ChallengeControllerV1Docs {
+public interface ChallengeControllerDocs {
 
 	@Operation(
 		summary = "챌린지 생성",
