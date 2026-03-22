@@ -62,9 +62,9 @@ public class Team extends BaseEntity {
 	@Comment("팀장이 설정한 최대 참여 인원")
 	private int maxMemberCount;
 
-	public static Team of(String teamName, String inviteCode, TeamType type, int maxMemberCount) {
+	public static Team of(String inviteCode, TeamType type, int maxMemberCount) {
 		return Team.builder()
-			.teamName(teamName)
+			//.teamName(teamName)
 			.inviteCode(inviteCode)
 			.type(type)
 			.maxMemberCount(maxMemberCount)
