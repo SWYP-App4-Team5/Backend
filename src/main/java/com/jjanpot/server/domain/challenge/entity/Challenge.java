@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Comment;
 
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
+import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.global.entity.BaseEntity;
 

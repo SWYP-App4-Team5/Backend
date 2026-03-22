@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.challenge.dto;
+package com.jjanpot.server.domain.challenge.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +10,7 @@ import com.jjanpot.server.domain.team.entity.Team;
 public record CreateChallengeResponse(
 	Long challengeId,
 	Long teamId,
-	String teamName,
+	//String teamName,
 	String inviteCode,
 	Integer goalAmount,
 	Integer minPersonalGoalAmount,
@@ -39,7 +39,7 @@ public record CreateChallengeResponse(
 		return new CreateChallengeResponse(
 			challenge.getChallengeId(),
 			team.getTeamId(),
-			team.getTeamName(),
+			//team.getTeamName(),
 			team.getInviteCode(),
 			challenge.getGoalAmount(),
 			challenge.getMinPersonalGoalAmount(),

@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.challenge.dto;
+package com.jjanpot.server.domain.challenge.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

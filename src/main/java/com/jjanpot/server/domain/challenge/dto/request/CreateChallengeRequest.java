@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.challenge.dto;
+package com.jjanpot.server.domain.challenge.dto.request;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,10 +16,10 @@ import jakarta.validation.constraints.Size;
 
 public record CreateChallengeRequest(
 
-	@Schema(description = "팀 이름", example = "자취방 절약단")
-	@NotBlank(message = "팀 이름은 필수입니다.")
-	@Size(max = 100, message = "팀 이름은 100자 이하여야 합니다.")
-	String teamName,
+	// @Schema(description = "팀 이름", example = "자취방 절약단")
+	// @NotBlank(message = "팀 이름은 필수입니다.")
+	// @Size(max = 100, message = "팀 이름은 100자 이하여야 합니다.")
+	// String teamName,
 
 	@Schema(description = "챌린지 제목", example = "이번 주 외식비 절약 챌린지")
 	@NotBlank(message = "챌린지 제목은 필수입니다.")
