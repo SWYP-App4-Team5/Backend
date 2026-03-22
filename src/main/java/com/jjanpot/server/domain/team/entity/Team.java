@@ -40,7 +40,7 @@ public class Team extends BaseEntity {
 	@Column(name = "team_id")
 	private Long teamId;
 
-	@Column(name = "team_name", nullable = false, length = 100)
+	@Column(name = "team_name", length = 100) // nullable = false 지움
 	@Comment("팀 명")
 	private String teamName;
 

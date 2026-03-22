@@ -162,11 +162,10 @@ public class ChallengeService {
 			}
 
 			Challenge challenge = activeChallenge.get();
-			List<ChallengeCategory> categories = challengeCategoryRepository.findAllByChallenge(challenge);
 
 			// 3-A. WAITING이면 대기중인 챌린지 정보 반환
 			if (challenge.getStatus() == ChallengeStatus.WAITING) {
-				return CurrentChallengeResponse.waiting(challenge, categories, membership.getRole());
+				return CurrentChallengeResponse.waiting(challenge, membership.getRole(), membership.getTeam());
 			}
 
 			// 3-B. ONGOING이면 현재 주차 정보까지 포함해서 챌린지 정보 반환
@@ -174,7 +173,7 @@ public class ChallengeService {
 				.findByChallengeAndWeekNumber(challenge, 1)
 				.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-			return CurrentChallengeResponse.ongoing(challenge, categories, membership.getRole(), currentWeek);
+			return CurrentChallengeResponse.ongoing(challenge, membership.getTeam(), currentWeek);
 		}
 
 		// 4. 모든 팀을 확인했는데 활성 챌린지가 없으면 홈 화면에서 "대기 중인 챌린지 없음" 표시
