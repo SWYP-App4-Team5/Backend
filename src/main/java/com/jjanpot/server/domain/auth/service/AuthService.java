@@ -42,6 +42,7 @@ public class AuthService {
 
 		UserCreateResult userCreateResult = findOrCreateUser(provider, oauthUserInfo);
 		User user = userCreateResult.user();
+		user.updateLastLoginAt();
 
 		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
