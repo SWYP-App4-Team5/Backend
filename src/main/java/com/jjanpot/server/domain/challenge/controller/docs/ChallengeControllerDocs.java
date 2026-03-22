@@ -146,7 +146,7 @@ public interface ChallengeControllerDocs {
 			로그인한 유저의 현재 활성 챌린지를 조회합니다.
 			
 			status 필드에 따라 3가지 상태로 분기됩니다:
-			- NONE: 활성 챌린지 없음 (challenge 필드는 null)
+			- NONE: 활성 챌린지 없음 (waiting, ongoing 필드 모두 null)
 			- WAITING: 시작일 전 대기 중인 챌린지
 			- ONGOING: 진행 중인 챌린지 (weekNumber, weekGoalAmount, weekSavedAmount 포함)
 			"""
