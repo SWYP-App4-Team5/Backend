@@ -19,10 +19,7 @@
     </appender>
 
     <springProfile name="local">
-        <!--
-        todo: swyp -> team_name으로 변경
-        -->
-        <logger level="DEBUG" name="swyp"/>
+        <logger level="DEBUG" name="jjanpot"/>
         <logger level="DEBUG" name="jdbc.sqltiming"/>
         <logger level="DEBUG" name="jdbc.resultsettable"/>
         <root level="INFO">
@@ -30,7 +27,7 @@
         </root>
     </springProfile>
 
-    <springProfile name="dev, stg">
+    <springProfile name="dev,stg">
         <logger level="DEBUG" name="on"/>
         <logger level="OFF" name="jdbc.sqlonly"/>
         <logger level="OFF" name="jdbc.audit"/>

@@ -6,7 +6,18 @@ spring:
   config:
     import:
       - optional:config/flyway.yml
-
+oauth:
+  kakao:
+    user-info-url: https://kapi.kakao.com/v2/user/me
+  google:
+    user-info-url: https://www.googleapis.com/oauth2/v2/userinfo
+jwt:
+  expiration: 3600000
+  refresh-expiration: 2592000000
+  secret: ${JWT_SECRET}
 app:
   version: local
   env: local
+auth:
+  refresh-token-expires-days: 30
+  refresh-token-re-issue-threshold-days: 2
