@@ -125,7 +125,7 @@ public record CurrentChallengeResponse(
 			int savedAmount = currentWeek.getWeekSavedAmount();
 			int goalAmount = currentWeek.getWeekGoalAmount();
 			int rate = goalAmount > 0
-				? Math.min((int)((savedAmount * 100L) / goalAmount), 100)
+				? Math.max(0, Math.min((int)((savedAmount * 100L) / goalAmount), 100)) // 음수 달성률 가능성 차단
 				: 0;
 
 			return new OngoingInfo(
