@@ -40,7 +40,7 @@ public record ChallengeDetailResponse(
 	@Schema(description = "챌린지 시작 일시", example = "2026-07-15T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
 	LocalDateTime startDate,
 
-	@Schema(description = "챌린지 종료 일��", example = "2026-07-21T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
+	@Schema(description = "챌린지 종료 일시", example = "2026-07-21T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
 	LocalDateTime endDate,
 
 	@Schema(description = "카테고리 목록 (1~3개)", requiredMode = Schema.RequiredMode.REQUIRED)
