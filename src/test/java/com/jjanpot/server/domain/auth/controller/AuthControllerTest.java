@@ -26,7 +26,7 @@ class AuthControllerTest extends MockMvcTestSupport {
 	}
 
 	@Test
-	@DisplayName("카카오로 신규사용자 로그인")
+	@DisplayName("카카오 신규사용자 로그인")
 	void login_kakao_newUser() throws Exception {
 		//given
 		LoginRequest loginRequest = new LoginRequest(TokenTestData.KAKAO_ACCESS_TOKEN);
@@ -56,7 +56,7 @@ class AuthControllerTest extends MockMvcTestSupport {
 
 	@Test
 	@DisplayName("카카오 기존 사용자 로그인")
-	void login_kako_newUser() throws Exception {
+	void login_kakao_existUser() throws Exception {
 		//given
 		LoginRequest loginRequest = new LoginRequest(TokenTestData.KAKAO_ACCESS_TOKEN);
 
@@ -83,4 +83,63 @@ class AuthControllerTest extends MockMvcTestSupport {
 			.andExpect(jsonPath("$.data.user.nickname").value("짠팟"))
 			.andExpect(jsonPath("$.data.newUser").value(false));
 	}
+
+	@Test
+	@DisplayName("구글 신규 사용자 로그인")
+	void login_google_newUser() throws Exception {
+		//given
+		LoginRequest loginRequest = new LoginRequest(TokenTestData.GOOGLE_ACCESS_TOKEN);
+		LoginUserInfo loginUserInfo = new LoginUserInfo(Long.valueOf("20260322"), "짠팟");
+		LoginResponse response = LoginResponse.of(
+			TokenTestData.ACCESS_TOKEN,
+			TokenTestData.REFRESH_TOKEN,
+			loginUserInfo,
+			true
+		);
+
+		given(authService.login(any(Provider.class), anyString()))
+			.willReturn(response);
+
+		//when & then
+		mockMvc.perform(post("/api/auth/v1/login/google")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.accessToken").exists())
+			.andExpect(jsonPath("$.data.refreshToken").exists())
+			.andExpect(jsonPath("$.data.user.userId").value("20260322"))
+			.andExpect(jsonPath("$.data.user.nickname").value("짠팟"))
+			.andExpect(jsonPath("$.data.newUser").value(true));
+	}
+
+	@Test
+	@DisplayName("구글 기존 사용자 로그인")
+	void login_google_existUser() throws Exception {
+		//given
+		LoginRequest loginRequest = new LoginRequest(TokenTestData.GOOGLE_ACCESS_TOKEN);
+		LoginUserInfo loginUserInfo = new LoginUserInfo(Long.valueOf("20260322"), "짠팟");
+		LoginResponse response = LoginResponse.of(
+			TokenTestData.ACCESS_TOKEN,
+			TokenTestData.REFRESH_TOKEN,
+			loginUserInfo,
+			false
+		);
+
+		given(authService.login(any(Provider.class), anyString()))
+			.willReturn(response);
+
+		//when & then
+		mockMvc.perform(post("/api/auth/v1/login/google")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.accessToken").exists())
+			.andExpect(jsonPath("$.data.refreshToken").exists())
+			.andExpect(jsonPath("$.data.user.userId").value("20260322"))
+			.andExpect(jsonPath("$.data.user.nickname").value("짠팟"))
+			.andExpect(jsonPath("$.data.newUser").value(false));
+	}
+
 }
