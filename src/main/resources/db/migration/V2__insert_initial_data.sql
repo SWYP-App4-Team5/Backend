@@ -15,16 +15,16 @@ VALUES ('FOOD_DELIVERY', 18000, 1),
 INSERT INTO category_amount_option (amount, sort_order, created_at, updated_at, category_id)
 VALUES
 -- 외식/배달 (category_id = 1)
-(1500, 1, NOW(), NOW(), 1),
-(2000, 2, NOW(), NOW(), 1),
-(4000, 3, NOW(), NOW(), 1),
-(7000, 4, NOW(), NOW(), 1),
+(10000, 1, NOW(), NOW(), 1),
+(15000, 2, NOW(), NOW(), 1),
+(20000, 3, NOW(), NOW(), 1),
+(30000, 4, NOW(), NOW(), 1),
 
 -- 카페/디저트 (category_id = 2)
-(10000, 1, NOW(), NOW(), 2),
-(15000, 2, NOW(), NOW(), 2),
-(20000, 3, NOW(), NOW(), 2),
-(30000, 4, NOW(), NOW(), 2),
+(1500, 1, NOW(), NOW(), 2),
+(2000, 2, NOW(), NOW(), 2),
+(4000, 3, NOW(), NOW(), 2),
+(7000, 4, NOW(), NOW(), 2),
 
 -- 교통 (category_id = 3)
 (1500, 1, NOW(), NOW(), 3),
