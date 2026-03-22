@@ -1,7 +1,9 @@
 package com.jjanpot.server.domain.challenge.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +51,7 @@ public class ChallengeService {
 	private static final int CHALLENGE_DURATION_WEEKS = 1;
 	private static final int INVITE_CODE_LENGTH = 6;
 	private static final String INVITE_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // O, I, L, 0, 1 제외 (혼동 가능성 제외)
+	private static final ZoneId BUSINESS_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final TeamRepository teamRepository;
@@ -62,6 +65,7 @@ public class ChallengeService {
 	/** 챌린지 생성 **/
 	@Transactional
 	public CreateChallengeResponse createChallenge(User user, CreateChallengeRequest request) {
+		validateStartDate(request.startDate());
 
 		// 1. ChallengeMinGoalPolicy 조회
 		validateGoalAmount(request.maxMemberCount(), request.goalAmount());
@@ -187,6 +191,16 @@ public class ChallengeService {
 			throw new BusinessException(
 				ErrorCode.GOAL_AMOUNT_BELOW_MINIMUM,
 				String.format("%d명 팀의 최소 목표 금액은 %,d원 이상이어야 합니다.", memberCount, policy.getMinAmount())
+			);
+		}
+	}
+
+	private void validateStartDate(LocalDate startDate) {
+		LocalDate today = LocalDate.now(BUSINESS_ZONE_ID);
+		if (startDate.isBefore(today)) {
+			throw new BusinessException(
+				ErrorCode.INVALID_CHALLENGE_START_DATE,
+				String.format("챌린지 시작일은 %s 기준 오늘(%s)보다 이전일 수 없습니다.", BUSINESS_ZONE_ID, today)
 			);
 		}
 	}
