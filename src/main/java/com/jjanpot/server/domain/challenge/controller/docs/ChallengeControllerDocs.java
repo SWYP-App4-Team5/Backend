@@ -34,6 +34,10 @@ public interface ChallengeControllerDocs {
 			- 최대 참여 인원은 2명 ~ 8명 사이로 설정해야 합니다.
 			- 챌린지는 시작일로부터 7일간 진행됩니다.
 			- 팀 전체 목표 금액은 인원수별 최소 금액 정책을 충족해야 합니다.
+			
+			categories[].amount: 카테고리별 소비 기준 금액입니다.
+			- GET /api/categories/v1 의 amountOptions 중 선택하거나 직접 입력할 수 있습니다.
+			- 인증 시 실제 소비금액과 비교하여 절약 금액을 산출합니다. (절약 금액 = 기준 - 실제 소비)
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 생성 성공")
@@ -51,11 +55,11 @@ public interface ChallengeControllerDocs {
 							{
 							  "title": "카페는 이제 그만!",
 							  "description": "카페를 줄이고 싶은 사람들을 위한 방입니다! 우리 모두 절약을 함께 해요!",
-							  "teamType": "친구",
+							  "teamType": "FRIEND",
 							  "maxMemberCount": 4,
 							  "startDate": "2026-03-18",
 							  "categories": [
-							    { "categoryId": 1, "amount": 50000 }
+							    { "categoryId": 1, "amount": 15000 }
 							  ],
 							  "goalAmount": 200000,
 							  "minPersonalGoalAmount": 30000
@@ -67,13 +71,13 @@ public interface ChallengeControllerDocs {
 						value = """
 							{
 							  "title": "우리 팀 절약 챌린지",
-							  "teamType": "소모임",
+							  "teamType": "CLUB",
 							  "maxMemberCount": 4,
 							  "startDate": "2026-03-18",
 							  "categories": [
-							    { "categoryId": 1, "amount": 50000 },
-							    { "categoryId": 2, "amount": 30000 },
-							    { "categoryId": 4, "amount": 20000 }
+							    { "categoryId": 1, "amount": 1500 },
+							    { "categoryId": 2, "amount": 10000 },
+							    { "categoryId": 4, "amount": 8000 }
 							  ],
 							  "goalAmount": 400000,
 							  "minPersonalGoalAmount": 30000
@@ -107,8 +111,9 @@ public interface ChallengeControllerDocs {
 			챌린지 상세 정보를 조회합니다.
 			
 			- 해당 챌린지의 팀원만 조회할 수 있습니다.
-			- 카테고리별 기준 금액, 팀 정보, 초대코드를 포함합니다.
 			- isLeader가 true이면 취소 버튼 등 팀장 전용 기능을 노출합니다.
+			- categories[].amount: 카테고리별 소비 기준 금액입니다.
+			  인증 시 실제 소비금액과 비교하여 절약 금액을 산출합니다. (절약 금액 = 기준 - 실제 소비)
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 상세 조회 성공")

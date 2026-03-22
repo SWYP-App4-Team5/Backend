@@ -97,7 +97,7 @@ public record CurrentChallengeResponse(
 			@Schema(description = "카테고리 아이콘 URL", example = "https://example.com/icon.png")
 			String iconUrl,
 
-			@Schema(description = "챌린지 생성 시 설정한 카테고리별 기준 금액", example = "50000")
+			@Schema(description = "카테고리별 소비 기준 금액 (인증 시 실제 소비금액과 비교하여 절약 금액 산출: 기준 - 실제 소비)", example = "1500")
 			int amount
 		) {
 			public static CategoryInfo from(ChallengeCategory cc) {
