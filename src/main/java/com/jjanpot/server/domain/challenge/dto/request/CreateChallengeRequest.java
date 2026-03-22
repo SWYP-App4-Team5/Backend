@@ -30,7 +30,7 @@ public record CreateChallengeRequest(
 	@Size(max = 255, message = "챌린지 설명은 80자 이하여야 합니다.")
 	String description,
 
-	@Schema(description = "팀 유형", example = "FRIEND")
+	@Schema(description = "팀 유형", example = "친구")
 	@NotNull(message = "팀 유형은 필수입니다.")
 	TeamType teamType,
 
