@@ -1,9 +1,12 @@
 package com.jjanpot.server.domain.challenge.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,12 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.category.repository.CategoryRepository;
-import com.jjanpot.server.domain.challenge.dto.ChallengeCategoryRequest;
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeResponse;
+import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
+import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
+import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
+import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeCategory;
 import com.jjanpot.server.domain.challenge.entity.ChallengeMinGoalPolicy;
+import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.challenge.entity.ChallengeWeek;
 import com.jjanpot.server.domain.challenge.repository.ChallengeCategoryRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMinGoalPolicyRepository;
@@ -25,6 +32,7 @@ import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeWeekRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
+import com.jjanpot.server.domain.team.entity.TeamRole;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
 import com.jjanpot.server.domain.user.entity.User;
@@ -43,6 +51,7 @@ public class ChallengeService {
 	private static final int CHALLENGE_DURATION_WEEKS = 1;
 	private static final int INVITE_CODE_LENGTH = 6;
 	private static final String INVITE_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // O, I, L, 0, 1 제외 (혼동 가능성 제외)
+	private static final ZoneId BUSINESS_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final TeamRepository teamRepository;
@@ -56,6 +65,7 @@ public class ChallengeService {
 	/** 챌린지 생성 **/
 	@Transactional
 	public CreateChallengeResponse createChallenge(User user, CreateChallengeRequest request) {
+		validateStartDate(request.startDate());
 
 		// 1. ChallengeMinGoalPolicy 조회
 		validateGoalAmount(request.maxMemberCount(), request.goalAmount());
@@ -65,7 +75,7 @@ public class ChallengeService {
 
 		// 3. Team 저장
 		Team team = teamRepository.save(
-			Team.of(request.teamName(), inviteCode, request.teamType(), request.maxMemberCount()));
+			Team.of(inviteCode, request.teamType(), request.maxMemberCount()));
 
 		// 4. TeamMembers 저장
 		teamMembersRepository.save(TeamMembers.ofLeader(team, user));
@@ -85,6 +95,91 @@ public class ChallengeService {
 		return CreateChallengeResponse.from(challenge, team, challengeCategories);
 	}
 
+	/** 챌린지 취소 (팀장 전용, WAITING 상태에서만 가능) **/
+	@Transactional
+	public void cancelChallenge(User user, Long challengeId) {
+		Challenge challenge = challengeRepository.findById(challengeId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+		TeamMembers membership = teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+
+		if (membership.getRole() != TeamRole.LEADER) {
+			throw new BusinessException(ErrorCode.CHALLENGE_LEADER_REQUIRED);
+		}
+
+		if (challenge.getStatus() != ChallengeStatus.WAITING) {
+			throw new BusinessException(ErrorCode.CHALLENGE_CANCEL_FORBIDDEN);
+		}
+
+		challenge.updateStatus(ChallengeStatus.CANCELLED);
+	}
+
+	/** 챌린지 상세 조회 **/
+	public ChallengeDetailResponse getChallengeDetail(User user, Long challengeId) {
+		Challenge challenge = challengeRepository.findById(challengeId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+		TeamMembers membership = teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+
+		List<ChallengeCategory> categories = challengeCategoryRepository.findAllByChallenge(challenge);
+
+		return ChallengeDetailResponse.from(challenge, categories, membership.getRole());
+	}
+
+	/** 팀/개인 절약 현황 통계 조회 (홈화면 스크롤 시) **/
+	// TODO: 인증(certification) 도메인 구현 후 로직 작성
+	public ChallengeStatsResponse getChallengeStats(User user, Long challengeId) {
+		Challenge challenge = challengeRepository.findById(challengeId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+
+		throw new UnsupportedOperationException("인증 도메인 구현 후 작업 예정");
+	}
+
+	/** 현재 유저의 활성된 챌린지 조회 (홈 화면) **/
+	//  로그인한 유저의 현재 활성 챌린지를 찾아 홈 화면 상태를 결정
+	public CurrentChallengeResponse getCurrentChallenge(User user) {
+
+		// 1. 이 유저가 속한 모든 팀 멤버십 조회 (유저가 과거에 참여했던 팀까지 전부 가져옴)
+		List<TeamMembers> memberships = teamMembersRepository.findAllByUser(user);
+
+		// 2. 각 팀에서 활성 챌린지(WAITING or ONGOING) 탐색
+		for (TeamMembers membership : memberships) {
+
+			// 팀마다 순회하면서 진행 중인 챌린지가 있는지 확인
+			Optional<Challenge> activeChallenge = challengeRepository.findFirstByTeamAndStatusIn(
+				membership.getTeam(),
+				List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING)
+			);
+
+			// 진행 중인 챌린지 없으면 다음 팀 확인
+			if (activeChallenge.isEmpty()) {
+				continue;
+			}
+
+			Challenge challenge = activeChallenge.get();
+
+			// 3-A. WAITING이면 대기중인 챌린지 정보 반환
+			if (challenge.getStatus() == ChallengeStatus.WAITING) {
+				return CurrentChallengeResponse.waiting(challenge, membership.getRole(), membership.getTeam());
+			}
+
+			// 3-B. ONGOING이면 현재 주차 정보까지 포함해서 챌린지 정보 반환
+			ChallengeWeek currentWeek = challengeWeekRepository
+				.findByChallengeAndWeekNumber(challenge, 1)
+				.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+			return CurrentChallengeResponse.ongoing(challenge, membership.getTeam(), currentWeek);
+		}
+
+		// 4. 모든 팀을 확인했는데 활성 챌린지가 없으면 홈 화면에서 "대기 중인 챌린지 없음" 표시
+		return CurrentChallengeResponse.none();
+	}
+
 	// 인원 수에 따른 팀 전체 목표 금액 최소 기준 검증
 	private void validateGoalAmount(int memberCount, int goalAmount) {
 		ChallengeMinGoalPolicy policy = challengeMinGoalPolicyRepository
@@ -95,6 +190,16 @@ public class ChallengeService {
 			throw new BusinessException(
 				ErrorCode.GOAL_AMOUNT_BELOW_MINIMUM,
 				String.format("%d명 팀의 최소 목표 금액은 %,d원 이상이어야 합니다.", memberCount, policy.getMinAmount())
+			);
+		}
+	}
+
+	private void validateStartDate(LocalDate startDate) {
+		LocalDate today = LocalDate.now(BUSINESS_ZONE_ID);
+		if (startDate.isBefore(today)) {
+			throw new BusinessException(
+				ErrorCode.INVALID_CHALLENGE_START_DATE,
+				String.format("챌린지 시작일은 %s 기준 오늘(%s)보다 이전일 수 없습니다.", BUSINESS_ZONE_ID, today)
 			);
 		}
 	}

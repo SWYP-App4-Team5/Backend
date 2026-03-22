@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,9 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.category.entity.CategoryName;
 import com.jjanpot.server.domain.category.repository.CategoryRepository;
-import com.jjanpot.server.domain.challenge.dto.ChallengeCategoryRequest;
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeResponse;
+import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
+import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeCategory;
 import com.jjanpot.server.domain.challenge.entity.ChallengeMinGoalPolicy;
@@ -34,6 +36,7 @@ import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeWeekRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
+import com.jjanpot.server.domain.team.entity.TeamRole;
 import com.jjanpot.server.domain.team.entity.TeamType;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
@@ -137,7 +140,7 @@ class ChallengeServiceTest {
 
 			// then
 			assertThat(response.challengeId()).isEqualTo(1L);
-			assertThat(response.teamName()).isEqualTo("절약왕팀");
+			//assertThat(response.teamName()).isEqualTo("절약왕팀");
 			assertThat(response.inviteCode()).isEqualTo("AB3K9P");
 			assertThat(response.goalAmount()).isEqualTo(200_000);
 			assertThat(response.categories()).hasSize(1);
@@ -293,10 +296,38 @@ class ChallengeServiceTest {
 			verify(challengeCategoryRepository, never()).saveAll(anyList());
 		}
 
+		@Test
+		@DisplayName("실패 - 시작일이 오늘보다 과거")
+		void 실패_시작일_과거() {
+			// given
+			LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+			CreateChallengeRequest request = new CreateChallengeRequest(
+				"절약왕팀",
+				"같이 절약해봐요!",
+				TeamType.FRIEND,
+				4,
+				today.minusDays(1),
+				List.of(new ChallengeCategoryRequest(1L, 50_000)),
+				200_000,
+				30_000
+			);
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.createChallenge(user, request))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("오늘")
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.INVALID_CHALLENGE_START_DATE);
+
+			verify(challengeMinGoalPolicyRepository, never()).findByMemberCount(anyInt());
+			verify(teamRepository, never()).save(any());
+		}
+
 		// 공통 요청 생성 헬퍼 (memberCount=4, goalAmount=200,000, startDate=2026-03-25)
 		private CreateChallengeRequest createRequest(List<ChallengeCategoryRequest> categories) {
 			return new CreateChallengeRequest(
 				"절약왕팀",
+				"같이 절약해봐요!",
 				TeamType.FRIEND,
 				4,
 				LocalDate.of(2026, 3, 25),
@@ -316,6 +347,202 @@ class ChallengeServiceTest {
 			when(challengeWeekRepository.save(any(ChallengeWeek.class))).thenReturn(null);
 			when(categoryRepository.findAllById(anyList())).thenReturn(categories);
 			when(challengeCategoryRepository.saveAll(anyList())).thenReturn(savedCategories);
+		}
+	}
+
+	@Nested
+	@DisplayName("챌린지 취소")
+	class CancelChallenge {
+
+		private TeamMembers leaderMembership;
+		private TeamMembers memberMembership;
+
+		@BeforeEach
+		void setUp() {
+			leaderMembership = TeamMembers.builder()
+				.team(savedTeam)
+				.user(user)
+				.role(TeamRole.LEADER)
+				.build();
+
+			memberMembership = TeamMembers.builder()
+				.team(savedTeam)
+				.user(user)
+				.role(TeamRole.MEMBER)
+				.build();
+		}
+
+		@Test
+		@DisplayName("성공 - 팀장이 WAITING 상태 챌린지 취소")
+		void 성공_팀장_취소() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.of(leaderMembership));
+
+			// when
+			challengeService.cancelChallenge(user, 1L);
+
+			// then: 상태가 CANCELLED로 변경되었는지 확인
+			assertThat(savedChallenge.getStatus()).isEqualTo(ChallengeStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("실패 - 존재하지 않는 챌린지")
+		void 실패_챌린지없음() {
+			// given
+			when(challengeRepository.findById(999L)).thenReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.cancelChallenge(user, 999L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.CHALLENGE_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("실패 - 팀원이 아닌 유저 접근")
+		void 실패_팀원아님() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.cancelChallenge(user, 1L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.FORBIDDEN);
+		}
+
+		@Test
+		@DisplayName("실패 - 팀원(MEMBER)이 취소 시도")
+		void 실패_팀원_취소시도() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.of(memberMembership));
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.cancelChallenge(user, 1L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.CHALLENGE_LEADER_REQUIRED);
+		}
+
+		@Test
+		@DisplayName("실패 - ONGOING 상태 챌린지 취소 시도")
+		void 실패_진행중_취소시도() {
+			// given: ONGOING 상태의 챌린지
+			Challenge ongoingChallenge = Challenge.builder()
+				.challengeId(2L)
+				.title("진행중팀")
+				.goalAmount(200_000)
+				.minPersonalGoalAmount(30_000)
+				.status(ChallengeStatus.ONGOING)
+				.startDate(LocalDate.of(2026, 3, 15).atStartOfDay())
+				.endDate(LocalDate.of(2026, 3, 22).atStartOfDay())
+				.team(savedTeam)
+				.build();
+
+			when(challengeRepository.findById(2L)).thenReturn(Optional.of(ongoingChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.of(leaderMembership));
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.cancelChallenge(user, 2L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.CHALLENGE_CANCEL_FORBIDDEN);
+		}
+	}
+
+	@Nested
+	@DisplayName("챌린지 상세 조회")
+	class GetChallengeDetail {
+
+		private TeamMembers leaderMembership;
+		private TeamMembers memberMembership;
+
+		@BeforeEach
+		void setUp() {
+			leaderMembership = TeamMembers.builder()
+				.team(savedTeam)
+				.user(user)
+				.role(TeamRole.LEADER)
+				.build();
+
+			memberMembership = TeamMembers.builder()
+				.team(savedTeam)
+				.user(user)
+				.role(TeamRole.MEMBER)
+				.build();
+		}
+
+		@Test
+		@DisplayName("성공 - 팀장 조회 (isLeader=true)")
+		void 성공_팀장_조회() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.of(leaderMembership));
+			when(challengeCategoryRepository.findAllByChallenge(savedChallenge))
+				.thenReturn(List.of(ChallengeCategory.of(savedChallenge, category1, 50_000)));
+
+			// when
+			ChallengeDetailResponse response = challengeService.getChallengeDetail(user, 1L);
+
+			// then
+			assertThat(response.challengeId()).isEqualTo(1L);
+			assertThat(response.isLeader()).isTrue();
+			assertThat(response.categories()).hasSize(1);
+		}
+
+		@Test
+		@DisplayName("성공 - 팀원 조회 (isLeader=false)")
+		void 성공_팀원_조회() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.of(memberMembership));
+			when(challengeCategoryRepository.findAllByChallenge(savedChallenge))
+				.thenReturn(List.of(ChallengeCategory.of(savedChallenge, category1, 50_000)));
+
+			// when
+			ChallengeDetailResponse response = challengeService.getChallengeDetail(user, 1L);
+
+			// then
+			assertThat(response.challengeId()).isEqualTo(1L);
+			assertThat(response.isLeader()).isFalse();
+			assertThat(response.categories()).hasSize(1);
+		}
+
+		@Test
+		@DisplayName("실패 - 존재하지 않는 챌린지")
+		void 실패_챌린지없음() {
+			// given
+			when(challengeRepository.findById(999L)).thenReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.getChallengeDetail(user, 999L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.CHALLENGE_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("실패 - 팀원이 아닌 유저 접근")
+		void 실패_팀원아님() {
+			// given
+			when(challengeRepository.findById(1L)).thenReturn(Optional.of(savedChallenge));
+			when(teamMembersRepository.findByTeamAndUser(any(Team.class), any(User.class)))
+				.thenReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> challengeService.getChallengeDetail(user, 1L))
+				.isInstanceOf(BusinessException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.FORBIDDEN);
 		}
 	}
 }

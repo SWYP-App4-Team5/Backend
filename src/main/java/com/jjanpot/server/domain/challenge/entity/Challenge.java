@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Comment;
 
-import com.jjanpot.server.domain.challenge.dto.CreateChallengeRequest;
+import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.global.entity.BaseEntity;
 
@@ -78,7 +78,8 @@ public class Challenge extends BaseEntity {
 		LocalDateTime endDateTime
 	) {
 		return Challenge.builder()
-			.title(request.teamName())
+			.title(request.title())
+			.description(request.description())
 			.goalAmount(request.goalAmount())
 			.minPersonalGoalAmount(request.minPersonalGoalAmount())
 			.status(ChallengeStatus.WAITING)

@@ -31,9 +31,12 @@ public enum ErrorCode {
 	// Challenge
 	CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "챌린지를 찾을 수 없습니다."),
 	CHALLENGE_NOT_JOINABLE(HttpStatus.BAD_REQUEST, "참여 가능한 챌린지가 없습니다. 이미 시작되었거나 종료된 챌린지입니다."),
+	CHALLENGE_CANCEL_FORBIDDEN(HttpStatus.BAD_REQUEST, "대기 중인 챌린지만 취소할 수 있습니다."),
+	CHALLENGE_LEADER_REQUIRED(HttpStatus.FORBIDDEN, "팀장만 수행할 수 있는 작업입니다."),
 	CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 	CHALLENGE_MIN_GOAL_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "최소 목표 금액 정책을 찾을 수 없습니다."),
 	GOAL_AMOUNT_BELOW_MINIMUM(HttpStatus.BAD_REQUEST, "팀 전체 목표 금액이 최소 기준에 미달합니다."),
+	INVALID_CHALLENGE_START_DATE(HttpStatus.BAD_REQUEST, "챌린지 시작일은 오늘보다 이전일 수 없습니다."),
 	INVALID_SAVED_AMOUNT(HttpStatus.BAD_REQUEST, "절약 금액은 0원 이상이어야 합니다."),
 	SAVED_AMOUNT_UNDERFLOW(HttpStatus.BAD_REQUEST, "누적 절약 금액보다 크게 차감할 수 없습니다."),
 
