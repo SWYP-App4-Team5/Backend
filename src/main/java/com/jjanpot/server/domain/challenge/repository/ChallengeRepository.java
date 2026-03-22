@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.challenge.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +30,9 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 	// getCurrentChallenge()에서 홈화면 로드 시,
 	//  WAITING 또는 ONGOING 챌린지가 있는지 한 번에 확인할 때 활용
 	Optional<Challenge> findFirstByTeamAndStatusIn(Team team, List<ChallengeStatus> statuses);
+
+	/** 특정 상태이면서 종료일이 지난 챌린지 전체 조회 */
+	// ChallengeScheduler에서 매일 자정
+	// ONGOING 챌린지의 end_date가 지났으면 COMPLETED/FAILED로 전환할 때 활용
+	List<Challenge> findAllByStatusAndEndDateBefore(ChallengeStatus status, LocalDateTime dateTime);
 }
