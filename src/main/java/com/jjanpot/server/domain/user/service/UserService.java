@@ -3,6 +3,11 @@ package com.jjanpot.server.domain.user.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jjanpot.server.domain.team.entity.Team;
+import com.jjanpot.server.domain.team.entity.TeamMembers;
+import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
+import com.jjanpot.server.domain.team.repository.TeamRepository;
+import com.jjanpot.server.domain.user.dto.InviteCodeResponse;
 import com.jjanpot.server.domain.user.dto.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
@@ -20,22 +25,52 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
 
 	private final UserRepository userRepository;
+	private final TeamRepository teamRepository;
+	private final TeamMembersRepository teamMembersRepository;
 
-	//프로필 생성
 	@Transactional
 	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request, Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(
-			() -> new BusinessException(ErrorCode.USER_NOT_FOUND)
-		);
+		User user = getUserByUserId(userId);
+
 		user.updateOnboarding(
 			request.profileImageUrl(),
 			request.nickname(),
 			request.birthDate()
 		);
+
 		return ProfileCreateResponse.of(
-			request.profileImageUrl(),
-			request.nickname(),
-			request.birthDate()
+			user.getProfileImageUrl(),
+			user.getNickname(),
+			user.getBirthDate()
 		);
+	}
+
+	@Transactional
+	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
+		User user = getUserByUserId(userId);
+
+		Team team = teamRepository.findByInviteCode(inviteCode)
+			.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND));
+
+		if (team.getCurrentMemberCount() >= team.getMaxMemberCount()) {
+			throw new BusinessException(ErrorCode.TEAM_ALREADY_FULL);
+		}
+
+		if (teamMembersRepository.existsByTeamAndUser(team, user)) {
+			throw new BusinessException(ErrorCode.ALREADY_TEAM_MEMBER);
+		}
+
+		teamMembersRepository.save(TeamMembers.ofMember(team, user));
+		team.increaseMemberCount();
+
+		return InviteCodeResponse.of(
+			inviteCode,
+			team.getTeamName()
+		);
+	}
+
+	private User getUserByUserId(Long userId) {
+		return userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}
 }
