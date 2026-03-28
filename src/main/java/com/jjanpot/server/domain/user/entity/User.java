@@ -42,8 +42,6 @@ public class User extends BaseEntity {
 	private Long userId;
 
 	@Column(nullable = false, length = 50)
-	private String name;
-
 	private String nickname;
 
 	private String email;
@@ -79,14 +77,14 @@ public class User extends BaseEntity {
 	public static User create(
 		Provider provider,
 		String providerId,
-		String name,
+		String nickname,
 		String email,
 		String profileImageUrl
 	) {
 		return User.builder()
 			.provider(provider)
 			.providerId(providerId)
-			.name(name)
+			.nickname(nickname)
 			.email(email)
 			.profileImageUrl(profileImageUrl)
 			.build();
