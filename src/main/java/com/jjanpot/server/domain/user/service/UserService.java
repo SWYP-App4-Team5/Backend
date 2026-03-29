@@ -8,9 +8,12 @@ import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
+import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
+import com.jjanpot.server.domain.user.entity.UserAgreement;
+import com.jjanpot.server.domain.user.repository.UserAgreementRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
@@ -27,6 +30,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final TeamRepository teamRepository;
 	private final TeamMembersRepository teamMembersRepository;
+	private final UserAgreementRepository userAgreementRepository;
 
 	@Transactional
 	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request, Long userId) {
@@ -68,6 +72,26 @@ public class UserService {
 			inviteCode,
 			team.getTeamName()
 		);
+	}
+
+	//약관 동의
+	@Transactional
+	public void agreeToTerms(Long userId, UserAgreementRequest request) {
+		User user = getUserByUserId(userId);
+
+		if (!request.ageVerified()
+			|| !request.termsOfServiceAgreed()
+			|| !request.privacyPolicyAgreed()) {
+			throw new BusinessException(ErrorCode.REQUIRED_AGREEMENT_MISSING);
+		}
+
+		userAgreementRepository.save(UserAgreement.from(
+			request.ageVerified(),
+			request.termsOfServiceAgreed(),
+			request.privacyPolicyAgreed(),
+			request.marketingConsent(),
+			user
+		));
 	}
 
 	private User getUserByUserId(Long userId) {
