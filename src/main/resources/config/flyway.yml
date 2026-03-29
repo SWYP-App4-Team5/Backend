@@ -4,3 +4,4 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     clean-disabled: true
+    repair-on-migrate: true

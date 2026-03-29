@@ -1,4 +1,4 @@
-CREATE TABLE user_agreement
+CREATE TABLE IF NOT EXISTS user_agreement
 (
     user_agreement_id       BIGINT   NOT NULL AUTO_INCREMENT,
     user_id                 BIGINT   NOT NULL,
