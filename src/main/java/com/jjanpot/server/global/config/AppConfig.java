@@ -11,7 +11,8 @@ import com.jjanpot.server.global.security.jwt.JwtProperties;
 	OAuthProperties.class,
 	JwtProperties.class,
 	CorsProperties.class,
-	AuthProperties.class
+	AuthProperties.class,
+	StorageProperties.class
 })
 public class AppConfig {
 }

@@ -11,6 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.repository.UserRepository;
+import com.jjanpot.server.global.principal.UserPrincipal;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -72,8 +73,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private void setAuthentication(User user) {
+		UserPrincipal principal = new UserPrincipal(user.getUserId());
+
 		UsernamePasswordAuthenticationToken authentication =
-			new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+			new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
