@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jjanpot.server.domain.user.dto.InviteCodeRequest;
-import com.jjanpot.server.domain.user.dto.InviteCodeResponse;
-import com.jjanpot.server.domain.user.dto.ProfileCreateRequest;
-import com.jjanpot.server.domain.user.dto.ProfileCreateResponse;
+import com.jjanpot.server.domain.user.dto.request.InviteCodeRequest;
+import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
+import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
+import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.service.UserService;
 import com.jjanpot.server.global.annotation.CurrentUserId;
 import com.jjanpot.server.global.common.dto.SuccessResponse;

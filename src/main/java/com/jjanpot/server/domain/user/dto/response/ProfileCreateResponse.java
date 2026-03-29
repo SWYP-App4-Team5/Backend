@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.user.dto;
+package com.jjanpot.server.domain.user.dto.response;
 
 import java.time.LocalDate;
 
