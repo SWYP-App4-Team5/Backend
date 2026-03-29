@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.user.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.jjanpot.server.global.entity.BaseEntity;
@@ -35,6 +36,7 @@ import lombok.NoArgsConstructor;
 	}
 )
 public class User extends BaseEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id", nullable = false)
@@ -66,6 +68,13 @@ public class User extends BaseEntity {
 	@Column(name = "last_login_at", nullable = false)
 	private LocalDateTime lastLoginAt = LocalDateTime.now();
 
+	@Builder.Default
+	@Column(name = "onboarding_completed", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean onboardingCompleted = false;
+
+	@Column(name = "birth_date")
+	private LocalDate birthDate;
+
 	public static User create(
 		Provider provider,
 		String providerId,
@@ -85,4 +94,12 @@ public class User extends BaseEntity {
 	public void updateLastLoginAt() {
 		this.lastLoginAt = LocalDateTime.now();
 	}
+
+	public void updateOnboarding(String profileImageUrl, String nickname, LocalDate birthDate) {
+		this.profileImageUrl = profileImageUrl;
+		this.nickname = nickname;
+		this.birthDate = birthDate;
+		this.onboardingCompleted = true;
+	}
+
 }
