@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+	INVALID_ENUM_INPUT(HttpStatus.BAD_REQUEST, "요청된 enum 값이 올바르지 않습니다."),
 	INVALID_INPUT(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
@@ -27,6 +28,11 @@ public enum ErrorCode {
 
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다."),
 	EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 리프레시 토큰입니다."),
+	// Template
+	TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "푸시 알림 템플릿을 찾을 수 없습니다."),
+	// Messaging
+	MESSAGE_REQUEST_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "메세지 발송에 실패했습니다."),
+	// User Agreement
 	REQUIRED_AGREEMENT_MISSING(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),
 	ALREADY_AGREED_TERMS(HttpStatus.BAD_REQUEST, "이미 약관 동의를 완료한 사용자입니다 "),
 	// Challenge
@@ -44,7 +50,8 @@ public enum ErrorCode {
 	// Team
 	TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "팀을 찾을 수 없습니다."),
 	TEAM_ALREADY_FULL(HttpStatus.BAD_REQUEST, "팀 정원이 초과되었습니다."),
-	ALREADY_TEAM_MEMBER(HttpStatus.BAD_REQUEST, "이미 팀에 참여한 사용자입니다.");
+	ALREADY_TEAM_MEMBER(HttpStatus.BAD_REQUEST, "이미 팀에 참여한 사용자입니다."),
+	;
 
 	private final HttpStatus status;
 	private final String message;
