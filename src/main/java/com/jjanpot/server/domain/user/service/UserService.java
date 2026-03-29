@@ -79,17 +79,22 @@ public class UserService {
 	public void agreeToTerms(Long userId, UserAgreementRequest request) {
 		User user = getUserByUserId(userId);
 
-		if (!request.ageVerified()
-			|| !request.termsOfServiceAgreed()
-			|| !request.privacyPolicyAgreed()) {
+		if (!Boolean.TRUE.equals(request.ageVerified())
+			|| !Boolean.TRUE.equals(request.termsOfServiceAgreed())
+			|| !Boolean.TRUE.equals(request.privacyPolicyAgreed())) {
 			throw new BusinessException(ErrorCode.REQUIRED_AGREEMENT_MISSING);
+		}
+
+		//약관 동의 여부 확인
+		if (userAgreementRepository.existsByUser(user)) {
+			throw new BusinessException(ErrorCode.ALREADY_AGREED_TERMS);
 		}
 
 		userAgreementRepository.save(UserAgreement.from(
 			request.ageVerified(),
 			request.termsOfServiceAgreed(),
 			request.privacyPolicyAgreed(),
-			request.marketingConsent(),
+			Boolean.TRUE.equals(request.marketingConsent()),
 			user
 		));
 	}
