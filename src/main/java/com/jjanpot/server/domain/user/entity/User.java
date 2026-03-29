@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.user.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.jjanpot.server.global.entity.BaseEntity;
