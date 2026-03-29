@@ -45,6 +45,7 @@ public class UserService {
 		);
 	}
 
+	//초대코드 기반 팀 참여 기능 구현
 	@Transactional
 	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
 		User user = getUserByUserId(userId);
