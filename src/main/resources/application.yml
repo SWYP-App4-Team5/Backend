@@ -6,6 +6,16 @@ spring:
   config:
     import:
       - optional:config/flyway.yml
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: ${S3_ACCESS_KEY}
+        secret-key: ${S3_SECRET_KEY}
+      s3:
+        enabled: true
 oauth:
   kakao:
     user-info-url: https://kapi.kakao.com/v2/user/me
@@ -21,3 +31,6 @@ app:
 auth:
   refresh-token-expires-days: 30
   refresh-token-re-issue-threshold-days: 2
+storage:
+  bucket: jjanpot-s3-bucket
+  base-url: https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com

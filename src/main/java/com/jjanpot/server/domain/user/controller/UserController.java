@@ -31,10 +31,8 @@ public class UserController {
 	}
 
 	@PostMapping("/invite-code")
-	public SuccessResponse<InviteCodeResponse> inputInviteCode(
-		@Valid @RequestBody InviteCodeRequest request,
-		@CurrentUserId Long userId
-	) {
+	public SuccessResponse<InviteCodeResponse> inputInviteCode(@Valid @RequestBody InviteCodeRequest request,
+		@CurrentUserId Long userId) {
 		InviteCodeResponse response = userService.joinChallengeByInviteCode(
 			request.code(),
 			userId
