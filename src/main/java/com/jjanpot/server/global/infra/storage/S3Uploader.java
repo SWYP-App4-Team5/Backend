@@ -6,11 +6,14 @@ import com.jjanpot.server.global.config.StorageProperties;
 import com.jjanpot.server.global.exception.StorageException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class S3Uploader implements FileUploader {
@@ -26,8 +29,13 @@ public class S3Uploader implements FileUploader {
 			PutObjectRequest request = generatePutObjectRequest(fullKey, contentType);
 			s3Client.putObject(request, RequestBody.fromBytes(content));
 
-			return String.format("%s/%s", storageProperties.getBaseUrl(), fullKey);
+			String normalizedBaseUrl = storageProperties.getBaseUrl().replaceAll("/+$", "");
+			return normalizedBaseUrl + "/" + fullKey;
 		} catch (S3Exception e) {
+			log.error("S3 Exception: {}", e.getMessage() , e);
+			throw new StorageException(e);
+		} catch (SdkException e) {
+			log.error("SdkException: {}", e.getMessage() , e);
 			throw new StorageException(e);
 		}
 	}
