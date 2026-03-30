@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.auth.client.OAuthClient;
 import com.jjanpot.server.domain.auth.client.OAuthClientRegistry;
-import com.jjanpot.server.domain.auth.dto.LoginResponse;
 import com.jjanpot.server.domain.auth.dto.LoginUserInfo;
 import com.jjanpot.server.domain.auth.dto.OAuthUser;
-import com.jjanpot.server.domain.auth.dto.RefreshResponse;
+import com.jjanpot.server.domain.auth.dto.request.RefreshResponse;
+import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
 import com.jjanpot.server.domain.auth.entity.RefreshToken;
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
 import com.jjanpot.server.domain.user.entity.Provider;
@@ -57,6 +57,23 @@ public class AuthService {
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
 		return LoginResponse.of(accessToken, refreshToken, userInfo, userCreateResult.isNewUser());
 
+	}
+
+	@Transactional
+	public LoginResponse devLogin(
+		Provider provider,
+		String providerId,
+		String nickname,
+		String email,
+		String profileImageUrl
+	) {
+		return userRepository.findByProviderAndProviderId(provider, providerId)
+			.map(user -> issueLoginResponse(user, false))
+			.orElseGet(() -> {
+				User user = createUser(provider,
+					new DevOAuthUser(provider, providerId, nickname, email, profileImageUrl));
+				return issueLoginResponse(user, true);
+			});
 	}
 
 	@Transactional
@@ -136,6 +153,55 @@ public class AuthService {
 		refreshToken.updateToken(newRefreshToken, newExpireTime);
 	}
 
+	private LoginResponse issueLoginResponse(User user, boolean isNewUser) {
+		user.updateLastLoginAt();
+
+		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
+		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
+		LocalDateTime expiresAt = LocalDateTime.now().plusDays(authProperties.getRefreshTokenExpiresDays());
+
+		refreshTokenRepository.findByUser(user)
+			.ifPresentOrElse(
+				token -> updateExistingToken(token, refreshToken, expiresAt),
+				() -> createNewToken(user, refreshToken, expiresAt)
+			);
+
+		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), isNewUser);
+	}
+
 	private record UserCreateResult(User user, boolean isNewUser) {
+	}
+
+	private record DevOAuthUser(
+		Provider provider,
+		String providerId,
+		String nickname,
+		String email,
+		String profileImageUrl
+	) implements OAuthUser {
+		@Override
+		public Provider getProvider() {
+			return provider;
+		}
+
+		@Override
+		public String getProviderId() {
+			return providerId;
+		}
+
+		@Override
+		public String getNickname() {
+			return nickname;
+		}
+
+		@Override
+		public String getEmail() {
+			return email;
+		}
+
+		@Override
+		public String getProfileImageUrl() {
+			return profileImageUrl;
+		}
 	}
 }

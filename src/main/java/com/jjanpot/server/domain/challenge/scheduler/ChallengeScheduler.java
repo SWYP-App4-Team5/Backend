@@ -40,7 +40,7 @@ public class ChallengeScheduler {
 	private final CertificationRepository certificationRepository;
 
 	/** 매일 자정: 시작일이 된 WAITING 챌린지를 ONGOING으로 전환 **/
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	@Transactional
 	public void transitionWaitingToOngoing() {
 		LocalDateTime now = LocalDateTime.now();
@@ -57,7 +57,7 @@ public class ChallengeScheduler {
 	}
 
 	/** 매일 자정: 종료일이 지난 ONGOING 챌린지를 COMPLETED 또는 FAILED로 전환하고 결과를 저장 **/
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	@Transactional
 	public void transitionOngoingToFinished() {
 		LocalDateTime now = LocalDateTime.now();

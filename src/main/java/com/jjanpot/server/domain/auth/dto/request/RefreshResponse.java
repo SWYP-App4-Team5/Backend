@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.auth.dto;
+package com.jjanpot.server.domain.auth.dto.request;
 
 public record RefreshResponse(
 	Long userId,
