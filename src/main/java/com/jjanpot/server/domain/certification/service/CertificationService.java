@@ -105,9 +105,9 @@ public class CertificationService {
 		int spendAmount = resolveSpendAmount(request);
 		int savedAmount = challengeCategory.getAmount() - spendAmount;
 
-		// 현재 주차 조회 (MVP: 1주 고정)
+		// 현재 주차 조회 (MVP: 1주 고정, 비관적 잠금)
 		ChallengeWeek currentWeek = challengeWeekRepository
-			.findByChallengeAndWeekNumber(challenge, 1)
+			.findByChallengeAndWeekNumberForUpdate(challenge, 1)
 			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
 		// 이미지 업로드 (트랜잭션 롤백 시 업로드된 이미지 정리)
@@ -204,8 +204,10 @@ public class CertificationService {
 		int spendAmount = resolveSpendAmount(request);
 		int newSavedAmount = challengeCategory.getAmount() - spendAmount;
 
-		// 주차 절약 금액 보정 (기존 절약 금액 차감 → 새 절약 금액 누적)
-		ChallengeWeek currentWeek = certification.getChallengeWeek();
+		// 주차 절약 금액 보정 (비관적 잠금, 기존 절약 금액 차감 → 새 절약 금액 누적)
+		ChallengeWeek currentWeek = challengeWeekRepository
+			.findByChallengeAndWeekNumberForUpdate(challenge, certification.getChallengeWeek().getWeekNumber())
+			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 		currentWeek.addSavedAmount(newSavedAmount);
 
@@ -251,8 +253,10 @@ public class CertificationService {
 			throw new BusinessException(ErrorCode.CHALLENGE_NOT_ONGOING);
 		}
 
-		// 주차 절약 금액 차감
-		ChallengeWeek currentWeek = certification.getChallengeWeek();
+		// 주차 절약 금액 차감 (비관적 잠금)
+		ChallengeWeek currentWeek = challengeWeekRepository
+			.findByChallengeAndWeekNumberForUpdate(challenge, certification.getChallengeWeek().getWeekNumber())
+			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 
 		// S3 이미지는 커밋 후 삭제
