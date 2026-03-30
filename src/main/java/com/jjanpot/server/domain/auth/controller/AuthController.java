@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jjanpot.server.domain.auth.controller.docs.AuthControllerV1Docs;
-import com.jjanpot.server.domain.auth.dto.LoginRequest;
-import com.jjanpot.server.domain.auth.dto.LoginResponse;
-import com.jjanpot.server.domain.auth.dto.RefreshRequest;
-import com.jjanpot.server.domain.auth.dto.RefreshResponse;
+import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
+import com.jjanpot.server.domain.auth.dto.request.RefreshRequest;
+import com.jjanpot.server.domain.auth.dto.request.RefreshResponse;
+import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
 import com.jjanpot.server.domain.auth.service.AuthService;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
