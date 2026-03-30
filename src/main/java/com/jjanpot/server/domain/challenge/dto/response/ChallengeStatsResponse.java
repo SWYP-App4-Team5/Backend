@@ -17,8 +17,8 @@ public record ChallengeStatsResponse(
 	@Schema(description = "팀 절약 현황")
 	public record TeamStats(
 
-		@Schema(description = "팀 인증 평균 (회)", example = "2.3", requiredMode = Schema.RequiredMode.REQUIRED)
-		double avgCertificationCount,
+		@Schema(description = "팀 인증 평균 (회)", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+		int avgCertificationCount,
 
 		@Schema(description = "팀 참여율 (0~100%)", example = "87", requiredMode = Schema.RequiredMode.REQUIRED)
 		int participationRate,

@@ -64,7 +64,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(
 					"/api/auth/v1/login/**",
-					"/api/auth/v1/refresh"
+					"/api/auth/v1/refresh",
+					"/api/auth/v1/dev-login"
 				).permitAll()
 				.anyRequest().authenticated());
 		return http.build();

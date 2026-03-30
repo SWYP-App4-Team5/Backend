@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.certification.entity;
 
+import java.time.LocalDateTime;
+
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeWeek;
@@ -25,9 +27,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "certification", indexes = {
-	@Index(name = "idx_certification_created_at", columnList = "created_at")
-})
+@Table(name = "certification", indexes = {@Index(name = "idx_certification_created_at", columnList = "created_at")})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -44,10 +44,10 @@ public class Certification extends BaseEntity {
 	private SpendType spendType;
 
 	@Column(name = "spend_amount", nullable = false)
-	private Long spendAmount;
+	private int spendAmount;
 
 	@Column(name = "saved_amount", nullable = false)
-	private Long savedAmount;
+	private int savedAmount;
 
 	@Column(name = "memo", nullable = false, length = 256)
 	private String memo;
@@ -56,7 +56,7 @@ public class Certification extends BaseEntity {
 	private String imageUrl;
 
 	@Column(name = "spent_at", nullable = false)
-	private java.time.LocalDateTime spentAt;
+	private LocalDateTime spentAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "challenge_id", nullable = false)
@@ -73,4 +73,32 @@ public class Certification extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "week_id", nullable = false)
 	private ChallengeWeek challengeWeek;
+
+	public static Certification create(Challenge challenge, User user, Category category, ChallengeWeek challengeWeek,
+		SpendType spendType, int spendAmount, int savedAmount, String memo, String imageUrl,
+		LocalDateTime spentAt) {
+		return Certification.builder()
+			.challenge(challenge)
+			.user(user)
+			.category(category)
+			.challengeWeek(challengeWeek)
+			.spendType(spendType)
+			.spendAmount(spendAmount)
+			.savedAmount(savedAmount)
+			.memo(memo)
+			.imageUrl(imageUrl)
+			.spentAt(spentAt)
+			.build();
+	}
+
+	public void update(Category category, SpendType spendType, int spendAmount, int savedAmount, String memo,
+		String imageUrl, java.time.LocalDateTime spentAt) {
+		this.category = category;
+		this.spendType = spendType;
+		this.spendAmount = spendAmount;
+		this.savedAmount = savedAmount;
+		this.memo = memo;
+		this.imageUrl = imageUrl;
+		this.spentAt = spentAt;
+	}
 }

@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.auth.dto;
+package com.jjanpot.server.domain.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

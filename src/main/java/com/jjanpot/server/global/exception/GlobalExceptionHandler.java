@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.jjanpot.server.global.aop.MdcTraceId;
@@ -71,6 +72,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity
 			.status(ErrorCode.INVALID_INPUT.getStatus())
 			.body(ErrorResponse.of(ErrorCode.INVALID_INPUT.getMessage(), errors));
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex,
+		HttpHeaders headers,
+		HttpStatusCode status,
+		WebRequest request
+	) {
+		ensureTraceId();
+
+		log.warn("[FILE-SIZE-ERROR] message={}", ex.getMessage());
+
+		return ResponseEntity
+			.status(ErrorCode.IMAGE_SIZE_EXCEEDED.getStatus())
+			.body(ErrorResponse.of(ErrorCode.IMAGE_SIZE_EXCEEDED.getMessage()));
 	}
 
 	@ExceptionHandler(Exception.class)
