@@ -3,6 +3,9 @@ package com.jjanpot.server.domain.user.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jjanpot.server.domain.challenge.entity.Challenge;
+import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
+import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
@@ -27,6 +30,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final TeamRepository teamRepository;
 	private final TeamMembersRepository teamMembersRepository;
+	private final ChallengeRepository challengeRepository;
 
 	@Transactional
 	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request, Long userId) {
@@ -45,29 +49,36 @@ public class UserService {
 		);
 	}
 
-	//초대코드 기반 팀 참여 기능 구현
+	// 초대코드 기반 팀 참여 (온보딩 흐름)
 	@Transactional
 	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
 		User user = getUserByUserId(userId);
 
+		// 1. 초대코드로 팀 조회
 		Team team = teamRepository.findByInviteCode(inviteCode)
 			.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND));
 
-		if (team.getCurrentMemberCount() >= team.getMaxMemberCount()) {
-			throw new BusinessException(ErrorCode.TEAM_ALREADY_FULL);
-		}
+		// 2. 해당 팀의 WAITING 챌린지 조회 (시작 전에만 참여 가능)
+		Challenge challenge = challengeRepository.findByTeamAndStatus(team, ChallengeStatus.WAITING)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_JOINABLE));
 
+		// 3. 이미 팀원인지 확인
 		if (teamMembersRepository.existsByTeamAndUser(team, user)) {
 			throw new BusinessException(ErrorCode.ALREADY_TEAM_MEMBER);
 		}
 
+		// 4. 정원 초과 확인
+		if (team.getCurrentMemberCount() >= team.getMaxMemberCount()) {
+			throw new BusinessException(ErrorCode.TEAM_ALREADY_FULL);
+		}
+
+		// 5. 팀원으로 등록
 		teamMembersRepository.save(TeamMembers.ofMember(team, user));
+
+		// 6. 팀의 현재 인원 증가
 		team.increaseMemberCount();
 
-		return InviteCodeResponse.of(
-			inviteCode,
-			team.getTeamName()
-		);
+		return InviteCodeResponse.from(team, challenge);
 	}
 
 	private User getUserByUserId(Long userId) {

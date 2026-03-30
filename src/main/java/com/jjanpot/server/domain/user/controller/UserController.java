@@ -36,7 +36,7 @@ public class UserController {
 		@CurrentUserId Long userId
 	) {
 		InviteCodeResponse response = userService.joinChallengeByInviteCode(
-			request.code(),
+			request.inviteCode(),
 			userId
 		);
 		return SuccessResponse.ok(response);
