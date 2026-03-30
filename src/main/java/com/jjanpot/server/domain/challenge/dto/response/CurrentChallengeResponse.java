@@ -115,17 +115,18 @@ public record CurrentChallengeResponse(
 		int teamWeekSavedAmount,
 
 		@Schema(description = "팀 실시간 목표 달성률 (0~100, 100 초과 시 100으로 고정)", example = "80")
-		int achievementRate
+		int achievementRate,
 
-		// TODO: 개인 절약 금액 - 인증 도메인 구현 후 추가
-		// int personalWeekSavedAmount
+		@Schema(description = "본인 개인 절약 금액", example = "25000")
+		int personalWeekSavedAmount
 
 	) {
-		public static OngoingInfo from(Challenge challenge, Team team, ChallengeWeek currentWeek) {
+		public static OngoingInfo from(Challenge challenge, Team team, ChallengeWeek currentWeek,
+			int personalSavedAmount) {
 			int savedAmount = currentWeek.getWeekSavedAmount();
 			int goalAmount = currentWeek.getWeekGoalAmount();
 			int rate = goalAmount > 0
-				? Math.max(0, Math.min((int)((savedAmount * 100L) / goalAmount), 100)) // 음수 달성률 가능성 차단
+				? Math.max(0, Math.min((int)((savedAmount * 100L) / goalAmount), 100))
 				: 0;
 
 			return new OngoingInfo(
@@ -133,11 +134,11 @@ public record CurrentChallengeResponse(
 				challenge.getTitle(),
 				challenge.getStatus().getDisplayName(),
 				challenge.getEndDate(),
-				//team.getTeamName(),
 				currentWeek.getWeekNumber(),
 				goalAmount,
 				savedAmount,
-				rate
+				rate,
+				personalSavedAmount
 			);
 		}
 	}
@@ -152,11 +153,12 @@ public record CurrentChallengeResponse(
 	}
 
 	// ONGOING 상태
-	public static CurrentChallengeResponse ongoing(Challenge challenge, Team team, ChallengeWeek currentWeek) {
+	public static CurrentChallengeResponse ongoing(Challenge challenge, Team team, ChallengeWeek currentWeek,
+		int personalSavedAmount) {
 		return new CurrentChallengeResponse(
 			"ONGOING",
 			null,
-			OngoingInfo.from(challenge, team, currentWeek)
+			OngoingInfo.from(challenge, team, currentWeek, personalSavedAmount)
 		);
 	}
 
