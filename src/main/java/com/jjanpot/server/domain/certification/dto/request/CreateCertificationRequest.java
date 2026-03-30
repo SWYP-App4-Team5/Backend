@@ -50,14 +50,6 @@ public record CreateCertificationRequest(
 	String memo,
 
 	@Schema(
-		description = "인증 사진 URL (MVP: 1장, S3 업로드 후 URL 전달)",
-		example = "https://example.com/image.jpg",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-		nullable = true
-	)
-	String imageUrl,
-
-	@Schema(
 		description = "지출 일시 (사용자가 직접 선택 가능)",
 		example = "2026-03-29T10:30:00",
 		requiredMode = Schema.RequiredMode.REQUIRED

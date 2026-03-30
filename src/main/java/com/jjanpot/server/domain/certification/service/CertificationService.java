@@ -1,12 +1,16 @@
 package com.jjanpot.server.domain.certification.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.certification.dto.request.CreateCertificationRequest;
@@ -28,6 +32,7 @@ import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
+import com.jjanpot.server.global.infra.storage.FileUploader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,6 +43,7 @@ public class CertificationService {
 
 	private static final int DAILY_CERT_LIMIT = 3;
 	private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Seoul");
+	private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
 	private final UserRepository userRepository;
 	private final ChallengeRepository challengeRepository;
@@ -46,10 +52,12 @@ public class CertificationService {
 	private final TeamMembersRepository teamMembersRepository;
 	private final CertificationRepository certificationRepository;
 	private final CertificationLikeRepository certificationLikeRepository;
+	private final FileUploader fileUploader;
 
 	/** 인증 생성 **/
 	@Transactional
-	public CreateCertificationResponse createCertification(Long userId, CreateCertificationRequest request) {
+	public CreateCertificationResponse createCertification(Long userId, CreateCertificationRequest request,
+		MultipartFile image) {
 		User user = findUser(userId);
 		Challenge challenge = findChallenge(request.challengeId());
 
@@ -98,6 +106,9 @@ public class CertificationService {
 			.findByChallengeAndWeekNumber(challenge, 1)
 			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
+		// 이미지 업로드
+		String imageUrl = uploadImage(image);
+
 		// 인증 저장
 		Category category = challengeCategory.getCategory();
 		Certification certification = Certification.create(
@@ -106,7 +117,7 @@ public class CertificationService {
 			spendAmount,
 			savedAmount,
 			request.memo() != null ? request.memo() : "",
-			request.imageUrl(),
+			imageUrl,
 			request.spentAt()
 		);
 		certificationRepository.save(certification);
@@ -138,7 +149,7 @@ public class CertificationService {
 	/** 인증 수정 **/
 	@Transactional
 	public CreateCertificationResponse updateCertification(Long userId, Long certificationId,
-		CreateCertificationRequest request) {
+		CreateCertificationRequest request, MultipartFile image) {
 		User user = findUser(userId);
 		Certification certification = findCertification(certificationId);
 
@@ -178,6 +189,15 @@ public class CertificationService {
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 		currentWeek.addSavedAmount(newSavedAmount);
 
+		// 이미지 처리: 새 이미지가 있으면 기존 이미지 삭제 후 업로드
+		String imageUrl = certification.getImageUrl();
+		if (image != null && !image.isEmpty()) {
+			if (imageUrl != null) {
+				fileUploader.deleteImage(imageUrl);
+			}
+			imageUrl = uploadImage(image);
+		}
+
 		// 인증 업데이트
 		Category category = challengeCategory.getCategory();
 		certification.update(
@@ -186,7 +206,7 @@ public class CertificationService {
 			spendAmount,
 			newSavedAmount,
 			request.memo() != null ? request.memo() : "",
-			request.imageUrl(),
+			imageUrl,
 			request.spentAt()
 		);
 
@@ -213,9 +233,31 @@ public class CertificationService {
 		ChallengeWeek currentWeek = certification.getChallengeWeek();
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 
+		// S3 이미지 삭제
+		if (certification.getImageUrl() != null) {
+			fileUploader.deleteImage(certification.getImageUrl());
+		}
+
 		// 좋아요 삭제 후 인증 삭제
 		certificationLikeRepository.deleteByCertification(certification);
 		certificationRepository.delete(certification);
+	}
+
+	private String uploadImage(MultipartFile image) {
+		if (image == null || image.isEmpty()) {
+			return null;
+		}
+		String contentType = image.getContentType();
+		if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+			throw new BusinessException(ErrorCode.IMAGE_INVALID_FORMAT);
+		}
+		try {
+			String extension = contentType.substring(contentType.indexOf('/') + 1);
+			String key = "certification/" + UUID.randomUUID() + "." + extension;
+			return fileUploader.uploadImage(key, image.getBytes(), contentType);
+		} catch (IOException e) {
+			throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
+		}
 	}
 
 	private int resolveSpendAmount(CreateCertificationRequest request) {

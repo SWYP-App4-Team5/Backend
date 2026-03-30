@@ -2,14 +2,16 @@ package com.jjanpot.server.domain.certification.controller;
 
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.certification.controller.docs.CertificationControllerDocs;
 import com.jjanpot.server.domain.certification.dto.request.CreateCertificationRequest;
@@ -29,26 +31,25 @@ public class CertificationController implements CertificationControllerDocs {
 
 	private final CertificationService certificationService;
 
-	// 인증 생성
-	@PostMapping
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public SuccessResponse<CreateCertificationResponse> createCertification(
 		@CurrentUserId Long userId,
-		@Valid @RequestBody CreateCertificationRequest request
+		@Valid @RequestPart("request") CreateCertificationRequest request,
+		@RequestPart(value = "image", required = false) MultipartFile image
 	) {
-		return SuccessResponse.created(certificationService.createCertification(userId, request));
+		return SuccessResponse.created(certificationService.createCertification(userId, request, image));
 	}
 
-	// 인증 수정
-	@PutMapping("/{certificationId}")
+	@PutMapping(value = "/{certificationId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public SuccessResponse<CreateCertificationResponse> updateCertification(
 		@CurrentUserId Long userId,
 		@PathVariable Long certificationId,
-		@Valid @RequestBody CreateCertificationRequest request
+		@Valid @RequestPart("request") CreateCertificationRequest request,
+		@RequestPart(value = "image", required = false) MultipartFile image
 	) {
-		return SuccessResponse.ok(certificationService.updateCertification(userId, certificationId, request));
+		return SuccessResponse.ok(certificationService.updateCertification(userId, certificationId, request, image));
 	}
 
-	// 인증 삭제
 	@DeleteMapping("/{certificationId}")
 	public SuccessResponse<Void> deleteCertification(
 		@CurrentUserId Long userId,
@@ -58,7 +59,6 @@ public class CertificationController implements CertificationControllerDocs {
 		return SuccessResponse.noContent();
 	}
 
-	// 챌린지의 인증 목록 조회
 	@GetMapping("/challenge/{challengeId}")
 	public SuccessResponse<List<CertificationFeedResponse>> getCertificationFeed(
 		@CurrentUserId Long userId,

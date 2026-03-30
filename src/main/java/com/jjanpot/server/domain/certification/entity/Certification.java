@@ -56,7 +56,7 @@ public class Certification extends BaseEntity {
 	private String imageUrl;
 
 	@Column(name = "spent_at", nullable = false)
-	private java.time.LocalDateTime spentAt;
+	private LocalDateTime spentAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "challenge_id", nullable = false)

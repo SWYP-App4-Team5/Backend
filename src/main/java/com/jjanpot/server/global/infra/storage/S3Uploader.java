@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
@@ -37,6 +38,22 @@ public class S3Uploader implements FileUploader {
 		} catch (SdkException e) {
 			log.error("SdkException: {}", e.getMessage() , e);
 			throw new StorageException(e);
+		}
+	}
+
+	@Override
+	public void deleteImage(String imageUrl) {
+		try {
+			String normalizedBaseUrl = storageProperties.getBaseUrl().replaceAll("/+$", "");
+			String key = imageUrl.replace(normalizedBaseUrl + "/", "");
+			s3Client.deleteObject(DeleteObjectRequest.builder()
+				.bucket(storageProperties.getBucket())
+				.key(key)
+				.build());
+		} catch (S3Exception e) {
+			log.error("S3 delete failed: {}", e.getMessage(), e);
+		} catch (SdkException e) {
+			log.error("SDK delete failed: {}", e.getMessage(), e);
 		}
 	}
 
