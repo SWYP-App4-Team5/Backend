@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.category.entity.Category;
@@ -35,7 +37,9 @@ import com.jjanpot.server.global.exception.ErrorCode;
 import com.jjanpot.server.global.infra.storage.FileUploader;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -106,8 +110,11 @@ public class CertificationService {
 			.findByChallengeAndWeekNumber(challenge, 1)
 			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-		// 이미지 업로드
+		// 이미지 업로드 (트랜잭션 롤백 시 업로드된 이미지 정리)
 		String imageUrl = uploadImage(image);
+		if (imageUrl != null) {
+			deleteImageOnRollback(imageUrl);
+		}
 
 		// 인증 저장
 		Category category = challengeCategory.getCategory();
@@ -175,6 +182,19 @@ public class CertificationService {
 			throw new BusinessException(ErrorCode.CERTIFICATION_SPENT_AT_OUT_OF_RANGE);
 		}
 
+		// 일일 인증 횟수 제한 검증 (spentAt 날짜가 변경된 경우, 자기 자신 제외)
+		LocalDate spentDate = request.spentAt().toLocalDate();
+		LocalDate originalDate = certification.getSpentAt().toLocalDate();
+		if (!spentDate.equals(originalDate)) {
+			LocalDateTime startOfDay = spentDate.atStartOfDay();
+			LocalDateTime startOfNextDay = spentDate.plusDays(1).atStartOfDay();
+			long dayCount = certificationRepository.countByUserAndChallengeAndSpentAtBetween(
+				user, challenge, startOfDay, startOfNextDay);
+			if (dayCount >= DAILY_CERT_LIMIT) {
+				throw new BusinessException(ErrorCode.CERTIFICATION_DAILY_LIMIT_EXCEEDED);
+			}
+		}
+
 		// 챌린지에 설정된 카테고리 검증
 		ChallengeCategory challengeCategory = challengeCategoryRepository
 			.findByChallengeAndCategory_CategoryId(challenge, request.categoryId())
@@ -189,13 +209,15 @@ public class CertificationService {
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 		currentWeek.addSavedAmount(newSavedAmount);
 
-		// 이미지 처리: 새 이미지가 있으면 기존 이미지 삭제 후 업로드
+		// 이미지 처리: 새 이미지가 있으면 업로드 후 기존 이미지는 커밋 후 삭제
 		String imageUrl = certification.getImageUrl();
 		if (image != null && !image.isEmpty()) {
-			if (imageUrl != null) {
-				fileUploader.deleteImage(imageUrl);
-			}
+			String oldImageUrl = imageUrl;
 			imageUrl = uploadImage(image);
+			deleteImageOnRollback(imageUrl);
+			if (oldImageUrl != null) {
+				deleteImageAfterCommit(oldImageUrl);
+			}
 		}
 
 		// 인증 업데이트
@@ -233,14 +255,44 @@ public class CertificationService {
 		ChallengeWeek currentWeek = certification.getChallengeWeek();
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 
-		// S3 이미지 삭제
+		// S3 이미지는 커밋 후 삭제
 		if (certification.getImageUrl() != null) {
-			fileUploader.deleteImage(certification.getImageUrl());
+			deleteImageAfterCommit(certification.getImageUrl());
 		}
 
 		// 좋아요 삭제 후 인증 삭제
 		certificationLikeRepository.deleteByCertification(certification);
 		certificationRepository.delete(certification);
+	}
+
+	/** 트랜잭션 커밋 후 S3 이미지 삭제 (삭제 실패해도 DB에 영향 없음) */
+	private void deleteImageAfterCommit(String imageUrl) {
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				try {
+					fileUploader.deleteImage(imageUrl);
+				} catch (Exception e) {
+					log.warn("커밋 후 S3 이미지 삭제 실패 (고아 파일 발생 가능): {}", imageUrl, e);
+				}
+			}
+		});
+	}
+
+	/** 트랜잭션 롤백 시 업로드된 S3 이미지 정리 */
+	private void deleteImageOnRollback(String imageUrl) {
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCompletion(int status) {
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+					try {
+						fileUploader.deleteImage(imageUrl);
+					} catch (Exception e) {
+						log.warn("롤백 후 S3 이미지 정리 실패 (고아 파일 발생 가능): {}", imageUrl, e);
+					}
+				}
+			}
+		});
 	}
 
 	private String uploadImage(MultipartFile image) {

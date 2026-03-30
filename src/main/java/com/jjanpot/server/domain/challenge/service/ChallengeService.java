@@ -179,7 +179,7 @@ public class ChallengeService {
 			: 0;
 
 		// 연속활동: 모든 팀원이 인증한 연속 일수 (최근 기준 역산)
-		int teamConsecutiveDays = calculateTeamStreak(challenge, memberCount);
+		int teamConsecutiveDays = calculateTeamStreak(challenge, memberCount, effectiveEnd);
 
 		// ── 개인 절약 현황 ──
 		// 인증횟수: 본인 주간 총 인증 횟수
@@ -199,8 +199,8 @@ public class ChallengeService {
 		);
 	}
 
-	/** 팀 연속활동일 계산: 모든 팀원이 인증한 날이 연속으로 이어진 일수 (최근 기준 역산) */
-	private int calculateTeamStreak(Challenge challenge, int memberCount) {
+	/** 팀 연속활동일 계산: effectiveEnd(오늘 또는 종료일)부터 역산하여 모든 팀원이 인증한 연속 일수 */
+	private int calculateTeamStreak(Challenge challenge, int memberCount, LocalDate effectiveEnd) {
 		List<Object[]> dailyUserCounts = certificationRepository
 			.countDistinctUsersByDateForChallenge(challenge);
 
@@ -210,25 +210,32 @@ public class ChallengeService {
 			.map(row -> (LocalDate) row[0])
 			.toList();
 
-		return calculateStreakFromEnd(fullParticipationDates);
+		return calculateStreakFromDate(fullParticipationDates, effectiveEnd);
 	}
 
-	/** 개인 연속활동일 계산: 최근 기준 연속 인증일 */
+	/** 개인 연속활동일 계산: effectiveEnd(오늘 또는 종료일)부터 역산하여 연속 인증일 */
 	private int calculatePersonalStreak(List<LocalDate> certDates, LocalDate effectiveEnd) {
-		return calculateStreakFromEnd(certDates);
+		return calculateStreakFromDate(certDates, effectiveEnd);
 	}
 
-	/** 날짜 리스트에서 마지막부터 역산하여 연속 일수 계산 */
-	private int calculateStreakFromEnd(List<LocalDate> sortedDates) {
+	/** 기준일(effectiveEnd)부터 역산하여 연속 일수 계산. 기준일에 인증이 없으면 0 반환 */
+	private int calculateStreakFromDate(List<LocalDate> sortedDates, LocalDate baseDate) {
 		if (sortedDates.isEmpty()) {
 			return 0;
 		}
 
+		// 기준일(오늘 또는 종료일)에 인증이 없으면 연속 끊김 → 0
+		if (!sortedDates.contains(baseDate)) {
+			return 0;
+		}
+
 		int streak = 1;
-		for (int i = sortedDates.size() - 1; i > 0; i--) {
-			if (sortedDates.get(i).minusDays(1).equals(sortedDates.get(i - 1))) {
+		LocalDate current = baseDate.minusDays(1);
+		for (int i = sortedDates.size() - 2; i >= 0; i--) {
+			if (sortedDates.get(i).equals(current)) {
 				streak++;
-			} else {
+				current = current.minusDays(1);
+			} else if (sortedDates.get(i).isBefore(current)) {
 				break;
 			}
 		}

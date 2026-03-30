@@ -41,20 +41,20 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 	List<Object[]> countCertPerUserByChallenge(@Param("challenge") Challenge challenge);
 
 	/** 챌린지 내 특정 유저의 인증 날짜 목록 조회 (중복 제거, 정렬) */
-	@Query("SELECT DISTINCT CAST(c.spentAt AS LocalDate) "
+	@Query("SELECT DISTINCT CAST(c.spentAt AS date) "
 		+ "FROM Certification c "
 		+ "WHERE c.challenge = :challenge AND c.user = :user "
-		+ "ORDER BY CAST(c.spentAt AS LocalDate)")
+		+ "ORDER BY CAST(c.spentAt AS date)")
 	List<java.time.LocalDate> findDistinctCertDatesByUser(
 		@Param("challenge") Challenge challenge,
 		@Param("user") User user
 	);
 
 	/** 챌린지 내 전체 인증 날짜별 유저 수 조회 (팀 연속활동 계산용) */
-	@Query("SELECT CAST(c.spentAt AS LocalDate), COUNT(DISTINCT c.user.userId) "
+	@Query("SELECT CAST(c.spentAt AS date), COUNT(DISTINCT c.user.userId) "
 		+ "FROM Certification c "
 		+ "WHERE c.challenge = :challenge "
-		+ "GROUP BY CAST(c.spentAt AS LocalDate) "
-		+ "ORDER BY CAST(c.spentAt AS LocalDate)")
+		+ "GROUP BY CAST(c.spentAt AS date) "
+		+ "ORDER BY CAST(c.spentAt AS date)")
 	List<Object[]> countDistinctUsersByDateForChallenge(@Param("challenge") Challenge challenge);
 }
