@@ -31,7 +31,7 @@ public class UserAgreement extends BaseEntity {
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id", nullable = false, unique = true)
 	private User user;
 
 	//만 14세이상 여부
@@ -53,5 +53,16 @@ public class UserAgreement extends BaseEntity {
 	@Builder.Default
 	@Column(name = "marketing_consent", nullable = false, columnDefinition = "TINYINT(1)")
 	private boolean marketingConsent = false;
-	
+
+	public static UserAgreement from(boolean ageVerified, boolean termsOfServiceAgreed, boolean privacyPolicyAgreed,
+		boolean marketingConsent, User user) {
+		return UserAgreement.builder()
+			.ageVerified(ageVerified)
+			.termsOfServiceAgreed(termsOfServiceAgreed)
+			.privacyPolicyAgreed(privacyPolicyAgreed)
+			.marketingConsent(marketingConsent)
+			.user(user)
+			.build();
+	}
+
 }

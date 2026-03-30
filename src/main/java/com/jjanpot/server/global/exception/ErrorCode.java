@@ -18,7 +18,7 @@ public enum ErrorCode {
 	INVALID_JWT_STRUCTURE(HttpStatus.BAD_REQUEST, "JWT 구조가 올바르지 않습니다."),
 	TOKEN_DECODE_FAILED(HttpStatus.BAD_REQUEST, "토큰 디코딩에 실패했습니다."),
 	TOKEN_PARSE_FAILED(HttpStatus.BAD_REQUEST, "토큰 파싱에 실패했습니다."),
-	
+
 	KAKAO_API_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 호출에 실패했습니다."),
 	GOOGLE_API_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "구글 API 호출에 실패했습니다."),
 	APPLE_API_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "애플 API 호출에 실패했습니다."),
@@ -27,6 +27,9 @@ public enum ErrorCode {
 
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다."),
 	EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 리프레시 토큰입니다."),
+	// User Agreement
+	REQUIRED_AGREEMENT_MISSING(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),
+	ALREADY_AGREED_TERMS(HttpStatus.BAD_REQUEST, "이미 약관 동의를 완료한 사용자입니다 "),
 
 	// Challenge
 	CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "챌린지를 찾을 수 없습니다."),
