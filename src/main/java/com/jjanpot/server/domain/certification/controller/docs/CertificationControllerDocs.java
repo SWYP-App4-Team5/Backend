@@ -24,12 +24,29 @@ public interface CertificationControllerDocs {
 		description = """
 			절약 인증을 생성합니다. (multipart/form-data)
 
-			- 진행 중(ONGOING) 상태의 챌린지에서만 인증 가능합니다.
-			- 하루 최대 3회까지 인증할 수 있습니다. (spentAt 기준, Asia/Seoul)
-			- 챌린지에 설정된 카테고리만 선택할 수 있습니다.
-			- 지출(SPEND): 소비 금액 필수 입력, 절약 금액 = 기준 금액 - 소비 금액 (음수 가능)
-			- 무지출(NO_SPEND): 소비 금액 0으로 처리, 절약 금액 = 기준 금액
-			- 이미지: 선택 입력, 최대 10MB (JPEG, PNG, WEBP)
+			## 요청 형식
+			Content-Type: `multipart/form-data`로 아래 두 파트를 전송합니다.
+			- `request` (필수): JSON 문자열, Content-Type을 `application/json`으로 설정
+			- `image` (선택): 이미지 파일 (JPEG, PNG, WEBP / 최대 10MB)
+
+			## request JSON 예시
+			```json
+			{
+			  "challengeId": 1,
+			  "spendType": "SPEND",
+			  "categoryId": 1,
+			  "spentAmount": 3500,
+			  "memo": "텀블러에 담아서 먹음",
+			  "spentAt": "2026-03-29T10:30:00"
+			}
+			```
+
+			## 비즈니스 규칙
+			- 진행 중(ONGOING) 상태의 챌린지에서만 인증 가능
+			- 하루 최대 3회 (spentAt 날짜 기준, Asia/Seoul)
+			- 챌린지에 설정된 카테고리만 선택 가능
+			- 지출(SPEND): spentAmount 필수, 절약 금액 = 기준 금액 - 소비 금액 (음수 가능)
+			- 무지출(NO_SPEND): spentAmount 불필요, 절약 금액 = 기준 금액 전액
 			"""
 	)
 	@ApiResponse(responseCode = "201", description = "인증 생성 성공")
@@ -44,10 +61,19 @@ public interface CertificationControllerDocs {
 		description = """
 			본인의 절약 인증을 수정합니다. (multipart/form-data)
 
-			- 진행 중(ONGOING) 상태의 챌린지에서만 수정 가능합니다.
-			- 본인의 인증만 수정할 수 있습니다.
-			- 수정 시 주차 절약 금액이 자동으로 보정됩니다 (기존 절약 금액 차감 → 새 절약 금액 누적).
-			- 새 이미지를 업로드하면 기존 이미지는 삭제됩니다.
+			## 요청 형식
+			인증 생성과 동일한 multipart/form-data 형식입니다.
+			- `request` (필수): JSON 문자열, Content-Type을 `application/json`으로 설정
+			- `image` (선택): 새 이미지 파일 (JPEG, PNG, WEBP / 최대 10MB)
+
+			## 이미지 처리
+			- 새 이미지 첨부 시: 기존 S3 이미지 삭제 → 새 이미지 업로드
+			- 이미지 미첨부 시: 기존 이미지 URL 유지
+
+			## 비즈니스 규칙
+			- 진행 중(ONGOING) 상태의 챌린지에서만 수정 가능
+			- 본인의 인증만 수정 가능
+			- 수정 시 주차 절약 금액이 자동 보정됩니다 (기존 절약 금액 차감 → 새 절약 금액 누적)
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "인증 수정 성공")
