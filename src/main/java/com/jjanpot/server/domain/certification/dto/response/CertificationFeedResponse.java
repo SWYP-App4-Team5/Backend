@@ -31,7 +31,7 @@ public record CertificationFeedResponse(
 	@Schema(description = "절약 금액 (기준 금액 - 소비 금액, 음수 가능)", example = "3500")
 	int savedAmount,
 
-	@Schema(description = "인증 사진 URL", example = "https://example.com/image.jpg", nullable = true)
+	@Schema(description = "인증 사진 URL (S3)", example = "https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com/images/certification/67fe91dc-966a-4131-9ffa-1278d9d9ead3.png", nullable = true)
 	String imageUrl,
 
 	@Schema(description = "인증 생성 일시", example = "2027-08-15T09:35:00")
