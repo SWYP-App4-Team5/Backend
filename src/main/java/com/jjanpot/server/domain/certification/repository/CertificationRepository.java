@@ -17,10 +17,15 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 	// ChallengeScheduler에서 챌린지 종료 시 개인 결과 산출에 활용
 	List<Certification> findAllByChallengeAndUser(Challenge challenge, User user);
 
-	/** 하루 인증 횟수 조회 (일일 최대 3회 제한 체크용) */
-	long countByUserAndChallengeAndSpentAtBetween(
-		User user, Challenge challenge,
-		LocalDateTime start, LocalDateTime end
+	/** 하루 인증 횟수 조회 (일일 최대 3회 제한 체크용, 배타적 상한) */
+	@Query("SELECT COUNT(c) FROM Certification c "
+		+ "WHERE c.user = :user AND c.challenge = :challenge "
+		+ "AND c.spentAt >= :start AND c.spentAt < :end")
+	int countByUserAndChallengeAndSpentAtRange(
+		@Param("user") User user,
+		@Param("challenge") Challenge challenge,
+		@Param("start") LocalDateTime start,
+		@Param("end") LocalDateTime end
 	);
 
 	/** 챌린지 전체 인증 피드 조회 (최신순) */

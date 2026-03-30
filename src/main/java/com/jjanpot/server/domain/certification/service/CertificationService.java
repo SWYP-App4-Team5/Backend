@@ -90,7 +90,7 @@ public class CertificationService {
 		LocalDate spentDate = request.spentAt().toLocalDate();
 		LocalDateTime startOfDay = spentDate.atStartOfDay();
 		LocalDateTime startOfNextDay = spentDate.plusDays(1).atStartOfDay();
-		long todayCount = certificationRepository.countByUserAndChallengeAndSpentAtBetween(
+		int todayCount = certificationRepository.countByUserAndChallengeAndSpentAtRange(
 			user, challenge, startOfDay, startOfNextDay);
 		if (todayCount >= DAILY_CERT_LIMIT) {
 			throw new BusinessException(ErrorCode.CERTIFICATION_DAILY_LIMIT_EXCEEDED);
@@ -188,7 +188,7 @@ public class CertificationService {
 		if (!spentDate.equals(originalDate)) {
 			LocalDateTime startOfDay = spentDate.atStartOfDay();
 			LocalDateTime startOfNextDay = spentDate.plusDays(1).atStartOfDay();
-			long dayCount = certificationRepository.countByUserAndChallengeAndSpentAtBetween(
+			long dayCount = certificationRepository.countByUserAndChallengeAndSpentAtRange(
 				user, challenge, startOfDay, startOfNextDay);
 			if (dayCount >= DAILY_CERT_LIMIT) {
 				throw new BusinessException(ErrorCode.CERTIFICATION_DAILY_LIMIT_EXCEEDED);
