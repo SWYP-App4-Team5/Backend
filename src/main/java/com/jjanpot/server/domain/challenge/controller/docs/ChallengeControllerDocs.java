@@ -2,10 +2,10 @@ package com.jjanpot.server.domain.challenge.controller.docs;
 
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
-import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +42,7 @@ public interface ChallengeControllerDocs {
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 생성 성공")
 	SuccessResponse<CreateChallengeResponse> createChallenge(
-		@Parameter(hidden = true) User user,
+		@Parameter(hidden = true) Long userId,
 
 		@RequestBody(
 			description = "챌린지 생성 요청",
@@ -101,7 +101,7 @@ public interface ChallengeControllerDocs {
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 취소 성공")
 	SuccessResponse<Void> cancelChallenge(
-		@Parameter(hidden = true) User user,
+		@Parameter(hidden = true) Long userId,
 		@Parameter(description = "챌린지 ID") Long id
 	);
 
@@ -118,12 +118,30 @@ public interface ChallengeControllerDocs {
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 상세 조회 성공")
 	SuccessResponse<ChallengeDetailResponse> getChallengeDetail(
-		@Parameter(hidden = true) User user,
+		@Parameter(hidden = true) Long userId,
 		@Parameter(description = "챌린지 ID") Long id
 	);
 
 	@Operation(
-		summary = "팀/개인 절약 현황 통계 조회 (홈화면)",
+		summary = "챌린지 팀원 절약 현황 조회 (챌린지 화면)",
+		description = """
+			챌린지에 참여 중인 팀원들의 절약 현황을 조회합니다.
+			
+			- 해당 챌린지의 팀원만 조회할 수 있습니다.
+			- 챌린지 제목, 시작일, 팀 전체 절약 금액/목표 금액을 포함합니다.
+			- 팀원별 닉네임, 프로필 이미지, 개인 절약 금액을 반환합니다.
+			- isMe 필드로 본인 여부를 구분합니다.
+			- 절약 금액은 인증 데이터 실시간 합산(SUM) 방식입니다.
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "팀원 절약 현황 조회 성공")
+	SuccessResponse<ChallengeMembersResponse> getChallengeMembers(
+		@Parameter(hidden = true) Long userId,
+		@Parameter(description = "챌린지 ID") Long id
+	);
+
+	@Operation(
+		summary = "팀/개인 절약 현황 통계 조회 (홈 화면)",
 		description = """
 			홈화면 스크롤 시 노출되는 팀/개인 절약 현황을 조회합니다.
 			
@@ -136,7 +154,7 @@ public interface ChallengeControllerDocs {
 	)
 	@ApiResponse(responseCode = "200", description = "절약 현황 조회 성공")
 	SuccessResponse<ChallengeStatsResponse> getChallengeStats(
-		@Parameter(hidden = true) User user,
+		@Parameter(hidden = true) Long userId,
 		@Parameter(description = "챌린지 ID") Long id
 	);
 
@@ -148,11 +166,14 @@ public interface ChallengeControllerDocs {
 			status 필드에 따라 3가지 상태로 분기됩니다:
 			- NONE: 활성 챌린지 없음 (waiting, ongoing 필드 모두 null)
 			- WAITING: 시작일 전 대기 중인 챌린지
-			- ONGOING: 진행 중인 챌린지 (weekNumber, weekGoalAmount, weekSavedAmount 포함)
+			- ONGOING: 진행 중인 챌린지
+			  - teamWeekSavedAmount: 팀 전체 절약 금액
+			  - personalWeekSavedAmount: 로그인 유저 본인의 개인 절약 금액
+			  - achievementRate: 팀 목표 달성률 (0~100%)
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "현재 챌린지 조회 성공")
 	SuccessResponse<CurrentChallengeResponse> getCurrentChallenge(
-		@Parameter(hidden = true) User user
+		@Parameter(hidden = true) Long userId
 	);
 }

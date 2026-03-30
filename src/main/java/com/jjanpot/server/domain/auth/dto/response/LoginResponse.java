@@ -1,4 +1,6 @@
-package com.jjanpot.server.domain.auth.dto;
+package com.jjanpot.server.domain.auth.dto.response;
+
+import com.jjanpot.server.domain.auth.dto.LoginUserInfo;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -46,7 +46,22 @@ public enum ErrorCode {
 	// Team
 	TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "팀을 찾을 수 없습니다."),
 	TEAM_ALREADY_FULL(HttpStatus.BAD_REQUEST, "팀 정원이 초과되었습니다."),
-	ALREADY_TEAM_MEMBER(HttpStatus.BAD_REQUEST, "이미 팀에 참여한 사용자입니다.");
+	ALREADY_TEAM_MEMBER(HttpStatus.BAD_REQUEST, "이미 팀에 참여한 사용자입니다."),
+
+	// Certification
+	CHALLENGE_NOT_ONGOING(HttpStatus.BAD_REQUEST, "진행 중인 챌린지에서만 인증할 수 있습니다."),
+	CERTIFICATION_DAILY_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "하루 최대 3회까지 인증할 수 있습니다."),
+	CERTIFICATION_CATEGORY_NOT_IN_CHALLENGE(HttpStatus.BAD_REQUEST, "챌린지에 설정된 카테고리만 선택할 수 있습니다."),
+	CERTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "인증을 찾을 수 없습니다."),
+	CERTIFICATION_NOT_OWNER(HttpStatus.FORBIDDEN, "본인의 인증만 수정/삭제할 수 있습니다."),
+	CERTIFICATION_SPENT_AT_FUTURE(HttpStatus.BAD_REQUEST, "지출 일시는 현재 시간보다 이후일 수 없습니다."),
+	CERTIFICATION_SPENT_AT_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "지출 일시는 챌린지 기간 내여야 합니다."),
+
+	// Image
+	IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 크기가 제한을 초과했습니다. (최대 10MB)"),
+	IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다. (JPEG, PNG, WEBP만 허용)"),
+	IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
+	IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 삭제에 실패했습니다.");
 
 	private final HttpStatus status;
 	private final String message;
