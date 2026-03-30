@@ -15,9 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.category.repository.CategoryRepository;
+import com.jjanpot.server.domain.certification.repository.CertificationRepository;
 import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
@@ -36,6 +38,7 @@ import com.jjanpot.server.domain.team.entity.TeamRole;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
 import com.jjanpot.server.domain.user.entity.User;
+import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
 
@@ -54,6 +57,7 @@ public class ChallengeService {
 	private static final ZoneId BUSINESS_ZONE_ID = ZoneId.of("Asia/Seoul");
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
+	private final UserRepository userRepository;
 	private final TeamRepository teamRepository;
 	private final TeamMembersRepository teamMembersRepository;
 	private final ChallengeRepository challengeRepository;
@@ -61,10 +65,12 @@ public class ChallengeService {
 	private final ChallengeCategoryRepository challengeCategoryRepository;
 	private final ChallengeMinGoalPolicyRepository challengeMinGoalPolicyRepository;
 	private final CategoryRepository categoryRepository;
+	private final CertificationRepository certificationRepository;
 
 	/** 챌린지 생성 **/
 	@Transactional
-	public CreateChallengeResponse createChallenge(User user, CreateChallengeRequest request) {
+	public CreateChallengeResponse createChallenge(Long userId, CreateChallengeRequest request) {
+		User user = findUser(userId);
 		validateStartDate(request.startDate());
 
 		// 1. ChallengeMinGoalPolicy 조회
@@ -97,7 +103,8 @@ public class ChallengeService {
 
 	/** 챌린지 취소 (팀장 전용, WAITING 상태에서만 가능) **/
 	@Transactional
-	public void cancelChallenge(User user, Long challengeId) {
+	public void cancelChallenge(Long userId, Long challengeId) {
+		User user = findUser(userId);
 		Challenge challenge = challengeRepository.findById(challengeId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
 
@@ -116,7 +123,8 @@ public class ChallengeService {
 	}
 
 	/** 챌린지 상세 조회 **/
-	public ChallengeDetailResponse getChallengeDetail(User user, Long challengeId) {
+	public ChallengeDetailResponse getChallengeDetail(Long userId, Long challengeId) {
+		User user = findUser(userId);
 		Challenge challenge = challengeRepository.findById(challengeId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
 
@@ -129,20 +137,158 @@ public class ChallengeService {
 	}
 
 	/** 팀/개인 절약 현황 통계 조회 (홈화면 스크롤 시) **/
-	// TODO: 인증(certification) 도메인 구현 후 로직 작성
-	public ChallengeStatsResponse getChallengeStats(User user, Long challengeId) {
+	public ChallengeStatsResponse getChallengeStats(Long userId, Long challengeId) {
+		User user = findUser(userId);
 		Challenge challenge = challengeRepository.findById(challengeId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
 
 		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
 			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
 
-		throw new UnsupportedOperationException("인증 도메인 구현 후 작업 예정");
+		List<TeamMembers> members = teamMembersRepository.findAllByTeam(challenge.getTeam());
+		int memberCount = members.size();
+
+		// 챌린지 시작일부터 오늘(또는 종료일)까지 경과일 수
+		LocalDate startDate = challenge.getStartDate().toLocalDate();
+		LocalDate today = LocalDate.now(BUSINESS_ZONE_ID);
+		LocalDate endDate = challenge.getEndDate().toLocalDate();
+		LocalDate effectiveEnd = today.isBefore(endDate) ? today : endDate;
+		int elapsedDays = (int) (effectiveEnd.toEpochDay() - startDate.toEpochDay()) + 1;
+		if (elapsedDays < 1) {
+			elapsedDays = 1;
+		}
+
+		// ── 팀 절약 현황 ──
+		// 인증평균: 팀원 1인당 주간 인증 횟수 평균 (소수점 버림 → 소수 첫째 자리까지)
+		Map<Long, Long> certCountMap = certificationRepository
+			.countCertPerUserByChallenge(challenge)
+			.stream()
+			.collect(Collectors.toMap(
+				row -> (Long) row[0],
+				row -> (Long) row[1]
+			));
+		long totalCertCount = certCountMap.values().stream().mapToLong(Long::longValue).sum();
+		int teamAvgCert = memberCount > 0
+			? (int) (totalCertCount / memberCount)
+			: 0;
+
+		// 참여율: 인증 1회 이상 한 팀원 수 / 전체 팀원 수 (소수점 버림)
+		long activeMemberCount = certCountMap.size();
+		int teamParticipationRate = memberCount > 0
+			? (int) (activeMemberCount * 100 / memberCount)
+			: 0;
+
+		// 연속활동: 모든 팀원이 인증한 연속 일수 (최근 기준 역산)
+		int teamConsecutiveDays = calculateTeamStreak(challenge, memberCount);
+
+		// ── 개인 절약 현황 ──
+		// 인증횟수: 본인 주간 총 인증 횟수
+		int personalCertCount = certCountMap.getOrDefault(userId, 0L).intValue();
+
+		// 참여율: 본인이 인증한 날 / 경과일 (소수점 버림)
+		List<LocalDate> personalCertDates = certificationRepository
+			.findDistinctCertDatesByUser(challenge, user);
+		int personalParticipationRate = (int) (personalCertDates.size() * 100 / elapsedDays);
+
+		// 연속활동: 본인 연속 인증일 (최근 기준 역산)
+		int personalConsecutiveDays = calculatePersonalStreak(personalCertDates, effectiveEnd);
+
+		return new ChallengeStatsResponse(
+			new ChallengeStatsResponse.TeamStats(teamAvgCert, teamParticipationRate, teamConsecutiveDays),
+			new ChallengeStatsResponse.PersonalStats(personalCertCount, personalParticipationRate, personalConsecutiveDays)
+		);
+	}
+
+	/** 팀 연속활동일 계산: 모든 팀원이 인증한 날이 연속으로 이어진 일수 (최근 기준 역산) */
+	private int calculateTeamStreak(Challenge challenge, int memberCount) {
+		List<Object[]> dailyUserCounts = certificationRepository
+			.countDistinctUsersByDateForChallenge(challenge);
+
+		// 모든 팀원이 인증한 날짜만 필터링
+		List<LocalDate> fullParticipationDates = dailyUserCounts.stream()
+			.filter(row -> ((Number) row[1]).intValue() >= memberCount)
+			.map(row -> (LocalDate) row[0])
+			.toList();
+
+		return calculateStreakFromEnd(fullParticipationDates);
+	}
+
+	/** 개인 연속활동일 계산: 최근 기준 연속 인증일 */
+	private int calculatePersonalStreak(List<LocalDate> certDates, LocalDate effectiveEnd) {
+		return calculateStreakFromEnd(certDates);
+	}
+
+	/** 날짜 리스트에서 마지막부터 역산하여 연속 일수 계산 */
+	private int calculateStreakFromEnd(List<LocalDate> sortedDates) {
+		if (sortedDates.isEmpty()) {
+			return 0;
+		}
+
+		int streak = 1;
+		for (int i = sortedDates.size() - 1; i > 0; i--) {
+			if (sortedDates.get(i).minusDays(1).equals(sortedDates.get(i - 1))) {
+				streak++;
+			} else {
+				break;
+			}
+		}
+		return streak;
+	}
+
+	/** 챌린지 팀원 절약 현황 조회 **/
+	public ChallengeMembersResponse getChallengeMembers(Long userId, Long challengeId) {
+		User user = findUser(userId);
+		Challenge challenge = challengeRepository.findById(challengeId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+
+		// 팀원 목록 조회
+		List<TeamMembers> members = teamMembersRepository.findAllByTeam(challenge.getTeam());
+
+		// 팀원별 절약 금액 SUM 조회
+		Map<Long, Integer> savedAmountMap = certificationRepository
+			.sumSavedAmountPerUserByChallenge(challenge)
+			.stream()
+			.collect(Collectors.toMap(
+				row -> (Long) row[0],
+				row -> ((Number) row[1]).intValue()
+			));
+
+		// 팀 전체 절약 금액
+		int totalSavedAmount = savedAmountMap.values().stream()
+			.mapToInt(Integer::intValue)
+			.sum();
+
+		// 팀원 정보 매핑
+		List<ChallengeMembersResponse.MemberSavingInfo> memberInfos = members.stream()
+			.map(member -> {
+				User memberUser = member.getUser();
+				return new ChallengeMembersResponse.MemberSavingInfo(
+					memberUser.getUserId(),
+					memberUser.getNickname(),
+					memberUser.getProfileImageUrl(),
+					savedAmountMap.getOrDefault(memberUser.getUserId(), 0),
+					memberUser.getUserId().equals(userId)
+				);
+			})
+			.toList();
+
+		return new ChallengeMembersResponse(
+			challenge.getChallengeId(),
+			challenge.getTitle(),
+			challenge.getStartDate().toString(),
+			totalSavedAmount,
+			challenge.getGoalAmount(),
+			memberInfos
+		);
 	}
 
 	/** 현재 유저의 활성된 챌린지 조회 (홈 화면) **/
 	//  로그인한 유저의 현재 활성 챌린지를 찾아 홈 화면 상태를 결정
-	public CurrentChallengeResponse getCurrentChallenge(User user) {
+	public CurrentChallengeResponse getCurrentChallenge(Long userId) {
+		User user = findUser(userId);
 
 		// 1. 이 유저가 속한 모든 팀 멤버십 조회 (유저가 과거에 참여했던 팀까지 전부 가져옴)
 		List<TeamMembers> memberships = teamMembersRepository.findAllByUser(user);
@@ -168,16 +314,30 @@ public class ChallengeService {
 				return CurrentChallengeResponse.waiting(challenge, membership.getRole(), membership.getTeam());
 			}
 
-			// 3-B. ONGOING이면 현재 주차 정보까지 포함해서 챌린지 정보 반환
+			// 3-B. ONGOING이면 현재 주차 정보 + 개인 절약 금액 포함해서 반환
 			ChallengeWeek currentWeek = challengeWeekRepository
 				.findByChallengeAndWeekNumber(challenge, 1)
 				.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-			return CurrentChallengeResponse.ongoing(challenge, membership.getTeam(), currentWeek);
+			// 개인 절약 금액 조회 (SUM)
+			int personalSavedAmount = certificationRepository
+				.sumSavedAmountPerUserByChallenge(challenge)
+				.stream()
+				.filter(row -> userId.equals(row[0]))
+				.map(row -> ((Number) row[1]).intValue())
+				.findFirst()
+				.orElse(0);
+
+			return CurrentChallengeResponse.ongoing(challenge, membership.getTeam(), currentWeek, personalSavedAmount);
 		}
 
 		// 4. 모든 팀을 확인했는데 활성 챌린지가 없으면 홈 화면에서 "대기 중인 챌린지 없음" 표시
 		return CurrentChallengeResponse.none();
+	}
+
+	private User findUser(Long userId) {
+		return userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	// 인원 수에 따른 팀 전체 목표 금액 최소 기준 검증
