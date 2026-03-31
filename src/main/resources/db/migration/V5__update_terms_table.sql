@@ -1,0 +1,7 @@
+-- terms 테이블 type ENUM 확장 및 content → url 컬럼 변경
+
+ALTER TABLE terms
+    MODIFY COLUMN type ENUM('SERVICE_TERMS', 'PRIVACY_POLICY', 'OPERATION_POLICY', 'MARKETING_CONSENT') NOT NULL;
+
+ALTER TABLE terms
+    CHANGE COLUMN content url TEXT NOT NULL;
