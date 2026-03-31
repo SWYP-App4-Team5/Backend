@@ -39,7 +39,6 @@ public class Terms extends BaseEntity {
 	@Column(name = "title", nullable = false, length = 200)
 	private String title;
 
-	@Column(name = "content", nullable = false,
-		columnDefinition = "TEXT")
-	private String content;
+	@Column(name = "url", nullable = false, columnDefinition = "TEXT")
+	private String url;
 }
