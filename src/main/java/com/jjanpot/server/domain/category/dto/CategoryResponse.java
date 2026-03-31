@@ -16,6 +16,9 @@ public record CategoryResponse(
 	@Schema(description = "카테고리 이름 (enum 상수명)", example = "CAFE_DESSERT", requiredMode = Schema.RequiredMode.REQUIRED)
 	String name,
 
+	@Schema(description = "카테고리 한글 표시명", example = "카페/디저트", requiredMode = Schema.RequiredMode.REQUIRED)
+	String displayName,
+
 	@Schema(
 		description = "카테고리 아이콘 URL",
 		example = "https://example.com/icon.png",
@@ -35,6 +38,7 @@ public record CategoryResponse(
 		return new CategoryResponse(
 			category.getCategoryId(),
 			category.getName().name(),
+			category.getName().getDisplayName(),
 			category.getIconUrl(),
 			options.stream()
 				.map(CategoryAmountOption::getAmount)
