@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/terms")
+@RequestMapping("/api/terms/v1")
 public class TermsController implements TermsControllerDocs {
 
 	private final TermsService termsService;

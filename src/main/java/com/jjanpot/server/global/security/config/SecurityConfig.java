@@ -65,7 +65,8 @@ public class SecurityConfig {
 				.requestMatchers(
 					"/api/auth/v1/login/**",
 					"/api/auth/v1/refresh",
-					"/api/auth/v1/dev-login"
+					"/api/auth/v1/dev-login",
+						"/api/terms/v1"
 				).permitAll()
 				.anyRequest().authenticated());
 		return http.build();
