@@ -123,7 +123,7 @@ public class UserService {
 	public NotificationResponse getNotification(Long userId) {
 		User user = getUserByUserId(userId);
 		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
 		return NotificationResponse.of(user, agreement);
 	}
 
@@ -133,7 +133,7 @@ public class UserService {
 		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled());
 
 		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
 		agreement.updateMarketingConsent(request.marketingConsent());
 	}
 }
