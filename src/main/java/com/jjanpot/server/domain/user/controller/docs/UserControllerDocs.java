@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.user.controller.docs;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.jjanpot.server.domain.user.dto.request.InviteCodeRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
@@ -21,7 +23,7 @@ public interface UserControllerDocs {
 		summary = "약관 동의",
 		description = """
 			온보딩 ① 단계: 필수 약관에 동의합니다.
-
+			
 			- `ageVerified`, `termsOfServiceAgreed`, `privacyPolicyAgreed`는 모두 `true` 필수
 			- `marketingConsent`는 선택이며, 미입력 시 `false`로 처리
 			- 이미 약관 동의를 완료한 사용자는 중복 요청 시 400 에러
@@ -37,7 +39,7 @@ public interface UserControllerDocs {
 		summary = "프로필 생성",
 		description = """
 			온보딩 ② 단계: 사용자 프로필을 생성합니다.
-
+			
 			- `nickname` (필수): 최대 10자
 			- `birthDate` (필수): yyyy-MM-dd 형식 (예: 2000-01-15)
 			- `profileImageUrl` (선택): 프로필 이미지 URL
@@ -46,6 +48,7 @@ public interface UserControllerDocs {
 	@ApiResponse(responseCode = "200", description = "프로필 생성 성공")
 	SuccessResponse<ProfileCreateResponse> onboardCreateProfile(
 		ProfileCreateRequest request,
+		@Parameter(description = "인증 이미지 (선택, 최대 10MB, JPEG/PNG/WEBP)") MultipartFile image,
 		@Parameter(hidden = true) Long userId
 	);
 
@@ -53,7 +56,7 @@ public interface UserControllerDocs {
 		summary = "초대코드 입력",
 		description = """
 			온보딩 ③ 단계: 초대코드를 입력하여 팀에 참여합니다. (팀 참여 시에만 호출)
-
+			
 			- `inviteCode`: 6자리 (혼동 문자 O/0/I/1/L 제외)
 			- 대기 중(WAITING) 상태의 챌린지가 있는 팀에만 참여 가능
 			- 이미 팀원이거나 정원 초과 시 400 에러

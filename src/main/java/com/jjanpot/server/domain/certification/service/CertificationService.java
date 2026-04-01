@@ -1,17 +1,12 @@
 package com.jjanpot.server.domain.certification.service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.category.entity.Category;
@@ -32,9 +27,9 @@ import com.jjanpot.server.domain.challenge.repository.ChallengeWeekRepository;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.repository.UserRepository;
+import com.jjanpot.server.global.common.service.ImageUploadService;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
-import com.jjanpot.server.global.infra.storage.FileUploader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +42,7 @@ public class CertificationService {
 
 	private static final int DAILY_CERT_LIMIT = 3;
 	private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Seoul");
-	private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+	private static final String CERTIFICATION_FILE_NAME = "certification/";
 
 	private final UserRepository userRepository;
 	private final ChallengeRepository challengeRepository;
@@ -56,7 +51,7 @@ public class CertificationService {
 	private final TeamMembersRepository teamMembersRepository;
 	private final CertificationRepository certificationRepository;
 	private final CertificationLikeRepository certificationLikeRepository;
-	private final FileUploader fileUploader;
+	private final ImageUploadService imageUploadService;
 
 	/** 인증 생성 **/
 	@Transactional
@@ -111,10 +106,7 @@ public class CertificationService {
 			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
 		// 이미지 업로드 (트랜잭션 롤백 시 업로드된 이미지 정리)
-		String imageUrl = uploadImage(image);
-		if (imageUrl != null) {
-			deleteImageOnRollback(imageUrl);
-		}
+		String imageUrl = imageUploadService.upload(image, CERTIFICATION_FILE_NAME);
 
 		// 인증 저장
 		Category category = challengeCategory.getCategory();
@@ -215,10 +207,9 @@ public class CertificationService {
 		String imageUrl = certification.getImageUrl();
 		if (image != null && !image.isEmpty()) {
 			String oldImageUrl = imageUrl;
-			imageUrl = uploadImage(image);
-			deleteImageOnRollback(imageUrl);
+			imageUrl = imageUploadService.upload(image, CERTIFICATION_FILE_NAME);
 			if (oldImageUrl != null) {
-				deleteImageAfterCommit(oldImageUrl);
+				imageUploadService.deleteImageAfterCommit(oldImageUrl);
 			}
 		}
 
@@ -260,60 +251,11 @@ public class CertificationService {
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 
 		// S3 이미지는 커밋 후 삭제
-		if (certification.getImageUrl() != null) {
-			deleteImageAfterCommit(certification.getImageUrl());
-		}
+		imageUploadService.deleteImageAfterCommit(certification.getImageUrl());
 
 		// 좋아요 삭제 후 인증 삭제
 		certificationLikeRepository.deleteByCertification(certification);
 		certificationRepository.delete(certification);
-	}
-
-	/** 트랜잭션 커밋 후 S3 이미지 삭제 (삭제 실패해도 DB에 영향 없음) */
-	private void deleteImageAfterCommit(String imageUrl) {
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				try {
-					fileUploader.deleteImage(imageUrl);
-				} catch (Exception e) {
-					log.warn("커밋 후 S3 이미지 삭제 실패 (고아 파일 발생 가능): {}", imageUrl, e);
-				}
-			}
-		});
-	}
-
-	/** 트랜잭션 롤백 시 업로드된 S3 이미지 정리 */
-	private void deleteImageOnRollback(String imageUrl) {
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCompletion(int status) {
-				if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
-					try {
-						fileUploader.deleteImage(imageUrl);
-					} catch (Exception e) {
-						log.warn("롤백 후 S3 이미지 정리 실패 (고아 파일 발생 가능): {}", imageUrl, e);
-					}
-				}
-			}
-		});
-	}
-
-	private String uploadImage(MultipartFile image) {
-		if (image == null || image.isEmpty()) {
-			return null;
-		}
-		String contentType = image.getContentType();
-		if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
-			throw new BusinessException(ErrorCode.IMAGE_INVALID_FORMAT);
-		}
-		try {
-			String extension = contentType.substring(contentType.indexOf('/') + 1);
-			String key = "certification/" + UUID.randomUUID() + "." + extension;
-			return fileUploader.uploadImage(key, image.getBytes(), contentType);
-		} catch (IOException e) {
-			throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
-		}
 	}
 
 	private int resolveSpendAmount(CreateCertificationRequest request) {
