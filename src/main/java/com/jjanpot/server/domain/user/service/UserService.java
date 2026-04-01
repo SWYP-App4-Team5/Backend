@@ -11,9 +11,11 @@ import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
+import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
+import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
@@ -116,5 +118,22 @@ public class UserService {
 	private User getUserByUserId(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public NotificationResponse getNotification(Long userId) {
+		User user = getUserByUserId(userId);
+		UserAgreement agreement = userAgreementRepository.findByUser(user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		return NotificationResponse.of(user, agreement);
+	}
+
+	@Transactional
+	public void updateNotification(Long userId, NotificationUpdateRequest request) {
+		User user = getUserByUserId(userId);
+		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled());
+
+		UserAgreement agreement = userAgreementRepository.findByUser(user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		agreement.updateMarketingConsent(request.marketingConsent());
 	}
 }
