@@ -49,16 +49,14 @@ jobs:
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.6
-      env:
-        TAG: ${{ steps.image_tag.outputs.tag }}
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        envs: TAG
+        command_timeout: 5m
         script: |
           cd /home/ubuntu
-          ./deploy.sh "$TAG"
+          ./deploy.sh "${{ steps.image_tag.outputs.tag }}"
 
     - name: Discord Success Notification
       if: success()
