@@ -57,12 +57,12 @@ public class User extends BaseEntity {
 	private String providerId;
 
 	@Builder.Default
-	@Column(name = "notification_all_enabled", nullable = false, columnDefinition = "TINYINT(1)")
-	private boolean notificationAllEnabled = false;
+	@Column(name = "notification_daily_enabled", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean notificationDailyEnabled = true;
 
 	@Builder.Default
-	@Column(name = "notification_personal_enabled", nullable = false, columnDefinition = "TINYINT(1)")
-	private boolean notificationPersonalEnabled = false;
+	@Column(name = "notification_weekly_enabled", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean notificationWeeklyEnabled = true;
 
 	@Builder.Default
 	@Column(name = "last_login_at", nullable = false)
@@ -100,6 +100,11 @@ public class User extends BaseEntity {
 		this.nickname = nickname;
 		this.birthDate = birthDate;
 		this.onboardingCompleted = true;
+	}
+
+	public void updateNotification(boolean daily, boolean weekly) {
+		this.notificationDailyEnabled = daily;
+		this.notificationWeeklyEnabled = weekly;
 	}
 
 }

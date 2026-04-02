@@ -9,12 +9,15 @@ import com.jjanpot.server.domain.auth.client.OAuthClient;
 import com.jjanpot.server.domain.auth.client.OAuthClientRegistry;
 import com.jjanpot.server.domain.auth.dto.LoginUserInfo;
 import com.jjanpot.server.domain.auth.dto.OAuthUser;
-import com.jjanpot.server.domain.auth.dto.request.RefreshResponse;
+import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
+import com.jjanpot.server.domain.auth.dto.response.RefreshResponse;
 import com.jjanpot.server.domain.auth.entity.RefreshToken;
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.domain.user.entity.User;
+import com.jjanpot.server.domain.user.entity.UserDevice;
+import com.jjanpot.server.domain.user.repository.UserDeviceRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.config.AuthProperties;
 import com.jjanpot.server.global.exception.BusinessException;
@@ -34,11 +37,12 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final AuthProperties authProperties;
+	private final UserDeviceRepository userDeviceRepository;
 
 	@Transactional
-	public LoginResponse login(Provider provider, String oauthAccessToken) {
+	public LoginResponse login(Provider provider, LoginRequest loginRequest) {
 		OAuthClient oauthClient = oAuthClientRegistry.getAuthClient(provider);
-		OAuthUser oauthUserInfo = oauthClient.getUserInfo(oauthAccessToken);
+		OAuthUser oauthUserInfo = oauthClient.getUserInfo(loginRequest.accessToken());
 
 		UserCreateResult userCreateResult = findOrCreateUser(provider, oauthUserInfo);
 		User user = userCreateResult.user();
@@ -46,17 +50,33 @@ public class AuthService {
 
 		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
+		String fcmToken = loginRequest.fcmToken();
 
 		LocalDateTime expiresAt = LocalDateTime.now().plusDays(authProperties.getRefreshTokenExpiresDays());
 
 		refreshTokenRepository.findByUser(user)
 			.ifPresentOrElse(
-				(token -> updateExistingToken(token, refreshToken, expiresAt)),
+				token -> updateExistingToken(token, refreshToken, expiresAt),
 				() -> createNewToken(user, refreshToken, expiresAt)
 			);
+
+		userDeviceRepository.findByFcmToken(fcmToken)
+			.ifPresentOrElse(
+				device -> {
+					if (device.getUser().getUserId().equals(user.getUserId())
+						&& device.getDeviceUuid().equals(loginRequest.deviceUuid())
+						&& device.isActive()) {
+						return;
+					}
+					device.update(user, loginRequest.deviceUuid(), fcmToken);
+				},
+				() -> userDeviceRepository.save(
+					UserDevice.create(user, loginRequest.deviceUuid(), fcmToken)
+				)
+			);
+
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
 		return LoginResponse.of(accessToken, refreshToken, userInfo, userCreateResult.isNewUser());
-
 	}
 
 	@Transactional

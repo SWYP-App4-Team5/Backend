@@ -2,6 +2,7 @@ package com.jjanpot.server.domain.user.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
@@ -10,14 +11,17 @@ import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
+import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
+import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
 import com.jjanpot.server.domain.user.repository.UserAgreementRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
+import com.jjanpot.server.global.common.service.ImageUploadService;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
 
@@ -30,18 +34,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
+	private static final String PROFILE_FILE_NAME = "profile/";
+	private static final String DEFAULT_PROFILE_IMAGE = "https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com/images/profile/defaultImg.png";
+
 	private final UserRepository userRepository;
 	private final TeamRepository teamRepository;
 	private final TeamMembersRepository teamMembersRepository;
 	private final ChallengeRepository challengeRepository;
 	private final UserAgreementRepository userAgreementRepository;
+	private final ImageUploadService imageUploadService;
 
+	//프로필 생성
 	@Transactional
-	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request, Long userId) {
+	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request,
+		MultipartFile image, Long userId) {
 		User user = getUserByUserId(userId);
 
+		String imageUrl = imageUploadService.upload(image, PROFILE_FILE_NAME);
+
+		if (imageUrl == null) {
+			imageUrl = DEFAULT_PROFILE_IMAGE;
+		}
+
 		user.updateOnboarding(
-			request.profileImageUrl(),
+			imageUrl,
 			request.nickname(),
 			request.birthDate()
 		);
@@ -58,28 +74,17 @@ public class UserService {
 	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
 		User user = getUserByUserId(userId);
 
-		// 1. 초대코드로 팀 조회
 		Team team = teamRepository.findByInviteCode(inviteCode)
 			.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND));
-
-		// 2. 해당 팀의 WAITING 챌린지 조회 (시작 전에만 참여 가능)
 		Challenge challenge = challengeRepository.findByTeamAndStatus(team, ChallengeStatus.WAITING)
 			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_JOINABLE));
-
-		// 3. 이미 팀원인지 확인
 		if (teamMembersRepository.existsByTeamAndUser(team, user)) {
 			throw new BusinessException(ErrorCode.ALREADY_TEAM_MEMBER);
 		}
-
-		// 4. 정원 초과 확인
 		if (team.getCurrentMemberCount() >= team.getMaxMemberCount()) {
 			throw new BusinessException(ErrorCode.TEAM_ALREADY_FULL);
 		}
-
-		// 5. 팀원으로 등록
 		teamMembersRepository.save(TeamMembers.ofMember(team, user));
-
-		// 6. 팀의 현재 인원 증가
 		team.increaseMemberCount();
 
 		return InviteCodeResponse.from(team, challenge);
@@ -113,5 +118,22 @@ public class UserService {
 	private User getUserByUserId(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public NotificationResponse getNotification(Long userId) {
+		User user = getUserByUserId(userId);
+		UserAgreement agreement = userAgreementRepository.findByUser(user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
+		return NotificationResponse.of(user, agreement);
+	}
+
+	@Transactional
+	public void updateNotification(Long userId, NotificationUpdateRequest request) {
+		User user = getUserByUserId(userId);
+		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled());
+
+		UserAgreement agreement = userAgreementRepository.findByUser(user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
+		agreement.updateMarketingConsent(request.marketingConsent());
 	}
 }

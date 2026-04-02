@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.request.RefreshRequest;
-import com.jjanpot.server.domain.auth.dto.request.RefreshResponse;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
+import com.jjanpot.server.domain.auth.dto.response.RefreshResponse;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
