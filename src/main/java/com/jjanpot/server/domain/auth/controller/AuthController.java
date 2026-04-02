@@ -13,6 +13,7 @@ import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
 import com.jjanpot.server.domain.auth.dto.response.RefreshResponse;
 import com.jjanpot.server.domain.auth.service.AuthService;
 import com.jjanpot.server.domain.user.entity.Provider;
+import com.jjanpot.server.global.annotation.CurrentUserId;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
 import jakarta.validation.Valid;
@@ -36,5 +37,11 @@ public class AuthController implements AuthControllerV1Docs {
 	public SuccessResponse<RefreshResponse> refresh(@Valid @RequestBody RefreshRequest request) {
 		RefreshResponse refreshResponse = authService.refreshToken(request.refreshToken());
 		return SuccessResponse.ok(refreshResponse);
+	}
+
+	@PostMapping("/logout")
+	public SuccessResponse<Void> logout(@CurrentUserId Long userId) {
+		authService.logout(userId);
+		return SuccessResponse.ok(null);
 	}
 }
