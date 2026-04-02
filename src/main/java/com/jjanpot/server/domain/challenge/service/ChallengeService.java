@@ -187,7 +187,15 @@ public class ChallengeService {
 
 		// 참여율: 본인이 인증한 날 / 경과일 (소수점 버림)
 		List<LocalDate> personalCertDates = certificationRepository
-			.findDistinctCertDatesByUser(challenge, user);
+			.findDistinctCertDatesByUser(challenge, user)
+			.stream()
+			.map(dateValue -> {
+				if (dateValue instanceof LocalDate ld) {
+					return ld;
+				}
+				return ((java.sql.Date) dateValue).toLocalDate();
+			})
+			.toList();
 		int personalParticipationRate = (int) (personalCertDates.size() * 100 / elapsedDays);
 
 		// 연속활동: 본인 연속 인증일 (최근 기준 역산)
@@ -207,7 +215,13 @@ public class ChallengeService {
 		// 모든 팀원이 인증한 날짜만 필터링
 		List<LocalDate> fullParticipationDates = dailyUserCounts.stream()
 			.filter(row -> ((Number) row[1]).intValue() >= memberCount)
-			.map(row -> (LocalDate) row[0])
+			.map(row -> {
+				Object dateValue = row[0];
+				if (dateValue instanceof LocalDate ld) {
+					return ld;
+				}
+				return ((java.sql.Date) dateValue).toLocalDate();
+			})
 			.toList();
 
 		return calculateStreakFromDate(fullParticipationDates, effectiveEnd);
