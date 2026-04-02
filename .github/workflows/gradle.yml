@@ -10,92 +10,93 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
-    - name: Set image tag
-      id: image_tag
-      run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Set image tag
+        id: image_tag
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-    - name: Set up JDK
-      uses: actions/setup-java@v5
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Build with Gradle
-      env:
-        SPRING_PROFILES_ACTIVE: prod
-      run: ./gradlew clean build test
+      - name: Build with Gradle
+        env:
+          SPRING_PROFILES_ACTIVE: prod
+        run: ./gradlew clean build test
 
-    - name: Login Docker Hub
-      uses: docker/login-action@v4
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build Docker image
-      run: |
-        docker build -t chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }} .
-        docker tag chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }} chaeyeon033/jjanpot:latest
+      - name: Build Docker image
+        run: |
+          docker build -t chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }} .
+          docker tag chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }} chaeyeon033/jjanpot:latest
 
-    - name: Push Docker image
-      run: |
-        docker push chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }}
-        docker push chaeyeon033/jjanpot:latest
+      - name: Push Docker image
+        run: |
+          docker push chaeyeon033/jjanpot:${{ steps.image_tag.outputs.tag }}
+          docker push chaeyeon033/jjanpot:latest
 
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.6
-      env:
-        TAG: ${{ steps.image_tag.outputs.tag }}
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        envs: TAG
-        script: |
-          cd /home/ubuntu
-          ./deploy.sh "$TAG"
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        env:
+          TAG: ${{ steps.image_tag.outputs.tag }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: TAG
+          command_timeout: 5m
+          script: |
+            cd /home/ubuntu
+            ./deploy.sh "$TAG"
 
-    - name: Discord Success Notification
-      if: success()
-      run: |
-        curl -H "Content-Type: application/json" \
-        -d '{
-          "content": "** 배포 성공**",
-          "embeds": [{
-            "title": "Deployment Success",
-            "description": "main 브랜치 배포 완료",
-            "color": 5763719,
-            "fields": [
-              {"name": "Repository", "value": "${{ github.repository }}"},
-              {"name": "Branch", "value": "${{ github.ref_name }}"},
-              {"name": "Commit", "value": "${{ github.sha }}"},
-              {"name": "Actor", "value": "${{ github.actor }}"}
-            ]
-          }]
-        }' \
-        ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Discord Success Notification
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "content": "** 배포 성공**",
+            "embeds": [{
+              "title": "Deployment Success",
+              "description": "main 브랜치 배포 완료",
+              "color": 5763719,
+              "fields": [
+                {"name": "Repository", "value": "${{ github.repository }}"},
+                {"name": "Branch", "value": "${{ github.ref_name }}"},
+                {"name": "Commit", "value": "${{ github.sha }}"},
+                {"name": "Actor", "value": "${{ github.actor }}"}
+              ]
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}
 
-    - name: Discord Failure Notification
-      if: failure()
-      run: |
-        curl -H "Content-Type: application/json" \
-        -d '{
-          "content": "** 배포 실패**",
-          "embeds": [{
-            "title": "Deployment Failed",
-            "description": "CI/CD 파이프라인 실패",
-            "color": 15548997,
-            "fields": [
-              {"name": "Repository", "value": "${{ github.repository }}"},
-              {"name": "Branch", "value": "${{ github.ref_name }}"},
-              {"name": "Commit", "value": "${{ github.sha }}"},
-              {"name": "Actor", "value": "${{ github.actor }}"}
-            ]
-          }]
-        }' \
-        ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Discord Failure Notification
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "content": "** 배포 실패**",
+            "embeds": [{
+              "title": "Deployment Failed",
+              "description": "CI/CD 파이프라인 실패",
+              "color": 15548997,
+              "fields": [
+                {"name": "Repository", "value": "${{ github.repository }}"},
+                {"name": "Branch", "value": "${{ github.ref_name }}"},
+                {"name": "Commit", "value": "${{ github.sha }}"},
+                {"name": "Actor", "value": "${{ github.actor }}"}
+              ]
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}
