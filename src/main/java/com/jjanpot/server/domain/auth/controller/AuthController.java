@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jjanpot.server.domain.auth.controller.docs.AuthControllerV1Docs;
 import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.request.RefreshRequest;
-import com.jjanpot.server.domain.auth.dto.request.RefreshResponse;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
+import com.jjanpot.server.domain.auth.dto.response.RefreshResponse;
 import com.jjanpot.server.domain.auth.service.AuthService;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
@@ -28,7 +28,7 @@ public class AuthController implements AuthControllerV1Docs {
 	@PostMapping("/login/{provider}")
 	public SuccessResponse<LoginResponse> login(@PathVariable String provider,
 		@Valid @RequestBody LoginRequest request) {
-		LoginResponse response = authService.login(Provider.from(provider), request.accessToken());
+		LoginResponse response = authService.login(Provider.from(provider), request);
 		return SuccessResponse.ok(response);
 	}
 

@@ -10,9 +10,6 @@ import jakarta.validation.constraints.Size;
 @Schema(description = "온보딩 프로필 생성 요청")
 public record ProfileCreateRequest(
 
-	@Schema(description = "프로필 이미지 URL", example = "https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com/images/certification/67fe91dc-966a-4131-9ffa-1278d9d9ead3.png", nullable = true)
-	String profileImageUrl,
-
 	@Schema(description = "닉네임", example = "절약왕", requiredMode = Schema.RequiredMode.REQUIRED)
 	@NotBlank(message = "닉네임은 필수입니다.")
 	@Size(max = 10, message = "닉네임은 10자 이하여야 합니다.")
