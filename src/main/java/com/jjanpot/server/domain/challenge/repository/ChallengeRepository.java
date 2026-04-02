@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
@@ -32,6 +33,15 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 	//  WAITING 또는 ONGOING 챌린지가 있는지 한 번에 확인할 때 활용
 	@Query("SELECT c FROM Challenge c WHERE c.team = :team AND c.status IN :statuses ORDER BY c.challengeId DESC")
 	Optional<Challenge> findFirstByTeamAndStatusIn(Team team, List<ChallengeStatus> statuses);
+
+	/** 특정 유저가 활성(WAITING/ONGOING) 챌린지에 참여 중인지 확인 */
+	@Query("SELECT COUNT(c) > 0 FROM Challenge c "
+		+ "JOIN TeamMembers tm ON tm.team = c.team "
+		+ "WHERE tm.user.userId = :userId AND c.status IN :statuses")
+	boolean existsActiveByUserIdAndStatusIn(
+		@Param("userId") Long userId,
+		@Param("statuses") List<ChallengeStatus> statuses
+	);
 
 	/** 특정 상태이면서 종료일이 지난 챌린지 전체 조회 */
 	// ChallengeScheduler에서 매일 자정

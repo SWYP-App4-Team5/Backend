@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Auth", description = "소셜 로그인 API")
+@Tag(name = "Auth", description = "소셜 로그인 / 인증 API")
 public interface AuthControllerV1Docs {
 
 	@Operation(
@@ -57,4 +57,16 @@ public interface AuthControllerV1Docs {
 		@Parameter(description = "refresh token")
 		@RequestBody RefreshRequest request
 	);
+
+	@Operation(
+		summary = "로그아웃",
+		description = """
+			로그아웃 API 입니다.
+
+			서버에 저장된 refresh token을 삭제하여
+			이후 토큰 재발급을 차단합니다.
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "로그아웃 성공")
+	SuccessResponse<Void> logout(Long userId);
 }

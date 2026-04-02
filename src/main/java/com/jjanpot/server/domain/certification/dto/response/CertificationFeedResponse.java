@@ -38,10 +38,13 @@ public record CertificationFeedResponse(
 	LocalDateTime createdAt,
 
 	@Schema(description = "좋아요 수", example = "0")
-	int likeCount
+	int likeCount,
+
+	@Schema(description = "본인 게시글 여부", example = "true")
+	boolean isMe
 ) {
 
-	public static CertificationFeedResponse from(Certification cert, int likeCount) {
+	public static CertificationFeedResponse from(Certification cert, int likeCount, Long currentUserId) {
 		return new CertificationFeedResponse(
 			cert.getCertificationId(),
 			cert.getSpendType().getDisplayName(),
@@ -51,7 +54,8 @@ public record CertificationFeedResponse(
 			cert.getSavedAmount(),
 			cert.getImageUrl(),
 			cert.getCreatedAt(),
-			likeCount
+			likeCount,
+			cert.getUser().getUserId().equals(currentUserId)
 		);
 	}
 }

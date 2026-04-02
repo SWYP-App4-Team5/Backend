@@ -1,6 +1,5 @@
 package com.jjanpot.server.domain.auth.controller;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Profile("local")
 @Tag(name = "dev-Auth", description = "로컬 개발용 인증 API")
 @RequiredArgsConstructor
 @RestController

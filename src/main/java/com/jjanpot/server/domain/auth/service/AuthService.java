@@ -97,6 +97,15 @@ public class AuthService {
 	}
 
 	@Transactional
+	public void logout(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		refreshTokenRepository.deleteByUser(user);
+		userDeviceRepository.findAllByUser(user)
+			.forEach(UserDevice::deactivate);
+	}
+
+	@Transactional
 	public RefreshResponse refreshToken(String token) {
 		RefreshToken refreshToken = findRefreshToken(token);
 		validateRefreshToken(refreshToken);

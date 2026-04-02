@@ -76,7 +76,15 @@ public class UserService {
 	// 초대코드 기반 팀 참여 (온보딩 흐름)
 	@Transactional
 	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
-		User user = getUserByUserId(userId);
+		// 비관적 락으로 동일 사용자 동시 요청 직렬화
+		User user = userRepository.findByIdForUpdate(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+		// 활성 챌린지 중복 참여 방지
+		if (challengeRepository.existsActiveByUserIdAndStatusIn(
+			userId, java.util.List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING))) {
+			throw new BusinessException(ErrorCode.CHALLENGE_ALREADY_ACTIVE);
+		}
 
 		Team team = teamRepository.findByInviteCode(inviteCode)
 			.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND));
