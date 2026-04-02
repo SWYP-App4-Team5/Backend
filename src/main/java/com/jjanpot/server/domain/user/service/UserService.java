@@ -74,6 +74,12 @@ public class UserService {
 	public InviteCodeResponse joinChallengeByInviteCode(String inviteCode, Long userId) {
 		User user = getUserByUserId(userId);
 
+		// 활성 챌린지 중복 참여 방지
+		if (challengeRepository.existsActiveByUserIdAndStatusIn(
+			userId, java.util.List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING))) {
+			throw new BusinessException(ErrorCode.CHALLENGE_ALREADY_ACTIVE);
+		}
+
 		Team team = teamRepository.findByInviteCode(inviteCode)
 			.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND));
 		Challenge challenge = challengeRepository.findByTeamAndStatus(team, ChallengeStatus.WAITING)

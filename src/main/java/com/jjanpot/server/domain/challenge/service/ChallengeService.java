@@ -71,6 +71,7 @@ public class ChallengeService {
 	@Transactional
 	public CreateChallengeResponse createChallenge(Long userId, CreateChallengeRequest request) {
 		User user = findUser(userId);
+		validateNoActiveChallenge(userId);
 		validateStartDate(request.startDate());
 
 		// 1. ChallengeMinGoalPolicy 조회
@@ -359,6 +360,14 @@ public class ChallengeService {
 	private User findUser(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	// 활성 챌린지 중복 참여 방지 검증
+	private void validateNoActiveChallenge(Long userId) {
+		if (challengeRepository.existsActiveByUserIdAndStatusIn(
+			userId, List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING))) {
+			throw new BusinessException(ErrorCode.CHALLENGE_ALREADY_ACTIVE);
+		}
 	}
 
 	// 인원 수에 따른 팀 전체 목표 금액 최소 기준 검증
