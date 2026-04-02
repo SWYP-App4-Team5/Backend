@@ -140,7 +140,8 @@ public class CertificationService {
 			.stream()
 			.map(cert -> CertificationFeedResponse.from(
 				cert,
-				certificationLikeRepository.countByCertificationAndDeletedAtIsNull(cert)
+				certificationLikeRepository.countByCertificationAndDeletedAtIsNull(cert),
+				userId
 			))
 			.toList();
 	}
