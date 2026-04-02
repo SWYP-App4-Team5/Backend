@@ -70,7 +70,8 @@ public class ChallengeService {
 	/** 챌린지 생성 **/
 	@Transactional
 	public CreateChallengeResponse createChallenge(Long userId, CreateChallengeRequest request) {
-		User user = findUser(userId);
+		User user = findUserForUpdate(userId);
+		validateNoActiveChallenge(userId);
 		validateStartDate(request.startDate());
 
 		// 1. ChallengeMinGoalPolicy 조회
@@ -187,7 +188,15 @@ public class ChallengeService {
 
 		// 참여율: 본인이 인증한 날 / 경과일 (소수점 버림)
 		List<LocalDate> personalCertDates = certificationRepository
-			.findDistinctCertDatesByUser(challenge, user);
+			.findDistinctCertDatesByUser(challenge, user)
+			.stream()
+			.map(dateValue -> {
+				if (dateValue instanceof LocalDate ld) {
+					return ld;
+				}
+				return ((java.sql.Date) dateValue).toLocalDate();
+			})
+			.toList();
 		int personalParticipationRate = (int) (personalCertDates.size() * 100 / elapsedDays);
 
 		// 연속활동: 본인 연속 인증일 (최근 기준 역산)
@@ -207,7 +216,13 @@ public class ChallengeService {
 		// 모든 팀원이 인증한 날짜만 필터링
 		List<LocalDate> fullParticipationDates = dailyUserCounts.stream()
 			.filter(row -> ((Number) row[1]).intValue() >= memberCount)
-			.map(row -> (LocalDate) row[0])
+			.map(row -> {
+				Object dateValue = row[0];
+				if (dateValue instanceof LocalDate ld) {
+					return ld;
+				}
+				return ((java.sql.Date) dateValue).toLocalDate();
+			})
 			.toList();
 
 		return calculateStreakFromDate(fullParticipationDates, effectiveEnd);
@@ -345,6 +360,19 @@ public class ChallengeService {
 	private User findUser(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	private User findUserForUpdate(Long userId) {
+		return userRepository.findByIdForUpdate(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	// 활성 챌린지 중복 참여 방지 검증
+	private void validateNoActiveChallenge(Long userId) {
+		if (challengeRepository.existsActiveByUserIdAndStatusIn(
+			userId, List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING))) {
+			throw new BusinessException(ErrorCode.CHALLENGE_ALREADY_ACTIVE);
+		}
 	}
 
 	// 인원 수에 따른 팀 전체 목표 금액 최소 기준 검증

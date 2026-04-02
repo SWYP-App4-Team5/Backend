@@ -3,6 +3,7 @@ package com.jjanpot.server.domain.challenge.scheduler;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,11 +40,13 @@ public class ChallengeScheduler {
 	private final TeamMembersRepository teamMembersRepository;
 	private final CertificationRepository certificationRepository;
 
+	private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Seoul");
+
 	/** 매일 자정: 시작일이 된 WAITING 챌린지를 ONGOING으로 전환 **/
 	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	@Transactional
 	public void transitionWaitingToOngoing() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now(BUSINESS_ZONE);
 
 		List<Challenge> waitingChallenges = challengeRepository.findAllByStatus(ChallengeStatus.WAITING);
 
@@ -60,7 +63,7 @@ public class ChallengeScheduler {
 	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	@Transactional
 	public void transitionOngoingToFinished() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now(BUSINESS_ZONE);
 
 		List<Challenge> toFinish = challengeRepository.findAllByStatusAndEndDateBefore(ChallengeStatus.ONGOING, now);
 

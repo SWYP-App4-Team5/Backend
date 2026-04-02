@@ -65,4 +65,8 @@ public class UserAgreement extends BaseEntity {
 			.build();
 	}
 
+	public void updateMarketingConsent(boolean marketingConsent) {
+		this.marketingConsent = marketingConsent;
+	}
+
 }

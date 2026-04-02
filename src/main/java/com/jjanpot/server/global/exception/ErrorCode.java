@@ -35,10 +35,12 @@ public enum ErrorCode {
 	// User Agreement
 	REQUIRED_AGREEMENT_MISSING(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),
 	ALREADY_AGREED_TERMS(HttpStatus.BAD_REQUEST, "이미 약관 동의를 완료한 사용자입니다 "),
+	USER_AGREEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 약관 동의 정보를 찾을 수 없습니다."),
 
 	// Challenge
 	CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "챌린지를 찾을 수 없습니다."),
 	CHALLENGE_NOT_JOINABLE(HttpStatus.BAD_REQUEST, "참여 가능한 챌린지가 없습니다. 이미 시작되었거나 종료된 챌린지입니다."),
+	CHALLENGE_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "이미 진행 중이거나 대기 중인 챌린지가 있습니다."),
 	CHALLENGE_CANCEL_FORBIDDEN(HttpStatus.BAD_REQUEST, "대기 중인 챌린지만 취소할 수 있습니다."),
 	CHALLENGE_LEADER_REQUIRED(HttpStatus.FORBIDDEN, "팀장만 수행할 수 있는 작업입니다."),
 	CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
