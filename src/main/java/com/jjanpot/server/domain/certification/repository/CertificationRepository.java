@@ -50,7 +50,7 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 		+ "FROM Certification c "
 		+ "WHERE c.challenge = :challenge AND c.user = :user "
 		+ "ORDER BY CAST(c.spentAt AS date)")
-	List<java.time.LocalDate> findDistinctCertDatesByUser(
+	List<Object> findDistinctCertDatesByUser(
 		@Param("challenge") Challenge challenge,
 		@Param("user") User user
 	);
