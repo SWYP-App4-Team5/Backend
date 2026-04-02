@@ -101,6 +101,8 @@ public class AuthService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 		refreshTokenRepository.deleteByUser(user);
+		userDeviceRepository.findAllByUser(user)
+			.forEach(UserDevice::deactivate);
 	}
 
 	@Transactional
