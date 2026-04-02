@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
+import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
+import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
@@ -14,6 +16,7 @@ import com.jjanpot.server.domain.team.repository.TeamRepository;
 import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
+import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
 import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
@@ -41,6 +44,7 @@ public class UserService {
 	private final TeamRepository teamRepository;
 	private final TeamMembersRepository teamMembersRepository;
 	private final ChallengeRepository challengeRepository;
+	private final ChallengeMemberResultRepository challengeMemberResultRepository;
 	private final UserAgreementRepository userAgreementRepository;
 	private final ImageUploadService imageUploadService;
 
@@ -118,6 +122,13 @@ public class UserService {
 	private User getUserByUserId(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public ChallengeStatsResponse getChallengeStats(Long userId) {
+		User user = getUserByUserId(userId);
+		ChallengeStatsDto dto = challengeMemberResultRepository.aggregateChallengeStatsByUser(
+			user, ChallengeStatus.COMPLETED, ChallengeStatus.FAILED);
+		return ChallengeStatsResponse.of(dto.getSuccessCount(), dto.getFailCount());
 	}
 
 	public NotificationResponse getNotification(Long userId) {
