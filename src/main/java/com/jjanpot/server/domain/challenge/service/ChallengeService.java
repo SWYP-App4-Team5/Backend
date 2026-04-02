@@ -70,7 +70,7 @@ public class ChallengeService {
 	/** 챌린지 생성 **/
 	@Transactional
 	public CreateChallengeResponse createChallenge(Long userId, CreateChallengeRequest request) {
-		User user = findUser(userId);
+		User user = findUserForUpdate(userId);
 		validateNoActiveChallenge(userId);
 		validateStartDate(request.startDate());
 
@@ -359,6 +359,11 @@ public class ChallengeService {
 
 	private User findUser(Long userId) {
 		return userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	private User findUserForUpdate(Long userId) {
+		return userRepository.findByIdForUpdate(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}
 
