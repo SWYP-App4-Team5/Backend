@@ -79,7 +79,7 @@ public class PushFcmSendService implements PushSendService {
 			.setToken(command.targetToken())
 			.setNotification(Notification.builder().setTitle(command.title()).setBody(command.body()).build())
 			.putData("type", command.type().getCode())
-			.putData("challengeId", String.valueOf(command.challengeId()))
+			.putData("relateId", command.challengeId() != null? String.valueOf(command.challengeId()) : null)
 			.build();
 	}
 }

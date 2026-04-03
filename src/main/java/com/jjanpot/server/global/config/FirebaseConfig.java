@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -24,7 +27,8 @@ public class FirebaseConfig {
 
 	@PostConstruct
 	public void init() throws IOException {
-		ClassPathResource resource = new ClassPathResource(keyPath);
+		ResourceLoader resourceLoader = new DefaultResourceLoader();
+		Resource resource = resourceLoader.getResource(keyPath);
 
 		try (InputStream serviceAccount = resource.getInputStream()) {
 			FirebaseOptions firebaseOptions = FirebaseOptions.builder()

@@ -1,6 +1,7 @@
 package com.jjanpot.server.domain.notification.controller;
 
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +27,11 @@ public class NotificationController implements NotificationFacade {
 		notificationTemplateService.markAsRead(userId, notificationId);
 
 		return SuccessResponse.created(null);
+	}
+
+	@Override
+	@GetMapping("/v99/test/push")
+	public void pushNotification() {
+
 	}
 }
