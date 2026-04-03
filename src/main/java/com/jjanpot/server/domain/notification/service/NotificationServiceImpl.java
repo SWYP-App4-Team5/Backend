@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.jjanpot.server.domain.notification.dto.FcmSendCommand;
@@ -121,10 +123,15 @@ public class NotificationServiceImpl implements NotificationService {
 
 		List<Notification> list = targets.stream()
 			.map(target -> {
+				if(!StringUtils.hasText(target.fcmToken())) {
+					return null;
+				}
 				NotificationTemplate selectedTemplate = templates.get(random.nextInt(templates.size()));
 				// PENDING 상태 생성
 				return Notification.create(target.userId(), target.fcmToken(), selectedTemplate, target.challengeId());
-			}).toList();
+			})
+			.filter(Objects::nonNull)
+			.toList();
 
 		return notificationManager.saveNotifications(list);
 	}

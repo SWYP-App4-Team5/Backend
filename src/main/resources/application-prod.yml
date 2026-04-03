@@ -23,7 +23,7 @@ cors:
 custom:
   encryption:
     key: ${ENCRYPT_KEY}
-fcm:
-  dry: false # 테스트 발송여부. true면 보내지 않음
-  partition-size: 500
-  key-path: ${KEY_PATH}
+  fcm:
+    dry: false # 테스트 발송여부. true면 보내지 않음
+    partition-size: 500
+    key-path: ${KEY_PATH}

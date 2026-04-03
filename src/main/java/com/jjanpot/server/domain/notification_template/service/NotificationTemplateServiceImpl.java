@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class NotificationTemplateTemplateServiceImpl implements NotificationTemplateService {
+public class NotificationTemplateServiceImpl implements NotificationTemplateService {
 	private final NotificationTemplateRepository notificationTemplateRepository;
 	private final UserRepository userRepository;
 

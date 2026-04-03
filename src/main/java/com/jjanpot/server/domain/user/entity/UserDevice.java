@@ -106,8 +106,8 @@ public class UserDevice extends BaseEntity {
 		}
 
 		@JsonCreator
-		public static NotificationTemplateType from(String code) {
-			return EnumUtils.fromCode(NotificationTemplateType.class, code);
+		public static DeviceType from(String code) {
+			return EnumUtils.fromCode(DeviceType.class, code);
 		}
 
 		@Override

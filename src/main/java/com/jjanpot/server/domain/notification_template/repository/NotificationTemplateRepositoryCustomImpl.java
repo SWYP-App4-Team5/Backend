@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Repository
-public class NotificationTemplateRepositoryCustomImpl implements NotificationRepositoryCustom {
+public class NotificationTemplateRepositoryCustomImpl implements NotificationTemplateRepositoryCustom {
 	private final JPAQueryFactory jpaQueryFactory;
 
 }
