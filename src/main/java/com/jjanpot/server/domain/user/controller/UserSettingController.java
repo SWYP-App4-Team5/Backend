@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(("/api/users/v1/onboarding"))
-public class UserController implements UserControllerDocs {
+public class UserSettingController implements UserControllerDocs {
 
 	private final UserService userService;
 

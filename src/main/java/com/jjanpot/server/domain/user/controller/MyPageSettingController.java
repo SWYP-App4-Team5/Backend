@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users/v1")
-public class MyPageController implements MyPageControllerDocs {
+public class MyPageSettingController implements MyPageControllerDocs {
 
 	private final UserService userService;
 

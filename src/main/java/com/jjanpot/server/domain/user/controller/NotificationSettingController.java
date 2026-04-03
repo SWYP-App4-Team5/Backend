@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users/v1/notifications")
-public class NotificationController implements NotificationControllerDocs {
+public class NotificationSettingController implements NotificationControllerDocs {
 
 	private final UserService userService;
 
