@@ -138,7 +138,7 @@
                 + '&response_type=code';
         }
 
-        // 카카오 리다이렉트 콜백 처리 (인가코드 → 토큰 교환)
+        // 카카오 리다이렉트 콜백 처리 (인가코드를 백엔드로 전달)
         async function handleKakaoCallback() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
@@ -152,50 +152,18 @@
             const fcmToken = localStorage.getItem('dev_fcmToken') || '';
 
             updateStep(1, 'done');
-            updateStep(2, 'active');
-            showStatus('카카오 인가코드 수신. 토큰 교환 중...', false);
+            updateStep(2, 'done');
+            updateStep(3, 'active');
+            showStatus('카카오 인가코드 수신. 백엔드 로그인 요청 중...', false);
 
             try {
-                // 인가코드로 카카오 accessToken 교환
-                const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        grant_type: 'authorization_code',
-                        client_id: REST_API_KEY,
-                        client_secret: 'I0mUd8BH5xr5Lp4dVc5y5LUVYYsAsjCs',
-                        redirect_uri: REDIRECT_URI,
-                        code: code
-                    })
-                });
-
-                const tokenData = await tokenResponse.json();
-
-                if (!tokenResponse.ok || !tokenData.access_token) {
-                    showStatus('카카오 토큰 교환 실패: ' + (tokenData.error_description || ''), true);
-                    return;
-                }
-
-                updateStep(2, 'done');
-                updateStep(3, 'active');
-                showStatus('카카오 로그인 성공. 백엔드 로그인 요청 중...', false);
-
-                backendLogin(tokenData.access_token, deviceUuid, fcmToken);
-            } catch (err) {
-                showStatus('카카오 토큰 교환 실패: ' + err.message, true);
-            }
-        }
-
-        // 페이지 로드 시 콜백 확인
-        window.addEventListener('DOMContentLoaded', handleKakaoCallback);
-
-        async function backendLogin(kakaoAccessToken, deviceUuid, fcmToken) {
-            try {
-                const response = await fetch(API_BASE + '/api/auth/v1/login/kakao', {
+                // 인가코드를 백엔드로 전달 (토큰 교환은 서버에서 처리)
+                const response = await fetch(API_BASE + '/api/auth/v1/login/kakao/code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        accessToken: kakaoAccessToken,
+                        code: code,
+                        redirectUri: REDIRECT_URI,
                         deviceUuid: deviceUuid,
                         fcmToken: fcmToken
                     })
@@ -205,14 +173,13 @@
 
                 if (!response.ok) {
                     updateStep(3, 'active');
-                    showStatus('백엔드 로그인 실패: ' + (data.message || response.status), true);
+                    showStatus('로그인 실패: ' + (data.message || response.status), true);
                     return;
                 }
 
                 updateStep(3, 'done');
                 showStatus('로그인 + 디바이스 등록 완료!', false);
 
-                // 결과 표시
                 const result = data.data;
                 document.getElementById('resUserId').textContent = result.user?.userId || '-';
                 document.getElementById('resNickname').textContent = result.user?.nickname || '-';
@@ -220,12 +187,14 @@
                 document.getElementById('resAccessToken').textContent = result.accessToken || '-';
                 document.getElementById('resRefreshToken').textContent = result.refreshToken || '-';
                 document.getElementById('result').style.display = 'block';
-
             } catch (err) {
                 updateStep(3, 'active');
                 showStatus('요청 실패: ' + err.message, true);
             }
         }
+
+        // 페이지 로드 시 콜백 확인
+        window.addEventListener('DOMContentLoaded', handleKakaoCallback);
 
         function copyToken() {
             const token = document.getElementById('resAccessToken').textContent;

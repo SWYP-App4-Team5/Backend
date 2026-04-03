@@ -23,6 +23,9 @@ spring:
 oauth:
   kakao:
     user-info-url: https://kapi.kakao.com/v2/user/me
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    token-url: https://kauth.kakao.com/oauth/token
   google:
     user-info-url: https://www.googleapis.com/oauth2/v2/userinfo
 jwt:
