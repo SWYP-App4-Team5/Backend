@@ -6,10 +6,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 @ActiveProfiles("test")
 @SpringBootTest
 class ServerApplicationTests {
+
+	@MockitoBean
+	private FirebaseMessaging firebaseMessaging;
 
 	@MockitoBean
 	private FirebaseApp firebaseApp;
