@@ -1,18 +1,26 @@
 package com.jjanpot.server.domain.user.dto.response;
 
 import com.jjanpot.server.domain.user.entity.User;
-import com.jjanpot.server.domain.user.entity.UserAgreement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "알림 설정 조회 응답")
 public record NotificationResponse(
+
+	@Schema(description = "1일 1회 미인증 알림 활성화 여부", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
 	boolean dailyEnabled,
+
+	@Schema(description = "주간 미인증 알림 활성화 여부", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
 	boolean weeklyEnabled,
+
+	@Schema(description = "마케팅 수신 동의 여부", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
 	boolean marketingConsent
 ) {
-	public static NotificationResponse of(User user, UserAgreement agreement) {
+	public static NotificationResponse of(User user) {
 		return new NotificationResponse(
 			user.isNotificationDailyEnabled(),
 			user.isNotificationWeeklyEnabled(),
-			agreement.isMarketingConsent()
+			user.isMarketingConsentEnabled()
 		);
 	}
 }

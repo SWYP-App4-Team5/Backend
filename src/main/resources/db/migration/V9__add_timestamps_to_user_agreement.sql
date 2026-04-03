@@ -1,0 +1,3 @@
+ALTER TABLE user_agreement
+    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
+    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();

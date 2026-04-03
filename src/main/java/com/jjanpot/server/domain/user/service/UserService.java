@@ -113,16 +113,17 @@ public class UserService {
 			throw new BusinessException(ErrorCode.REQUIRED_AGREEMENT_MISSING);
 		}
 
-		//약관 동의 여부 확인
 		if (userAgreementRepository.existsByUser(user)) {
 			throw new BusinessException(ErrorCode.ALREADY_AGREED_TERMS);
 		}
+
+		// 마케팅 동의 users 테이블에 저장
+		user.updateMarketingConsent(Boolean.TRUE.equals(request.marketingConsent()));
 
 		userAgreementRepository.save(UserAgreement.from(
 			request.ageVerified(),
 			request.termsOfServiceAgreed(),
 			request.privacyPolicyAgreed(),
-			Boolean.TRUE.equals(request.marketingConsent()),
 			user
 		));
 	}
@@ -141,18 +142,12 @@ public class UserService {
 
 	public NotificationResponse getNotification(Long userId) {
 		User user = getUserByUserId(userId);
-		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
-		return NotificationResponse.of(user, agreement);
+		return NotificationResponse.of(user);
 	}
 
 	@Transactional
 	public void updateNotification(Long userId, NotificationUpdateRequest request) {
 		User user = getUserByUserId(userId);
-		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled());
-
-		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
-		agreement.updateMarketingConsent(request.marketingConsent());
+		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled(), request.marketingConsent());
 	}
 }

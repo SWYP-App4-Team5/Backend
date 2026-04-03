@@ -49,24 +49,14 @@ public class UserAgreement extends BaseEntity {
 	@Column(name = "privacy_policy_agreed", nullable = false, columnDefinition = "TINYINT(1)")
 	private boolean privacyPolicyAgreed = false;
 
-	//마케팅수신 동의
-	@Builder.Default
-	@Column(name = "marketing_consent", nullable = false, columnDefinition = "TINYINT(1)")
-	private boolean marketingConsent = false;
-
 	public static UserAgreement from(boolean ageVerified, boolean termsOfServiceAgreed, boolean privacyPolicyAgreed,
-		boolean marketingConsent, User user) {
+		User user) {
 		return UserAgreement.builder()
 			.ageVerified(ageVerified)
 			.termsOfServiceAgreed(termsOfServiceAgreed)
 			.privacyPolicyAgreed(privacyPolicyAgreed)
-			.marketingConsent(marketingConsent)
 			.user(user)
 			.build();
-	}
-
-	public void updateMarketingConsent(boolean marketingConsent) {
-		this.marketingConsent = marketingConsent;
 	}
 
 }
