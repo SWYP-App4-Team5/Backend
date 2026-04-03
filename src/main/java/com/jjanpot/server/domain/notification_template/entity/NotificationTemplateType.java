@@ -12,7 +12,7 @@ public enum NotificationTemplateType implements CodeEnum {
 	ENCOURAGE("ENCOURAGE", "인증 독려"),
 	LIKE("LIKE", "좋아요"),
 	// GOAL_NEAR,      // 목표 금액 10% 이하 남음
-	GOAL_COMPLETE("GIAL_COMPLETE", "목표 달성")
+	GOAL_COMPLETE("GOAL_COMPLETE", "목표 달성")
 	;
 
 	private final String code;
