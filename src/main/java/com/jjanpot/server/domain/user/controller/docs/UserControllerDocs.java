@@ -41,7 +41,7 @@ public interface UserControllerDocs {
 			온보딩 ② 단계: 사용자 프로필을 생성합니다.
 			
 			- `nickname` (필수): 최대 10자
-			- `birthDate` (필수): yyyy-MM-dd 형식 (예: 2000-01-15)
+			- `birthDate` (선택): yyyy-MM-dd 형식 (예: 2000-01-15), 미입력 시 null
 			- `profileImageUrl` (선택): 프로필 이미지 URL
 			"""
 	)

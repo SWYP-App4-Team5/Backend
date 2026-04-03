@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jjanpot.server.domain.auth.controller.docs.AuthControllerV1Docs;
+import com.jjanpot.server.domain.auth.dto.request.CodeLoginRequest;
 import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.request.RefreshRequest;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
@@ -37,6 +38,13 @@ public class AuthController implements AuthControllerV1Docs {
 	public SuccessResponse<RefreshResponse> refresh(@Valid @RequestBody RefreshRequest request) {
 		RefreshResponse refreshResponse = authService.refreshToken(request.refreshToken());
 		return SuccessResponse.ok(refreshResponse);
+	}
+
+	@PostMapping("/login/kakao/code")
+	public SuccessResponse<LoginResponse> loginWithCode(@Valid @RequestBody CodeLoginRequest request) {
+		LoginResponse response = authService.loginWithCode(
+			request.code(), request.redirectUri(), request.deviceUuid(), request.fcmToken());
+		return SuccessResponse.ok(response);
 	}
 
 	@PostMapping("/logout")

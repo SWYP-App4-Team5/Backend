@@ -15,8 +15,7 @@ public record ProfileCreateRequest(
 	@Size(max = 10, message = "닉네임은 10자 이하여야 합니다.")
 	String nickname,
 
-	@Schema(description = "생년월일", example = "2000-01-15", requiredMode = Schema.RequiredMode.REQUIRED)
-	@NotNull(message = "생년월일은 필수입니다.")
+	@Schema(description = "생년월일 (선택)", example = "2000-01-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
 	LocalDate birthDate
 ) {
 }
