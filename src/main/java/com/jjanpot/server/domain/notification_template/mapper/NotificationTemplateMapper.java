@@ -23,10 +23,10 @@ public class NotificationTemplateMapper {
 			throw new BusinessException(ErrorCode.INVALID_INPUT, "알람 유형이 필요합니다.");
 		}
 		if (!StringUtils.hasText(request.title()) || request.title().length() < 2) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT, "알람 유형이 필요합니다.");
+			throw new BusinessException(ErrorCode.INVALID_INPUT, "알람 제목이 필요합니다.");
 		}
 		if (request.body() == null || request.body().length() < 2) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT, "알람 유형이 필요합니다.");
+			throw new BusinessException(ErrorCode.INVALID_INPUT, "알람 본문이 필요합니다.");
 		}
 	}
 }
