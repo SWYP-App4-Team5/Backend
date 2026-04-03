@@ -31,6 +31,8 @@ public enum ErrorCode {
 	// Template
 	TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "푸시 알림 템플릿을 찾을 수 없습니다."),
 	// Messaging
+	NOTIFICATION_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인가되지 않은 알림입니다."),
+	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
 	MESSAGE_REQUEST_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "메세지 발송에 실패했습니다."),
 	// User Agreement
 	REQUIRED_AGREEMENT_MISSING(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),

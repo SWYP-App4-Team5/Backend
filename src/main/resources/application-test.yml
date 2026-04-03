@@ -4,7 +4,6 @@ spring:
 
   datasource:
     url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=MySQL
-    driver-class-name: org.h2.Driver
     username: sa
     password:
 
@@ -27,3 +26,10 @@ app:
   version: test
   env: test
 
+custom:
+  encryption:
+    key: uR4y7M/9PzL2kXj5Wq8N6V3fH1s0G4b7D9z2L6x0K5m=
+fcm:
+  dry: false # 테스트 발송여부. true면 보내지 않음
+  partition-size: 500
+  key-path: ${KEY_PATH:jjanpot-fcm.json}
