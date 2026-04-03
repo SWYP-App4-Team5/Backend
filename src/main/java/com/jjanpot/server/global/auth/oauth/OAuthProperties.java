@@ -17,6 +17,9 @@ public class OAuthProperties {
 	@RequiredArgsConstructor
 	public static class Kakao {
 		private final String userInfourl;
+		private final String clientId;
+		private final String clientSecret;
+		private final String tokenUrl;
 	}
 
 	@Getter

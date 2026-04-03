@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>짠팟 - 개발용 로그인</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
+        label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+        input:focus { outline: none; border-color: #FEE500; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .btn-kakao { background: #FEE500; color: #000; }
+        .btn-kakao:hover { background: #FDD800; }
+        .btn-copy { background: #4A90D9; color: #fff; font-size: 13px; padding: 8px; }
+        .btn-copy:hover { background: #3A7BC8; }
+        .btn-disabled { background: #ccc; cursor: not-allowed; }
+        .result { margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px; display: none; }
+        .result-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .result-item { font-size: 13px; color: #555; margin-bottom: 6px; word-break: break-all; }
+        .result-item strong { color: #333; }
+        .token-box { background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 8px; font-size: 12px; font-family: monospace; word-break: break-all; margin: 4px 0 8px; max-height: 80px; overflow-y: auto; }
+        .status { padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .step { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+        .step-num { width: 24px; height: 24px; border-radius: 50%; background: #eee; color: #999; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+        .step-num.active { background: #FEE500; color: #000; }
+        .step-num.done { background: #28a745; color: #fff; }
+        .step-text { font-size: 13px; color: #999; }
+        .step-text.active { color: #333; font-weight: 500; }
+        .divider { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>짠팟 개발용 로그인</h1>
+        <p class="subtitle">카카오 로그인 + FCM 디바이스 등록 테스트</p>
+
+        <!-- Steps -->
+        <div class="section">
+            <div class="step">
+                <div class="step-num active" id="step1-num">1</div>
+                <span class="step-text active" id="step1-text">디바이스 정보 입력</span>
+            </div>
+            <div class="step">
+                <div class="step-num" id="step2-num">2</div>
+                <span class="step-text" id="step2-text">카카오 로그인</span>
+            </div>
+            <div class="step">
+                <div class="step-num" id="step3-num">3</div>
+                <span class="step-text" id="step3-text">백엔드 로그인 + 디바이스 등록</span>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Device Info -->
+        <div class="section">
+            <div class="section-title">디바이스 정보</div>
+            <label for="deviceUuid">Device UUID</label>
+            <input type="text" id="deviceUuid" placeholder="예: test-device-001">
+            <label for="fcmToken">FCM Token</label>
+            <input type="text" id="fcmToken" placeholder="FCM 토큰을 붙여넣어 주세요">
+        </div>
+
+        <!-- Kakao Login Button -->
+        <button class="btn btn-kakao" id="btnKakaoLogin" onclick="kakaoLogin()">
+            카카오 로그인
+        </button>
+
+        <!-- Status -->
+        <div class="status" id="status"></div>
+
+        <!-- Result -->
+        <div class="result" id="result">
+            <div class="result-title">로그인 결과</div>
+            <div class="result-item"><strong>User ID:</strong> <span id="resUserId"></span></div>
+            <div class="result-item"><strong>Nickname:</strong> <span id="resNickname"></span></div>
+            <div class="result-item"><strong>New User:</strong> <span id="resNewUser"></span></div>
+            <div class="result-item"><strong>Access Token:</strong></div>
+            <div class="token-box" id="resAccessToken"></div>
+            <button class="btn btn-copy" onclick="copyToken()">Access Token 복사</button>
+            <div class="result-item" style="margin-top: 8px;"><strong>Refresh Token:</strong></div>
+            <div class="token-box" id="resRefreshToken"></div>
+        </div>
+    </div>
+
+    <!-- Kakao SDK -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
+            crossorigin="anonymous"></script>
+    <script>
+        // Kakao SDK 초기화
+        Kakao.init('e35391200cc2cdca64471d9630c2ccbe');
+
+        // 백엔드 API 주소 (같은 서버)
+        const API_BASE = window.location.origin;
+        const REDIRECT_URI = window.location.origin + '/dev-login.html';
+        const REST_API_KEY = 'f761c366da1554ea6d6c9f35714272a8';
+
+        function showStatus(message, isError) {
+            const el = document.getElementById('status');
+            el.textContent = message;
+            el.className = 'status ' + (isError ? 'status-error' : 'status-success');
+            el.style.display = 'block';
+        }
+
+        function updateStep(stepNum, state) {
+            const num = document.getElementById('step' + stepNum + '-num');
+            const text = document.getElementById('step' + stepNum + '-text');
+            num.className = 'step-num ' + state;
+            text.className = 'step-text ' + (state === '' ? '' : 'active');
+        }
+
+        function kakaoLogin() {
+            const deviceUuid = document.getElementById('deviceUuid').value.trim();
+            const fcmToken = document.getElementById('fcmToken').value.trim();
+
+            if (!deviceUuid || !fcmToken) {
+                showStatus('Device UUID와 FCM Token을 모두 입력해 주세요.', true);
+                return;
+            }
+
+            // 디바이스 정보를 localStorage에 저장 (리다이렉트 후 복원)
+            localStorage.setItem('dev_deviceUuid', deviceUuid);
+            localStorage.setItem('dev_fcmToken', fcmToken);
+
+            // 카카오 로그인 리다이렉트 방식
+            window.location.href = 'https://kauth.kakao.com/oauth/authorize'
+                + '?client_id=' + REST_API_KEY
+                + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI)
+                + '&response_type=code';
+        }
+
+        // 카카오 리다이렉트 콜백 처리 (인가코드를 백엔드로 전달)
+        async function handleKakaoCallback() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+
+            if (!code) return;
+
+            // URL에서 code 파라미터 제거
+            window.history.replaceState({}, '', '/dev-login.html');
+
+            const deviceUuid = localStorage.getItem('dev_deviceUuid') || '';
+            const fcmToken = localStorage.getItem('dev_fcmToken') || '';
+
+            updateStep(1, 'done');
+            updateStep(2, 'done');
+            updateStep(3, 'active');
+            showStatus('카카오 인가코드 수신. 백엔드 로그인 요청 중...', false);
+
+            try {
+                // 인가코드를 백엔드로 전달 (토큰 교환은 서버에서 처리)
+                const response = await fetch(API_BASE + '/api/auth/v1/login/kakao/code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: code,
+                        redirectUri: REDIRECT_URI,
+                        deviceUuid: deviceUuid,
+                        fcmToken: fcmToken
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    updateStep(3, 'active');
+                    showStatus('로그인 실패: ' + (data.message || response.status), true);
+                    return;
+                }
+
+                updateStep(3, 'done');
+                showStatus('로그인 + 디바이스 등록 완료!', false);
+
+                const result = data.data;
+                document.getElementById('resUserId').textContent = result.user?.userId || '-';
+                document.getElementById('resNickname').textContent = result.user?.nickname || '-';
+                document.getElementById('resNewUser').textContent = result.newUser ? '예 (신규)' : '아니오 (기존)';
+                document.getElementById('resAccessToken').textContent = result.accessToken || '-';
+                document.getElementById('resRefreshToken').textContent = result.refreshToken || '-';
+                document.getElementById('result').style.display = 'block';
+            } catch (err) {
+                updateStep(3, 'active');
+                showStatus('요청 실패: ' + err.message, true);
+            }
+        }
+
+        // 페이지 로드 시 콜백 확인
+        window.addEventListener('DOMContentLoaded', handleKakaoCallback);
+
+        function copyToken() {
+            const token = document.getElementById('resAccessToken').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                showStatus('Access Token이 클립보드에 복사되었습니다.', false);
+            });
+        }
+    </script>
+</body>
+</html>

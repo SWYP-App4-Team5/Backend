@@ -19,6 +19,7 @@ import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserDevice;
 import com.jjanpot.server.domain.user.repository.UserDeviceRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
+import com.jjanpot.server.global.auth.oauth.OAuthProperties;
 import com.jjanpot.server.global.config.AuthProperties;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthService {
 
 	private final OAuthClientRegistry oAuthClientRegistry;
+	private final OAuthProperties oAuthProperties;
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -94,6 +96,58 @@ public class AuthService {
 					new DevOAuthUser(provider, providerId, nickname, email, profileImageUrl));
 				return issueLoginResponse(user, true);
 			});
+	}
+
+	@Transactional
+	public LoginResponse loginWithCode(String code, String redirectUri, String deviceUuid, String fcmToken) {
+		String kakaoAccessToken = exchangeCodeForToken(code, redirectUri);
+		return login(Provider.KAKAO, new LoginRequest(kakaoAccessToken, deviceUuid, fcmToken));
+	}
+
+	private String exchangeCodeForToken(String code, String redirectUri) {
+		try {
+			var tokenUrl = oAuthProperties.getKakao().getTokenUrl();
+			var clientId = oAuthProperties.getKakao().getClientId();
+			var clientSecret = oAuthProperties.getKakao().getClientSecret();
+
+			var params = new java.util.LinkedHashMap<String, String>();
+			params.put("grant_type", "authorization_code");
+			params.put("client_id", clientId);
+			params.put("redirect_uri", redirectUri);
+			params.put("code", code);
+			if (clientSecret != null && !clientSecret.isBlank()) {
+				params.put("client_secret", clientSecret);
+			}
+
+			String body = params.entrySet().stream()
+				.map(e -> java.net.URLEncoder.encode(e.getKey(), java.nio.charset.StandardCharsets.UTF_8)
+					+ "=" + java.net.URLEncoder.encode(e.getValue(), java.nio.charset.StandardCharsets.UTF_8))
+				.collect(java.util.stream.Collectors.joining("&"));
+
+			var request = java.net.http.HttpRequest.newBuilder()
+				.uri(java.net.URI.create(tokenUrl))
+				.header("Content-Type", "application/x-www-form-urlencoded")
+				.POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+				.build();
+
+			var response = java.net.http.HttpClient.newHttpClient()
+				.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+			var objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			var jsonNode = objectMapper.readTree(response.body());
+
+			if (jsonNode.has("access_token")) {
+				return jsonNode.get("access_token").asText();
+			}
+
+			log.error("카카오 토큰 교환 실패: {}", response.body());
+			throw new BusinessException(ErrorCode.KAKAO_API_CALL_FAILED);
+		} catch (BusinessException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("카카오 토큰 교환 중 오류", e);
+			throw new BusinessException(ErrorCode.KAKAO_API_CALL_FAILED);
+		}
 	}
 
 	@Transactional
