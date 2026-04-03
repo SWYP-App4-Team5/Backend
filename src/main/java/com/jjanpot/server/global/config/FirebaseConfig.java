@@ -19,7 +19,7 @@ import jakarta.annotation.PostConstruct;
 @Profile("!test")
 @Configuration
 public class FirebaseConfig {
-	@Value("${fcm.key-path}")
+	@Value("${fcm.key-path:jjanpot-fcm.json}")
 	private String keyPath;
 
 	@PostConstruct

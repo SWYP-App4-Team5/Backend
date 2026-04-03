@@ -32,4 +32,4 @@ custom:
 fcm:
   dry: false # 테스트 발송여부. true면 보내지 않음
   partition-size: 500
-  key-path: ${KEY_PATH:jjanpot-fcm.json}
+  key-path: jjanpot-fcm.json
