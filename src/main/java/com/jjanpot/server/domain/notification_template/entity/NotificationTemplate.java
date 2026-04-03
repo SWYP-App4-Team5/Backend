@@ -1,4 +1,4 @@
-package com.jjanpot.server.domain.notification.entity;
+package com.jjanpot.server.domain.notification_template.entity;
 
 import com.jjanpot.server.global.entity.BaseEntity;
 
@@ -40,11 +40,21 @@ public class NotificationTemplate extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", nullable = false)
-	private NotificationType type;
+	private NotificationTemplateType type;
 
 	@Column(name = "title", nullable = false, length = 100)
 	private String title;
 
 	@Column(name = "body", nullable = false, length = 200)
 	private String body;
+
+	// TODO 고도화에서 관리자가 관리할 수 있게 활성화 여부 컬럼 추가 필요
+
+	public static NotificationTemplate create(NotificationTemplateType type, String title, String body) {
+		return NotificationTemplate.builder()
+			.type(type)
+			.title(title)
+			.body(body)
+			.build();
+	}
 }
