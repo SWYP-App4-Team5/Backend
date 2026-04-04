@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jjanpot.server.domain.auth.dto.request.DevLoginRequest;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
 import com.jjanpot.server.domain.auth.service.AuthService;
+import com.jjanpot.server.domain.challenge.scheduler.ChallengeScheduler;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
@@ -24,6 +25,17 @@ import lombok.RequiredArgsConstructor;
 public class DevAuthController {
 
 	private final AuthService authService;
+	private final ChallengeScheduler challengeScheduler;
+
+	@Operation(summary = "스케줄러 수동 실행 (챌린지 상태 전환 + 결과 생성)",
+		description = "WAITING→ONGOING 전환과 ONGOING→COMPLETED/FAILED 전환을 즉시 실행합니다.")
+	@ApiResponse(responseCode = "200", description = "스케줄러 실행 완료")
+	@PostMapping("/run-scheduler")
+	public SuccessResponse<Void> runScheduler() {
+		challengeScheduler.transitionWaitingToOngoing();
+		challengeScheduler.transitionOngoingToFinished();
+		return SuccessResponse.ok(null);
+	}
 
 	@Operation(
 		summary = "로컬 개발용 로그인",

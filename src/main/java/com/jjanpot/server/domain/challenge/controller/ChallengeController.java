@@ -11,6 +11,7 @@ import com.jjanpot.server.domain.challenge.controller.docs.ChallengeControllerDo
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
@@ -75,6 +76,16 @@ public class ChallengeController implements ChallengeControllerDocs {
 		@PathVariable Long id
 	) {
 		ChallengeMembersResponse response = challengeService.getChallengeMembers(userId, id);
+		return SuccessResponse.ok(response);
+	}
+
+	// 챌린지 결과 조회 (종료된 챌린지)
+	@GetMapping("/{id}/result")
+	public SuccessResponse<ChallengeResultResponse> getChallengeResult(
+		@CurrentUserId Long userId,
+		@PathVariable Long id
+	) {
+		ChallengeResultResponse response = challengeService.getChallengeResult(userId, id);
 		return SuccessResponse.ok(response);
 	}
 

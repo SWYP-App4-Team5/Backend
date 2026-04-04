@@ -20,17 +20,22 @@ import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeCategory;
+import com.jjanpot.server.domain.challenge.entity.ChallengeMemberResult;
 import com.jjanpot.server.domain.challenge.entity.ChallengeMinGoalPolicy;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
+import com.jjanpot.server.domain.challenge.entity.ChallengeTeamResult;
 import com.jjanpot.server.domain.challenge.entity.ChallengeWeek;
 import com.jjanpot.server.domain.challenge.repository.ChallengeCategoryRepository;
+import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMinGoalPolicyRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
+import com.jjanpot.server.domain.challenge.repository.ChallengeTeamResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeWeekRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
@@ -66,6 +71,8 @@ public class ChallengeService {
 	private final ChallengeMinGoalPolicyRepository challengeMinGoalPolicyRepository;
 	private final CategoryRepository categoryRepository;
 	private final CertificationRepository certificationRepository;
+	private final ChallengeTeamResultRepository challengeTeamResultRepository;
+	private final ChallengeMemberResultRepository challengeMemberResultRepository;
 
 	/** 챌린지 생성 **/
 	@Transactional
@@ -121,6 +128,31 @@ public class ChallengeService {
 		}
 
 		challenge.updateStatus(ChallengeStatus.CANCELLED);
+	}
+
+	/** 챌린지 결과 조회 (COMPLETED/FAILED) **/
+	public ChallengeResultResponse getChallengeResult(Long userId, Long challengeId) {
+		User user = findUser(userId);
+		Challenge challenge = challengeRepository.findById(challengeId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
+
+		if (challenge.getStatus() != ChallengeStatus.COMPLETED
+			&& challenge.getStatus() != ChallengeStatus.FAILED) {
+			throw new BusinessException(ErrorCode.CHALLENGE_RESULT_NOT_READY);
+		}
+
+		ChallengeTeamResult teamResult = challengeTeamResultRepository.findByChallenge(challenge)
+			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+		ChallengeMemberResult memberResult = challengeMemberResultRepository.findByChallengeAndUser(challenge, user)
+			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+		List<ChallengeCategory> categories = challengeCategoryRepository.findAllByChallenge(challenge);
+
+		return ChallengeResultResponse.from(teamResult, memberResult, categories);
 	}
 
 	/** 챌린지 상세 조회 **/
