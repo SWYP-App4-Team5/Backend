@@ -67,7 +67,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			))
 			.collect(Collectors.toList());
 
-		log.error("[VALIDATION-ARGUMENT-ERROR] message={}", ex.getMessage(), ex);
+		log.error("[VALIDATION-ERROR] errors={}", errors);
 
 		return ResponseEntity
 			.status(ErrorCode.INVALID_INPUT.getStatus())
