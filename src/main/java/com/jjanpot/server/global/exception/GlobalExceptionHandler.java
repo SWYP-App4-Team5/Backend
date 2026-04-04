@@ -104,4 +104,3 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		MdcTraceId.putIfAbsent();
 	}
 }
-

@@ -8,6 +8,7 @@ import com.jjanpot.server.global.aop.MdcTraceId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -40,6 +41,7 @@ public class ErrorResponse {
 	}
 
 	@Getter
+	@ToString
 	public static class FieldError {
 
 		private final String field;
@@ -62,4 +64,3 @@ public class ErrorResponse {
 		}
 	}
 }
-
