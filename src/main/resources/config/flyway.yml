@@ -5,3 +5,4 @@ spring:
     baseline-version: 0
     clean-disabled: true
     repair-on-migrate: true
+    out-of-order: true
