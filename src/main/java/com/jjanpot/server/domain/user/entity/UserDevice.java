@@ -1,9 +1,16 @@
 package com.jjanpot.server.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.jjanpot.server.domain.notification_template.entity.NotificationTemplateType;
 import com.jjanpot.server.global.entity.BaseEntity;
+import com.jjanpot.server.global.util.CodeEnum;
+import com.jjanpot.server.global.util.EnumUtils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,12 +25,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
 	name = "user_device",
 	uniqueConstraints = {
@@ -38,12 +46,16 @@ public class UserDevice extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_device_id", nullable = false)
-	private Long userDeviceId;
+	@Column(name = "device_id")
+	private Long deviceId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "device_type")
+	private DeviceType deviceType;
 
 	@Column(name = "device_uuid", nullable = false, length = 100)
 	private String deviceUuid;
@@ -76,5 +88,36 @@ public class UserDevice extends BaseEntity {
 
 	public void deactivate() {
 		this.isActive = false;
+	}
+
+	@Getter
+	@RequiredArgsConstructor
+	public enum DeviceType implements CodeEnum {
+		IOS("IOS", "애플"),
+		ANDROID("ANDROID", "안드로이드"),
+		;
+
+		private final String code;
+		private final String description;
+
+		@JsonValue
+		public String toJson() {
+			return getCode();
+		}
+
+		@JsonCreator
+		public static DeviceType from(String code) {
+			return EnumUtils.fromCode(DeviceType.class, code);
+		}
+
+		@Override
+		public String getCode() {
+			return code;
+		}
+
+		@Override
+		public String getDescription() {
+			return description;
+		}
 	}
 }

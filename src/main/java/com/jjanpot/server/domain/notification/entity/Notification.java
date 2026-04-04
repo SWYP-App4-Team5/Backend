@@ -1,7 +1,10 @@
 package com.jjanpot.server.domain.notification.entity;
 
+import com.jjanpot.server.domain.notification_template.entity.NotificationTemplate;
+import com.jjanpot.server.domain.notification_template.entity.NotificationTemplateType;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.global.entity.BaseEntity;
+import com.jjanpot.server.global.util.CodeEnum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Table(name = "notification")
@@ -33,36 +37,78 @@ public class Notification extends BaseEntity {
 	@Column(name = "notification_id")
 	private Long notificationId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "type", nullable = false)
-	private NotificationType type;
+	@Column(name = "user_id")
+	private Long userId;
 
-	@Column(name = "title", length = 100)
-	private String title;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "template_id", nullable = false)
+	private NotificationTemplate notificationTemplate;
 
-	@Column(name = "body", nullable = false, length = 200)
-	private String body;
-
-	@Column(name = "is_read", nullable = false)
-	@Builder.Default
-	private Boolean isRead = false;
-
-	@Column(name = "is_sent", nullable = false)
-	@Builder.Default
-	private Boolean isSent = false;
+	@Column(name = "target_token", nullable = false, length = 3000)
+	private String targetToken;
 
 	@Column(name = "related_id")
 	private Long relatedId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	@Enumerated(EnumType.STRING)
+	private NotificationStatus status;
+
+	@Column(name = "title", nullable = false, length = 3000)
+	private String title;
+
+	@Column(name = "body", nullable = false, length = 3000)
+	private String body;
+
+	@Column(name = "is_read")
+	@Builder.Default
+	private Boolean isRead = false;
+
+	@Column(name = "message_id", nullable = false, length = 200)
+	private String messageId;
+
+	@Column(name = "fail_code")
+	private String failCode;
+
+	@Column(name = "fail_reason")
+	private String failReason;
+
+	public static Notification create(Long userId, String fcmToken, NotificationTemplate template, Long relatedId) {
+		return Notification.builder()
+			.userId(userId)
+			.targetToken(fcmToken)
+			.notificationTemplate(template)
+			.title(template.getTitle())
+			.body(template.getBody())
+			.status(NotificationStatus.PENDING)
+			.relatedId(relatedId)
+			.isRead(false)
+			.build();
+	}
 
 	public void markAsRead() {
 		this.isRead = true;
 	}
 
-	public void markAsSent() {
-		this.isSent = true;
+	public void success(String messageId) {
+		this.messageId = messageId;
+		this.status = NotificationStatus.SENT;
+	}
+
+	public void fail(String failCode, String reason) {
+		this.failCode = failCode;
+		this.failReason = reason;
+		this.status = NotificationStatus.FAILED;
+	}
+
+	@Getter
+	@RequiredArgsConstructor
+	public enum NotificationStatus implements CodeEnum {
+		PENDING("PENDING", "대기중"),
+		SENT("SENT", "발송 완료"),
+		FAILED("FAILED", "실패"),
+		;
+
+		private final String code;
+		private final String description;
 	}
 }
