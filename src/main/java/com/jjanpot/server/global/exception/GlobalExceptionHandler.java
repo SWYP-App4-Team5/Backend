@@ -67,7 +67,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			))
 			.collect(Collectors.toList());
 
-		log.error("[VALIDATION-ERROR] errors={}", errors);
+		log.error("[VALIDATION-ARGUMENT-ERROR] message={}", ex.getMessage(), ex);
 
 		return ResponseEntity
 			.status(ErrorCode.INVALID_INPUT.getStatus())
@@ -104,4 +104,3 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		MdcTraceId.putIfAbsent();
 	}
 }
-
