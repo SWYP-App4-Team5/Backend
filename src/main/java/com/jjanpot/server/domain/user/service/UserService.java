@@ -51,13 +51,11 @@ public class UserService {
 
 	//프로필 생성
 	@Transactional
-	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request,
-		MultipartFile image, Long userId) {
+	public ProfileCreateResponse onboardingCreateProfile(ProfileCreateRequest request, Long userId) {
 		User user = getUserByUserId(userId);
 
-		String imageUrl = imageUploadService.upload(image, PROFILE_FILE_NAME);
-
-		if (imageUrl == null) {
+		String imageUrl = request.profileImageUrl();
+		if (imageUrl == null || imageUrl.isBlank()) {
 			imageUrl = DEFAULT_PROFILE_IMAGE;
 		}
 

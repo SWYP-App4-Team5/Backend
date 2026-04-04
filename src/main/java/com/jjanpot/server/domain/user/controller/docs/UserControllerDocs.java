@@ -1,7 +1,5 @@
 package com.jjanpot.server.domain.user.controller.docs;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.jjanpot.server.domain.user.dto.request.InviteCodeRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
@@ -42,13 +40,12 @@ public interface UserControllerDocs {
 			
 			- `nickname` (필수): 최대 10자
 			- `birthDate` (선택): yyyy-MM-dd 형식 (예: 2000-01-15), 미입력 시 null
-			- `profileImageUrl` (선택): 프로필 이미지 URL
+			- `profileImageUrl` (선택): Presigned URL로 업로드한 이미지 URL, 미입력 시 기본 이미지
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "프로필 생성 성공")
 	SuccessResponse<ProfileCreateResponse> onboardCreateProfile(
 		ProfileCreateRequest request,
-		@Parameter(description = "인증 이미지 (선택, 최대 10MB, JPEG/PNG/WEBP)") MultipartFile image,
 		@Parameter(hidden = true) Long userId
 	);
 
