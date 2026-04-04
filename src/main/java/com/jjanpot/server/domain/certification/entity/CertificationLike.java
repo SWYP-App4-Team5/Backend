@@ -40,10 +40,6 @@ public class CertificationLike extends BaseEntity {
 	@Column(name = "like_id")
 	private Long likeId;
 
-	@Column(name = "created_at", nullable = false,
-		updatable = false)
-	private java.time.LocalDateTime createdAt;
-
 	@Column(name = "deleted_at")
 	private java.time.LocalDateTime deletedAt;
 
