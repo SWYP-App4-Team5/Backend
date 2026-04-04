@@ -16,6 +16,9 @@ public record ProfileCreateRequest(
 	String nickname,
 
 	@Schema(description = "생년월일 (선택)", example = "2000-01-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
-	LocalDate birthDate
+	LocalDate birthDate,
+
+	@Schema(description = "프로필 이미지 URL (Presigned URL로 업로드 후 전달, 미입력 시 기본 이미지)", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
+	String profileImageUrl
 ) {
 }

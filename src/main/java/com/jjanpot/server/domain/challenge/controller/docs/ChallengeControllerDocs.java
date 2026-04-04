@@ -3,6 +3,7 @@ package com.jjanpot.server.domain.challenge.controller.docs;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CreateChallengeResponse;
 import com.jjanpot.server.domain.challenge.dto.response.CurrentChallengeResponse;
@@ -101,6 +102,70 @@ public interface ChallengeControllerDocs {
 	)
 	@ApiResponse(responseCode = "200", description = "챌린지 취소 성공")
 	SuccessResponse<Void> cancelChallenge(
+		@Parameter(hidden = true) Long userId,
+		@Parameter(description = "챌린지 ID") Long id
+	);
+
+	@Operation(
+		summary = "챌린지 결과 조회",
+		description = """
+			종료된 챌린지(COMPLETED/FAILED)의 결과를 조회합니다.
+
+			- 해당 챌린지의 팀원만 조회할 수 있습니다.
+			- COMPLETED 또는 FAILED 상태의 챌린지만 조회 가능합니다.
+			- WAITING/ONGOING 상태에서 호출 시 400 에러 (CHALLENGE_RESULT_NOT_READY)
+
+			응답 필드:
+			- `isTeamSuccess`: 팀 목표 달성 여부 (true: 성공, false: 실패)
+			- `goalAmount`: 팀 전체 목표 금액
+			- `totalSavedAmount`: 팀 전체 절약 금액
+			- `achievementRate`: 달성률 (%, 정수)
+			- `categoryNames`: 챌린지 카테고리 이름 목록 (예: ["외식/배달"])
+			- `personalSavedAmount`: 요청 유저의 개인 절약 금액
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "챌린지 결과 조회 성공",
+		content = @Content(
+			schema = @Schema(implementation = ChallengeResultResponse.class),
+			examples = {
+				@ExampleObject(
+					name = "팀 성공",
+					value = """
+						{
+						  "status": 200,
+						  "data": {
+						    "isTeamSuccess": true,
+						    "goalAmount": 300000,
+						    "totalSavedAmount": 312500,
+						    "achievementRate": 104,
+						    "categoryNames": ["외식/배달"],
+						    "personalSavedAmount": 25000
+						  },
+						  "message": "요청 성공"
+						}
+						"""
+				),
+				@ExampleObject(
+					name = "팀 실패",
+					value = """
+						{
+						  "status": 200,
+						  "data": {
+						    "isTeamSuccess": false,
+						    "goalAmount": 200000,
+						    "totalSavedAmount": 9500,
+						    "achievementRate": 5,
+						    "categoryNames": ["외식/배달"],
+						    "personalSavedAmount": 9500
+						  },
+						  "message": "요청 성공"
+						}
+						"""
+				)
+			}
+		)
+	)
+	SuccessResponse<ChallengeResultResponse> getChallengeResult(
 		@Parameter(hidden = true) Long userId,
 		@Parameter(description = "챌린지 ID") Long id
 	);

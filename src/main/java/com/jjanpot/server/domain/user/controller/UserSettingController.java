@@ -3,9 +3,7 @@ package com.jjanpot.server.domain.user.controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.user.controller.docs.UserControllerDocs;
 import com.jjanpot.server.domain.user.dto.request.InviteCodeRequest;
@@ -30,10 +28,9 @@ public class UserSettingController implements UserControllerDocs {
 	@PostMapping("/profile")
 	public SuccessResponse<ProfileCreateResponse> onboardCreateProfile(
 		@Valid @RequestBody ProfileCreateRequest request,
-		@Valid @RequestPart(value = "image", required = false) MultipartFile image,
 		@CurrentUserId Long userId
 	) {
-		ProfileCreateResponse profileCreateResponse = userService.onboardingCreateProfile(request, image, userId);
+		ProfileCreateResponse profileCreateResponse = userService.onboardingCreateProfile(request, userId);
 		return SuccessResponse.ok(profileCreateResponse);
 	}
 
