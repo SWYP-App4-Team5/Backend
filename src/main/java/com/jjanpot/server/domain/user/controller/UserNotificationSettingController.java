@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jjanpot.server.domain.user.controller.docs.UserNotificationSettingControllerDocs;
-import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
-import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
+import com.jjanpot.server.domain.user.dto.request.NotificationSettingUpdateRequest;
+import com.jjanpot.server.domain.user.dto.response.NotificationSettingResponse;
 import com.jjanpot.server.domain.user.service.UserService;
 import com.jjanpot.server.global.annotation.CurrentUserId;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
@@ -23,13 +23,13 @@ public class UserNotificationSettingController implements UserNotificationSettin
 	private final UserService userService;
 
 	@GetMapping
-	public SuccessResponse<NotificationResponse> getNotification(@CurrentUserId Long userId) {
+	public SuccessResponse<NotificationSettingResponse> getNotification(@CurrentUserId Long userId) {
 		return SuccessResponse.ok(userService.getNotification(userId));
 	}
 
 	@PatchMapping
 	public SuccessResponse<Void> updateNotification(
-		@RequestBody NotificationUpdateRequest request,
+		@RequestBody NotificationSettingUpdateRequest request,
 		@CurrentUserId Long userId
 	) {
 		userService.updateNotification(userId, request);

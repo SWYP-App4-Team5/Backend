@@ -13,12 +13,12 @@ import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
-import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
+import com.jjanpot.server.domain.user.dto.request.NotificationSettingUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
-import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
+import com.jjanpot.server.domain.user.dto.response.NotificationSettingResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
@@ -140,13 +140,13 @@ public class UserService {
 		return ChallengeStatsResponse.of(dto.getSuccessCount(), dto.getFailCount());
 	}
 
-	public NotificationResponse getNotification(Long userId) {
+	public NotificationSettingResponse getNotification(Long userId) {
 		User user = getUserByUserId(userId);
-		return NotificationResponse.of(user);
+		return NotificationSettingResponse.of(user);
 	}
 
 	@Transactional
-	public void updateNotification(Long userId, NotificationUpdateRequest request) {
+	public void updateNotification(Long userId, NotificationSettingUpdateRequest request) {
 		User user = getUserByUserId(userId);
 		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled(), request.marketingConsent());
 	}

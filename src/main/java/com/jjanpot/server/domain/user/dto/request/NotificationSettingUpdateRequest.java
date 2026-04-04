@@ -3,7 +3,7 @@ package com.jjanpot.server.domain.user.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "알림 설정 수정 요청")
-public record NotificationUpdateRequest(
+public record NotificationSettingUpdateRequest(
 
 	@Schema(description = "1일 1회 미인증 알림 활성화 여부", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
 	boolean dailyEnabled,
