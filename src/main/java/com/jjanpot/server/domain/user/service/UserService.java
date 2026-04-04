@@ -20,6 +20,7 @@ import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
 import com.jjanpot.server.domain.user.dto.response.NotificationSettingResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
+import com.jjanpot.server.domain.user.dto.response.UserProfileResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
 import com.jjanpot.server.domain.user.repository.UserAgreementRepository;
@@ -131,6 +132,11 @@ public class UserService {
 	private User getUserByUserId(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public UserProfileResponse getProfile(Long userId) {
+		User user = getUserByUserId(userId);
+		return UserProfileResponse.from(user);
 	}
 
 	public ChallengeStatsResponse getChallengeStats(Long userId) {

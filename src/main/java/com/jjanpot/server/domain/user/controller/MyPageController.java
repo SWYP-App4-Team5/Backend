@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jjanpot.server.domain.user.controller.docs.MyPageControllerDocs;
 import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
+import com.jjanpot.server.domain.user.dto.response.UserProfileResponse;
 import com.jjanpot.server.domain.user.service.UserService;
 import com.jjanpot.server.global.annotation.CurrentUserId;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
@@ -15,12 +16,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users/v1")
-public class MyPageSettingController implements MyPageControllerDocs {
+public class MyPageController implements MyPageControllerDocs {
 
 	private final UserService userService;
 
 	@GetMapping("/challenge-stats")
 	public SuccessResponse<ChallengeStatsResponse> getChallengeStats(@CurrentUserId Long userId) {
 		return SuccessResponse.ok(userService.getChallengeStats(userId));
+	}
+
+	@GetMapping("/profile")
+	public SuccessResponse<UserProfileResponse> getProfile(@CurrentUserId Long userId) {
+		return SuccessResponse.ok(userService.getProfile(userId));
 	}
 }
