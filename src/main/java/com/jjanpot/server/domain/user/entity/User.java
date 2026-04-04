@@ -65,6 +65,10 @@ public class User extends BaseEntity {
 	private boolean notificationWeeklyEnabled = true;
 
 	@Builder.Default
+	@Column(name = "marketing_consent_enabled", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean marketingConsentEnabled = false;
+
+	@Builder.Default
 	@Column(name = "last_login_at", nullable = false)
 	private LocalDateTime lastLoginAt = LocalDateTime.now();
 
@@ -102,9 +106,14 @@ public class User extends BaseEntity {
 		this.onboardingCompleted = true;
 	}
 
-	public void updateNotification(boolean daily, boolean weekly) {
+	public void updateNotification(boolean daily, boolean weekly, boolean marketingConsent) {
 		this.notificationDailyEnabled = daily;
 		this.notificationWeeklyEnabled = weekly;
+		this.marketingConsentEnabled = marketingConsent;
+	}
+
+	public void updateMarketingConsent(boolean marketingConsent) {
+		this.marketingConsentEnabled = marketingConsent;
 	}
 
 }

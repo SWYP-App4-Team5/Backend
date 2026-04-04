@@ -13,12 +13,12 @@ import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
-import com.jjanpot.server.domain.user.dto.request.NotificationUpdateRequest;
+import com.jjanpot.server.domain.user.dto.request.NotificationSettingUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
-import com.jjanpot.server.domain.user.dto.response.NotificationResponse;
+import com.jjanpot.server.domain.user.dto.response.NotificationSettingResponse;
 import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
@@ -113,16 +113,17 @@ public class UserService {
 			throw new BusinessException(ErrorCode.REQUIRED_AGREEMENT_MISSING);
 		}
 
-		//약관 동의 여부 확인
 		if (userAgreementRepository.existsByUser(user)) {
 			throw new BusinessException(ErrorCode.ALREADY_AGREED_TERMS);
 		}
+
+		// 마케팅 동의 users 테이블에 저장
+		user.updateMarketingConsent(Boolean.TRUE.equals(request.marketingConsent()));
 
 		userAgreementRepository.save(UserAgreement.from(
 			request.ageVerified(),
 			request.termsOfServiceAgreed(),
 			request.privacyPolicyAgreed(),
-			Boolean.TRUE.equals(request.marketingConsent()),
 			user
 		));
 	}
@@ -139,20 +140,14 @@ public class UserService {
 		return ChallengeStatsResponse.of(dto.getSuccessCount(), dto.getFailCount());
 	}
 
-	public NotificationResponse getNotification(Long userId) {
+	public NotificationSettingResponse getNotification(Long userId) {
 		User user = getUserByUserId(userId);
-		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
-		return NotificationResponse.of(user, agreement);
+		return NotificationSettingResponse.of(user);
 	}
 
 	@Transactional
-	public void updateNotification(Long userId, NotificationUpdateRequest request) {
+	public void updateNotification(Long userId, NotificationSettingUpdateRequest request) {
 		User user = getUserByUserId(userId);
-		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled());
-
-		UserAgreement agreement = userAgreementRepository.findByUser(user)
-			.orElseThrow(() -> new BusinessException(ErrorCode.USER_AGREEMENT_NOT_FOUND));
-		agreement.updateMarketingConsent(request.marketingConsent());
+		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled(), request.marketingConsent());
 	}
 }
