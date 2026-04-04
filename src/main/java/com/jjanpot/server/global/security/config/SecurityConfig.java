@@ -67,6 +67,7 @@ public class SecurityConfig {
 					"/api/auth/v1/login/**",
 					"/api/auth/v1/refresh",
 					"/api/auth/v1/dev-login",
+					"/api/auth/v1/run-scheduler",
 						"/api/terms/v1"
 				).permitAll()
 				.anyRequest().authenticated());

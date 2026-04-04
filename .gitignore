@@ -6,6 +6,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 local.env
+src/main/resources/jjanpot-fcm.json
 
 ### STS ###
 .apt_generated
