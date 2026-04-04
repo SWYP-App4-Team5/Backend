@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
 import com.jjanpot.server.global.infra.storage.FileUploader;
+import com.jjanpot.server.global.infra.storage.FileUploader.PresignedUrlResult;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,16 @@ public class ImageUploadService {
 			deleteImageOnRollback(imgUrl);
 		}
 		return imgUrl;
+	}
+
+	// Presigned URL 발급
+	public PresignedUrlResult generatePresignedUrl(String directory, String contentType) {
+		if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+			throw new BusinessException(ErrorCode.IMAGE_INVALID_FORMAT);
+		}
+		String extension = contentType.substring(contentType.indexOf('/') + 1);
+		String key = directory + UUID.randomUUID() + "." + extension;
+		return fileUploader.generatePresignedUrl(key, contentType);
 	}
 
 	//이미지 삭제
