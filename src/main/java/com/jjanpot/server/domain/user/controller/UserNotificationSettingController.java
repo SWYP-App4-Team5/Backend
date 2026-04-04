@@ -13,6 +13,7 @@ import com.jjanpot.server.domain.user.service.UserService;
 import com.jjanpot.server.global.annotation.CurrentUserId;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class UserNotificationSettingController implements UserNotificationSettin
 
 	@PatchMapping
 	public SuccessResponse<Void> updateNotification(
-		@RequestBody NotificationSettingUpdateRequest request,
+		@Valid @RequestBody NotificationSettingUpdateRequest request,
 		@CurrentUserId Long userId
 	) {
 		userService.updateNotification(userId, request);
