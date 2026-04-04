@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
 
+    <!-- 로그 파일 저장 경로 (컨테이너 내부 기준) -->
+    <property name="LOG_ROOT" value="/app/logs" />
+
+    <!-- 콘솔 출력 패턴 -->
     <property name="CONSOLE_LOG_PATTERN"
               value="%d{HH:mm:ss.SSS} %highlight(%-5level) %magenta([%15.15thread]) %yellow([%X{traceId:-no-id}]) %cyan(%-40.40logger{39}) : %msg%n"/>
 
+    <!-- 파일 저장 패턴 (날짜 포함) -->
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- 콘솔 앱엔더 -->
     <appender class="ch.qos.logback.core.ConsoleAppender" name="SERVER_CONSOLE">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+    <!-- 일자별 폴더 + 시간대별 파일명 -->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/current_server.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_ROOT}/%d{yyyy-MM-dd, aux}/server_%d{yyyy-MM-dd_HH}.log</fileNamePattern>
+            <maxHistory>10</maxHistory> <!-- 10일간 보관 -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 3. 비동기 콘솔 앱엔더 (성능 최적화) -->
     <appender class="ch.qos.logback.classic.AsyncAppender" name="ASYNC_SERVER_CONSOLE">
         <appender-ref ref="SERVER_CONSOLE"/>
         <discardingThreshold>0</discardingThreshold>
@@ -46,6 +68,7 @@
         <logger level="WARN" name="org.hibernate.SQL"/>
         <root level="INFO">
             <appender-ref ref="ASYNC_SERVER_CONSOLE"/>
+            <appender-ref ref="ROLLING_FILE"/>
         </root>
     </springProfile>
 
