@@ -42,7 +42,8 @@ public class SecurityConfig {
 				"/v3/api-docs",
 				"/v3/api-docs/**",
 				"/v3/api-docs.yaml",
-				"/dev-login.html"
+				"/dev-login.html",
+				"/api/notification/v99/test/**"
 			)
 			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 			.csrf(csrf -> csrf.disable())
