@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jjanpot.server.domain.challenge.controller.docs.ChallengeControllerDocs;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
+import java.util.List;
+
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeHistoryResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
@@ -77,6 +80,14 @@ public class ChallengeController implements ChallengeControllerDocs {
 	) {
 		ChallengeMembersResponse response = challengeService.getChallengeMembers(userId, id);
 		return SuccessResponse.ok(response);
+	}
+
+	// 챌린지 이력 목록 조회 (완료/실패)
+	@GetMapping("/history")
+	public SuccessResponse<List<ChallengeHistoryResponse>> getChallengeHistory(
+		@CurrentUserId Long userId
+	) {
+		return SuccessResponse.ok(challengeService.getChallengeHistory(userId));
 	}
 
 	// 챌린지 결과 조회 (종료된 챌린지)

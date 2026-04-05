@@ -43,6 +43,16 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 		@Param("statuses") List<ChallengeStatus> statuses
 	);
 
+	/** 특정 유저가 참여한 완료/실패 챌린지 목록 조회 (최신순) */
+	@Query("SELECT c FROM Challenge c "
+		+ "JOIN TeamMembers tm ON tm.team = c.team "
+		+ "WHERE tm.user.userId = :userId AND c.status IN :statuses "
+		+ "ORDER BY c.endDate DESC")
+	List<Challenge> findAllByUserIdAndStatusIn(
+		@Param("userId") Long userId,
+		@Param("statuses") List<ChallengeStatus> statuses
+	);
+
 	/** 특정 상태이면서 종료일이 지난 챌린지 전체 조회 */
 	// ChallengeScheduler에서 매일 자정
 	// ONGOING 챌린지의 end_date가 지났으면 COMPLETED/FAILED로 전환할 때 활용
