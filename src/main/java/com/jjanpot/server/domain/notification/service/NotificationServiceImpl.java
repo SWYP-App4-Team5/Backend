@@ -2,6 +2,7 @@ package com.jjanpot.server.domain.notification.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -79,10 +80,13 @@ public class NotificationServiceImpl implements NotificationService {
 		for (var entry : dayMap.entrySet()) {
 			Integer day = entry.getKey();
 
-			LocalDate targetStartDate = today.minusDays(day - 1);
+			// 인증 체크 시작 시간 (그날의 00:00:00)
+			LocalDateTime startDateTime = today.atStartOfDay();
+			// 인증 체크 종료 시간 (그날의 23:59:59)
+			LocalDateTime endDateTime = today.atTime(LocalTime.MAX);
 
 			List<UserChallengeReminderDto> targets =
-				notificationRepository.findDidNotCertifyUserWeekly(today, targetStartDate, day.longValue());
+				notificationRepository.findDidNotCertifyUserWeekly(startDateTime, endDateTime, day.longValue());
 
 			if (CollectionUtils.isEmpty(targets)) {
 				continue;
