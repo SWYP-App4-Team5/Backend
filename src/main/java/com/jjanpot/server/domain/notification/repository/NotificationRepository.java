@@ -67,19 +67,20 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 				ON tm.user = u
 			JOIN Challenge c
 				ON c.team = tm.team
-			WHERE u.notificationDailyEnabled = true
+			WHERE u.notificationWeeklyEnabled = true
 				AND c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
-				AND c.startDate = :startDateTime
+				AND c.startDate BETWEEN :startDateTime AND :endDateTime
 				AND NOT EXISTS (
 					SELECT 1 FROM Certification cert
 					WHERE cert.user = u AND cert.challenge = c
-						AND cert.createdAt BETWEEN :startDateTime AND :endDateTime
+						AND cert.createdAt BETWEEN :startDateTime AND :now
 				)
 			GROUP BY u.userId, ud.fcmToken
 		""")
 	List<UserChallengeReminderDto> findDidNotCertifyUserWeekly(
 		@Param("startDateTime") LocalDateTime startDateTime,
 		@Param("endDateTime") LocalDateTime endDateTime,
+		@Param("now") LocalDateTime now,
 		@Param("day") Long day
 	);
 

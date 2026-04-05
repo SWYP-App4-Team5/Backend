@@ -80,13 +80,15 @@ public class NotificationServiceImpl implements NotificationService {
 		for (var entry : dayMap.entrySet()) {
 			Integer day = entry.getKey();
 
-			// 인증 체크 시작 시간 (그날의 00:00:00)
-			LocalDateTime startDateTime = today.atStartOfDay();
+			// 오늘 - (N-1)일
+			LocalDateTime challengeStartDate = today.minusDays(day - 1).atStartOfDay();
+
 			// 인증 체크 종료 시간 (그날의 23:59:59)
-			LocalDateTime endDateTime = today.atTime(LocalTime.MAX);
+			LocalDateTime endDateTime = challengeStartDate.with(LocalTime.MAX).withNano(0);
+			LocalDateTime nowTime = LocalDateTime.now();
 
 			List<UserChallengeReminderDto> targets =
-				notificationRepository.findDidNotCertifyUserWeekly(startDateTime, endDateTime, day.longValue());
+				notificationRepository.findDidNotCertifyUserWeekly(challengeStartDate, endDateTime, nowTime, day.longValue());
 
 			if (CollectionUtils.isEmpty(targets)) {
 				continue;
