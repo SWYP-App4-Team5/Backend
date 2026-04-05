@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.jjanpot.server.domain.notification.repository.NotificationRepositoryCustom;
+import com.jjanpot.server.domain.notification_template.entity.NotificationSubTemplateType;
 import com.jjanpot.server.domain.notification_template.entity.NotificationTemplate;
 import com.jjanpot.server.domain.notification_template.entity.NotificationTemplateType;
 
@@ -17,6 +18,10 @@ public interface NotificationTemplateRepository
 			SELECT template
 			FROM NotificationTemplate template
 			WHERE template.type = :type
+				AND template.subType = :subType
 		""")
-	List<NotificationTemplate> findTemplateByType(@Param("type") NotificationTemplateType type);
+	List<NotificationTemplate> findTemplateByType(
+		@Param("type") NotificationTemplateType type,
+		@Param("subType") NotificationSubTemplateType subType
+	);
 }
