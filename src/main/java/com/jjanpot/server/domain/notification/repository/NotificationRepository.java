@@ -47,12 +47,19 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 		@Param("endOfToday") LocalDateTime endOfToday
 	);
 
+	/**
+	 *
+	 * @param today 오늘 날짜
+	 * @param checkChallengeStart 챌린지 시작일
+	 * @param day
+	 * @return
+	 */
 	@Query("""
 			SELECT new com.jjanpot.server.domain.notification.dto.UserChallengeReminderDto(
 				u.userId,
 				ud.fcmToken,
 				MAX(c.challengeId),
-				CAST(DATEDIFF(:today, c.startDate) + 1 AS long)
+				:day
 			)
 			FROM UserDevice ud
 			JOIN ud.user u
@@ -62,17 +69,18 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 				ON c.team = tm.team
 			WHERE u.notificationDailyEnabled = true
 				AND c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
-				AND (DATEDIFF(:today, c.startDate) + 1) = :days
+				AND c.startDate = :checkChallengeStart
 				AND NOT EXISTS (
 					SELECT 1 FROM Certification cert
 					WHERE cert.user = u AND cert.challenge = c
-						AND cert.createdAt BETWEEN :startDate AND :today
+						AND cert.createdAt BETWEEN :checkChallengeStart AND :today
 				)
 			GROUP BY u.userId, ud.fcmToken
 		""")
 	List<UserChallengeReminderDto> findDidNotCertifyUserWeekly(
 		@Param("today") LocalDate today,
-		@Param("days") Integer days
+		@Param("checkChallengeStart") LocalDate checkChallengeStart,
+		@Param("day") Long day
 	);
 
 	@Modifying

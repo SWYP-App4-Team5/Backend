@@ -77,8 +77,12 @@ public class NotificationServiceImpl implements NotificationService {
 		);
 
 		for (var entry : dayMap.entrySet()) {
+			Integer day = entry.getKey();
+
+			LocalDate targetStartDate = today.minusDays(day - 1);
+
 			List<UserChallengeReminderDto> targets =
-				notificationRepository.findDidNotCertifyUserWeekly(today, entry.getKey());
+				notificationRepository.findDidNotCertifyUserWeekly(today, targetStartDate, day.longValue());
 
 			if (CollectionUtils.isEmpty(targets)) {
 				continue;
