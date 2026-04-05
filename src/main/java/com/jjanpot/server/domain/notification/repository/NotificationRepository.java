@@ -66,6 +66,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 				AND NOT EXISTS (
 					SELECT 1 FROM Certification cert
 					WHERE cert.user = u AND cert.challenge = c
+						AND cert.createdAt BETWEEN :startDate AND :today
 				)
 			GROUP BY u.userId, ud.fcmToken
 		""")
