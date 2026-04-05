@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "UQ_template_type",
-			columnNames = {"type"}
+			columnNames = {"type" , "sub_type"}
 		)
 	}
 )
