@@ -52,58 +52,58 @@ public interface NotificationFacade {
 	@Operation(
 		summary = "[TEST] 스케줄 기반 푸시 알림 설명",
 		description = """
-        해당 알림은 서버에서 스케줄러(@Scheduled)에 의해 자동 발송되기 때문에 테스트 할 수 없습니다.
-        
-        ■ 발송 주기
-        - 매일 18:00
-        - 테스트를 위해 test flight에서는 호출 하면 발송하게 만듦
-        
-        ■ FCM Payload 구조
-        [Data]
-        - type: 알림 타입
-        - relateId: 연관 리소스 ID (nullable)
-
-        ■ type 값 목록
-        - ENCOURAGE: 인증 독려
-        - LIKE: 좋아요 알림
-        - GOAL_COMPLETE: 목표 달성
-
-        ■ relateId 정책
-        - type에 따라 값이 다름
-          - ENCOURAGE : 챌린지 ID
-          - LIKE : 인증 ID (미정)
-          - GOAL_COMPLETE : 미정
-        - null 값이 내려올 수 있기 때문에 앱에서 null 체크 후 처리 필요
-        """
+			해당 알림은 서버에서 스케줄러(@Scheduled)에 의해 자동 발송되기 때문에 테스트 할 수 없습니다.
+			
+			■ 발송 주기
+			- 매일 18:00
+			- 테스트를 위해 test flight에서는 호출 하면 발송하게 만듦
+			
+			■ FCM Payload 구조
+			[Data]
+			- type: 알림 타입
+			- relateId: 연관 리소스 ID (nullable)
+			
+			■ type 값 목록
+			- ENCOURAGE: 인증 독려
+			- LIKE: 좋아요 알림
+			- GOAL_COMPLETE: 목표 달성
+			
+			■ relateId 정책
+			- type에 따라 값이 다름
+			  - ENCOURAGE : 챌린지 ID
+			  - LIKE : 인증 ID (미정)
+			  - GOAL_COMPLETE : 미정
+			- null 값이 내려올 수 있기 때문에 앱에서 null 체크 후 처리 필요
+			"""
 	)
 	void dailyPushNotification();
 
 	@Operation(
 		summary = "[TEST] 스케줄 기반 주간 푸시 알림 설명",
 		description = """
-        해당 알림은 서버에서 스케줄러(@Scheduled)에 의해 자동 발송되기 때문에 실제 사용하지 않음.
-        하지만 2분마다 도는건 너무 많아서 호출하면 요청되게 변경
-        
-        ■ 발송 주기
-        - 챌린지 시작 후 매주 3,5,7일 20:00
-        
-        ■ FCM Payload 구조
-        [Data]
-        - type: 알림 타입
-        - relateId: 연관 리소스 ID (nullable)
-
-        ■ type 값 목록
-        - ENCOURAGE: 인증 독려
-        - LIKE: 좋아요 알림
-        - GOAL_COMPLETE: 목표 달성
-
-        ■ relateId 정책
-        - type에 따라 값이 다름
-          - ENCOURAGE : 챌린지 ID
-          - LIKE : 인증 ID (미정)
-          - GOAL_COMPLETE : 미정
-        - null 값이 내려올 수 있기 때문에 앱에서 null 체크 후 처리 필요
-        """
+			해당 알림은 서버에서 스케줄러(@Scheduled)에 의해 자동 발송되기 때문에 실제 사용하지 않음.
+			하지만 2분마다 도는건 너무 많아서 호출하면 요청되게 변경
+			
+			■ 발송 주기
+			- 챌린지 시작 후 매주 3,5,7일 20:00
+			
+			■ FCM Payload 구조
+			[Data]
+			- type: 알림 타입
+			- relateId: 연관 리소스 ID (nullable)
+			
+			■ type 값 목록
+			- ENCOURAGE: 인증 독려
+			- LIKE: 좋아요 알림
+			- GOAL_COMPLETE: 목표 달성
+			
+			■ relateId 정책
+			- type에 따라 값이 다름
+			  - ENCOURAGE : 챌린지 ID
+			  - LIKE : 인증 ID (미정)
+			  - GOAL_COMPLETE : 미정
+			- null 값이 내려올 수 있기 때문에 앱에서 null 체크 후 처리 필요
+			"""
 	)
 	void weeklyPushNotification();
 }
