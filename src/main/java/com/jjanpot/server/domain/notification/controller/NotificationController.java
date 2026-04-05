@@ -18,20 +18,26 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/notification")
 @RestController
 public class NotificationController implements NotificationFacade {
-	private final NotificationService notificationTemplateService;
+	private final NotificationService notificationService;
 
 	// TODO Principal 사용
 	@Override
 	@PatchMapping("/v1/{notificationId}")
 	public SuccessResponse<Long> read(@CurrentUserId Long userId, @PathVariable Long notificationId) {
-		notificationTemplateService.markAsRead(userId, notificationId);
+		notificationService.markAsRead(userId, notificationId);
 
 		return SuccessResponse.created(null);
 	}
 
 	@Override
-	@GetMapping("/v99/test/push")
-	public void pushNotification() {
+	@GetMapping("/v99/test/daily-push")
+	public void dailyPushNotification() {
+		notificationService.sendDailyReminder();
+	}
 
+	@Override
+	@GetMapping("/v99/test/weekly-push")
+	public void weeklyPushNotification() {
+		notificationService.sendWeeklyReminder();
 	}
 }

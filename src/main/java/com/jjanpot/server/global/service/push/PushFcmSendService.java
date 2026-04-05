@@ -60,6 +60,7 @@ public class PushFcmSendService implements PushSendService {
 						if (res.isSuccessful()) {
 							return FcmSendResult.success(res.getMessageId());
 						} else {
+							log.error("FCM Send Failed: {}", res.getException().getMessage(), res.getException());
 							// 실패시 FCM 에러 코드 추출 (UNREGISTERED, INVALID_ARGUMENT)
 							String errorCode = res.getException().getMessagingErrorCode().name();
 							return FcmSendResult.fail(errorCode, res.getException().getMessage());
