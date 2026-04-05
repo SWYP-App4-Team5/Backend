@@ -15,4 +15,6 @@ public interface UserDeviceRepository extends JpaRepository<UserDevice, Long> {
 	Optional<UserDevice> findByFcmToken(String fcmToken);
 
 	List<UserDevice> findAllByUser(User user);
+
+	void deleteAllByUser(User user);
 }
