@@ -23,6 +23,6 @@ public class PushScheduler {
 	@Scheduled(cron = "0  0 20 * * ?")
 	public void scheduleWeeklyPush() {
 		log.info("Weekly Scheduled Push Started");
-		notificationService.sendDailyReminder();
+		notificationService.sendWeeklyReminder();
 	}
 }
