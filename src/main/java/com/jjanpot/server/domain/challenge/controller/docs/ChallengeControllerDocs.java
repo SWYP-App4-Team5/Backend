@@ -1,7 +1,10 @@
 package com.jjanpot.server.domain.challenge.controller.docs;
 
+import java.util.List;
+
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeHistoryResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
@@ -107,14 +110,39 @@ public interface ChallengeControllerDocs {
 	);
 
 	@Operation(
-		summary = "챌린지 결과 조회",
+		summary = "챌린지 이력 목록 조회 (완료된 챌린지 받는 api)",
+		description = """
+			로그인한 유저가 참여했던 종료된 챌린지(COMPLETED/FAILED) 목록을 조회합니다.
+			
+			- 마이페이지에서 과거 챌린지 이력을 보여줄 때 사용합니다.
+			- COMPLETED: 목표 달성 성공 챌린지
+			- FAILED: 목표 미달성 실패 챌린지
+			- 각 항목의 challengeId로 결과 상세 조회 API(`GET /{id}/result`)를 호출할 수 있습니다.
+			
+			응답 필드:
+			- `challengeId`: 챌린지 ID
+			- `title`: 챌린지 제목
+			- `status`: 챌린지 상태 (COMPLETED / FAILED)
+			- `statusDisplayName`: 상태 한국어 표시명
+			- `goalAmount`: 팀 목표 금액
+			- `startDate`: 챌린지 시작일
+			- `endDate`: 챌린지 종료일
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "챌린지 이력 목록 조회 성공")
+	SuccessResponse<List<ChallengeHistoryResponse>> getChallengeHistory(
+		@Parameter(hidden = true) Long userId
+	);
+
+	@Operation(
+		summary = "챌린지 결과 조회 (결과 리포트)",
 		description = """
 			종료된 챌린지(COMPLETED/FAILED)의 결과를 조회합니다.
-
+			
 			- 해당 챌린지의 팀원만 조회할 수 있습니다.
 			- COMPLETED 또는 FAILED 상태의 챌린지만 조회 가능합니다.
 			- WAITING/ONGOING 상태에서 호출 시 400 에러 (CHALLENGE_RESULT_NOT_READY)
-
+			
 			응답 필드:
 			- `isTeamSuccess`: 팀 목표 달성 여부 (true: 성공, false: 실패)
 			- `goalAmount`: 팀 전체 목표 금액

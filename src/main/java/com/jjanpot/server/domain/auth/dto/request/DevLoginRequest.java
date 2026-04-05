@@ -42,6 +42,22 @@ public record DevLoginRequest(
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
 		nullable = true
 	)
-	String profileImageUrl
+	String profileImageUrl,
+
+	@Schema(
+		description = "기기 고유 식별자 (테스트용 아무 값 입력 가능)",
+		example = "test-device-uuid",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		nullable = true
+	)
+	String deviceUuid,
+
+	@Schema(
+		description = "FCM 푸시 토큰 (테스트용 아무 값 입력 가능)",
+		example = "test-fcm-token",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		nullable = true
+	)
+	String fcmToken
 ) {
 }

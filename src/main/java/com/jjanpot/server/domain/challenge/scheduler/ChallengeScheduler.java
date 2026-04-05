@@ -68,6 +68,12 @@ public class ChallengeScheduler {
 		List<Challenge> toFinish = challengeRepository.findAllByStatusAndEndDateBefore(ChallengeStatus.ONGOING, now);
 
 		for (Challenge challenge : toFinish) {
+			// 이미 결과가 생성된 챌린지는 skip (중복 실행 방지)
+			if (challengeTeamResultRepository.findByChallenge(challenge).isPresent()) {
+				log.info("[ChallengeScheduler] 이미 결과 존재, skip: id={}", challenge.getChallengeId());
+				continue;
+			}
+
 			List<TeamMembers> members = teamMembersRepository.findAllByTeam(challenge.getTeam());
 
 			List<ChallengeMemberResult> memberResults = members.stream()
