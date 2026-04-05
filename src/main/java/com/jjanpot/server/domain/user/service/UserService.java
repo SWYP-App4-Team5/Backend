@@ -2,14 +2,13 @@ package com.jjanpot.server.domain.user.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationLikeRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationRepository;
+import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
-import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.notification.repository.NotificationRepository;
@@ -150,6 +149,7 @@ public class UserService {
 
 		// FK 자식 테이블부터 순서대로 삭제
 		certificationLikeRepository.deleteAllByUser(user);
+		certificationLikeRepository.deleteByCertificationUser(user);
 		certificationRepository.deleteAllByUser(user);
 		challengeMemberResultRepository.deleteAllByUser(user);
 		notificationRepository.deleteAllByUserId(userId);
