@@ -79,7 +79,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 		""")
 	List<UserChallengeReminderDto> findDidNotCertifyUserWeekly(
 		@Param("startDateTime") LocalDateTime startDateTime,
-		@Param("startDateTime") LocalDateTime endDateTime,
+		@Param("endDateTime") LocalDateTime endDateTime,
 		@Param("day") Long day
 	);
 
