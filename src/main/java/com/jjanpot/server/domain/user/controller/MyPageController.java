@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.user.controller;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,5 +29,11 @@ public class MyPageController implements MyPageControllerDocs {
 	@GetMapping("/profile")
 	public SuccessResponse<UserProfileResponse> getProfile(@CurrentUserId Long userId) {
 		return SuccessResponse.ok(userService.getProfile(userId));
+	}
+
+	@DeleteMapping("/withdraw")
+	public SuccessResponse<Void> withdraw(@CurrentUserId Long userId) {
+		userService.withdraw(userId);
+		return SuccessResponse.ok(null);
 	}
 }

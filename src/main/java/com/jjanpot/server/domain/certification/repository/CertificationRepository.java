@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -62,4 +63,9 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 		+ "GROUP BY CAST(c.spentAt AS date) "
 		+ "ORDER BY CAST(c.spentAt AS date)")
 	List<Object[]> countDistinctUsersByDateForChallenge(@Param("challenge") Challenge challenge);
+
+	/** 유저의 인증 일괄 삭제 (회원 탈퇴용) */
+	@Modifying
+	@Query("DELETE FROM Certification c WHERE c.user = :user")
+	void deleteAllByUser(@Param("user") User user);
 }

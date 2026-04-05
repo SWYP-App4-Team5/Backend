@@ -28,4 +28,7 @@ public interface TeamMembersRepository extends JpaRepository<TeamMembers, TeamMe
 	/** 특정 팀에 특정 유저가 이미 속해 있는지 확인 */
 	// joinTeam()에서 중복 참여 방지에 활용
 	boolean existsByTeamAndUser(Team team, User user);
+
+	/** 유저의 팀 멤버십 일괄 삭제 (회원 탈퇴용) */
+	void deleteAllByUser(User user);
 }

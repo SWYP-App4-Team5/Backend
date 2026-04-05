@@ -12,4 +12,5 @@ import com.jjanpot.server.domain.user.entity.UserAgreement;
 public interface UserAgreementRepository extends JpaRepository<UserAgreement, Long> {
 	boolean existsByUser(User user);
 	Optional<UserAgreement> findByUser(User user);
+	void deleteByUser(User user);
 }
