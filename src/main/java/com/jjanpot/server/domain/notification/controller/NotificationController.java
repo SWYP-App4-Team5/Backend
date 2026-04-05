@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.notification.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,12 +31,14 @@ public class NotificationController implements NotificationFacade {
 	}
 
 	@Override
+	@PreAuthorize("permitAll()")
 	@GetMapping("/v99/test/daily-push")
 	public void dailyPushNotification() {
 		notificationService.sendDailyReminder();
 	}
 
 	@Override
+	@PreAuthorize("permitAll()")
 	@GetMapping("/v99/test/weekly-push")
 	public void weeklyPushNotification() {
 		notificationService.sendWeeklyReminder();
