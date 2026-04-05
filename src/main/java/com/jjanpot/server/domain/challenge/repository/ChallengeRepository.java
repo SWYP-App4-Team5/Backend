@@ -31,8 +31,8 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 	/** 특정 팀에서 상태 목록 중 하나에 해당하는 챌린지 1개 조회 (최신 생성순) */
 	// getCurrentChallenge()에서 홈화면 로드 시,
 	//  WAITING 또는 ONGOING 챌린지가 있는지 한 번에 확인할 때 활용
-	@Query("SELECT c FROM Challenge c WHERE c.team = :team AND c.status IN :statuses ORDER BY c.challengeId DESC")
-	Optional<Challenge> findFirstByTeamAndStatusIn(Team team, List<ChallengeStatus> statuses);
+	@Query("SELECT c FROM Challenge c WHERE c.team = :team AND c.status IN :statuses ORDER BY c.challengeId DESC LIMIT 1")
+	Optional<Challenge> findFirstByTeamAndStatusIn(@Param("team") Team team, @Param("statuses") List<ChallengeStatus> statuses);
 
 	/** 특정 유저가 활성(WAITING/ONGOING) 챌린지에 참여 중인지 확인 */
 	@Query("SELECT COUNT(c) > 0 FROM Challenge c "

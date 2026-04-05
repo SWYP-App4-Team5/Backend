@@ -16,6 +16,8 @@ public interface ChallengeMemberResultRepository extends JpaRepository<Challenge
 
 	Optional<ChallengeMemberResult> findByChallengeAndUser(Challenge challenge, User user);
 
+	void deleteAllByUser(User user);
+
 	@Query("SELECT new com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto("
 		+ "SUM(CASE WHEN r.challenge.status = :completed THEN 1L ELSE 0L END), "
 		+ "SUM(CASE WHEN r.challenge.status = :failed THEN 1L ELSE 0L END)) "

@@ -2,13 +2,16 @@ package com.jjanpot.server.domain.user.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
+import com.jjanpot.server.domain.certification.repository.CertificationLikeRepository;
+import com.jjanpot.server.domain.certification.repository.CertificationRepository;
+import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
-import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
+import com.jjanpot.server.domain.notification.repository.NotificationRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
@@ -24,6 +27,7 @@ import com.jjanpot.server.domain.user.dto.response.UserProfileResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
 import com.jjanpot.server.domain.user.repository.UserAgreementRepository;
+import com.jjanpot.server.domain.user.repository.UserDeviceRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.common.service.ImageUploadService;
 import com.jjanpot.server.global.exception.BusinessException;
@@ -47,6 +51,11 @@ public class UserService {
 	private final ChallengeRepository challengeRepository;
 	private final ChallengeMemberResultRepository challengeMemberResultRepository;
 	private final UserAgreementRepository userAgreementRepository;
+	private final UserDeviceRepository userDeviceRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
+	private final CertificationLikeRepository certificationLikeRepository;
+	private final CertificationRepository certificationRepository;
+	private final NotificationRepository notificationRepository;
 	private final ImageUploadService imageUploadService;
 
 	//프로필 생성
@@ -125,6 +134,30 @@ public class UserService {
 			request.privacyPolicyAgreed(),
 			user
 		));
+	}
+
+	/** 회원 탈퇴 **/
+	@Transactional
+	public void withdraw(Long userId) {
+		User user = getUserByUserId(userId);
+
+		// 진행 중인 챌린지가 있으면 탈퇴 차단
+		if (challengeRepository.existsActiveByUserIdAndStatusIn(
+			userId, java.util.List.of(ChallengeStatus.WAITING, ChallengeStatus.ONGOING))) {
+			throw new BusinessException(ErrorCode.WITHDRAW_BLOCKED_ACTIVE_CHALLENGE);
+		}
+
+		// FK 자식 테이블부터 순서대로 삭제
+		certificationLikeRepository.deleteAllByUser(user);
+		certificationLikeRepository.deleteByCertificationUser(user);
+		certificationRepository.deleteAllByUser(user);
+		challengeMemberResultRepository.deleteAllByUser(user);
+		notificationRepository.deleteAllByUserId(userId);
+		teamMembersRepository.deleteAllByUser(user);
+		userDeviceRepository.deleteAllByUser(user);
+		userAgreementRepository.deleteByUser(user);
+		refreshTokenRepository.deleteByUser(user);
+		userRepository.delete(user);
 	}
 
 	private User getUserByUserId(Long userId) {

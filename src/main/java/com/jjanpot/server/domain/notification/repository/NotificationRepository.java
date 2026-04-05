@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,6 +12,10 @@ import com.jjanpot.server.domain.notification.dto.UserFcmDto;
 import com.jjanpot.server.domain.notification.entity.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long>, NotificationRepositoryCustom {
+
+	@Modifying
+	@Query("DELETE FROM Notification n WHERE n.userId = :userId")
+	void deleteAllByUserId(@Param("userId") Long userId);
 	// TODO 고도화 작업시 유저 설정에 알람 동의한 유저만 조회하게 WHERE 조건에 추가 필요.
 	@Query("""
 		SELECT DISTINCT new com.jjanpot.server.domain.notification.dto.UserFcmDto(u.userId, ud.fcmToken, cg.challengeId)
