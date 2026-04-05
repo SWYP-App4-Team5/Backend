@@ -27,8 +27,8 @@ public enum NotificationSubTemplateType implements CodeEnum {
 	}
 
 	@JsonCreator
-	public static NotificationTemplateType from(String code) {
-		return EnumUtils.fromCode(NotificationTemplateType.class, code);
+	public static NotificationSubTemplateType from(String code) {
+		return EnumUtils.fromCode(NotificationSubTemplateType.class, code);
 	}
 
 	@Override
