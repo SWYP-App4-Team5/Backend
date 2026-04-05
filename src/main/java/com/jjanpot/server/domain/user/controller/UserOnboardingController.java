@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(("/api/users/v1/onboarding"))
-public class UserSettingController implements UserControllerDocs {
+public class UserOnboardingController implements UserControllerDocs {
 
 	private final UserService userService;
 

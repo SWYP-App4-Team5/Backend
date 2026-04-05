@@ -42,6 +42,10 @@ public class NotificationTemplate extends BaseEntity {
 	@Column(name = "type", nullable = false)
 	private NotificationTemplateType type;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "sub_type", length = 50)
+	private NotificationSubTemplateType subType;
+
 	@Column(name = "title", nullable = false, length = 100)
 	private String title;
 
@@ -50,9 +54,10 @@ public class NotificationTemplate extends BaseEntity {
 
 	// TODO 고도화에서 관리자가 관리할 수 있게 활성화 여부 컬럼 추가 필요
 
-	public static NotificationTemplate create(NotificationTemplateType type, String title, String body) {
+	public static NotificationTemplate create(NotificationTemplateType type, NotificationSubTemplateType subType, String title, String body) {
 		return NotificationTemplate.builder()
 			.type(type)
+			.subType(subType)
 			.title(title)
 			.body(body)
 			.build();

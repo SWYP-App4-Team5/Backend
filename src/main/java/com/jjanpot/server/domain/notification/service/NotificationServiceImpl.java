@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,9 +16,11 @@ import org.springframework.util.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.jjanpot.server.domain.notification.dto.FcmSendCommand;
+import com.jjanpot.server.domain.notification.dto.UserChallengeReminderDto;
 import com.jjanpot.server.domain.notification.dto.UserFcmDto;
 import com.jjanpot.server.domain.notification.entity.Notification;
 import com.jjanpot.server.domain.notification.repository.NotificationRepository;
+import com.jjanpot.server.domain.notification_template.entity.NotificationSubTemplateType;
 import com.jjanpot.server.domain.notification_template.entity.NotificationTemplate;
 import com.jjanpot.server.domain.notification_template.entity.NotificationTemplateType;
 import com.jjanpot.server.domain.notification_template.repository.NotificationTemplateRepository;
@@ -46,41 +47,79 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Override
 	public void sendDailyReminder() {
-		log.info("sendDailyReminder Started");
-		List<UserFcmDto> userFcmList = getTodayDidNotCertifyUser();
+		log.info("Daily Reminder Process Started");
+		LocalDateTime start = LocalDate.now().atStartOfDay();
+		LocalDateTime end = start.plusDays(1).minusNanos(1);
 
-		if (userFcmList.isEmpty()) {
+		List<UserFcmDto> didNotCertifyUserByPeriod = notificationRepository.findDidNotCertifyUserByToday(start, end);
+
+		NotificationSubTemplateType daily = NotificationSubTemplateType.DAILY;
+		List<NotificationTemplate> templateList =
+			notificationTemplateRepository.findTemplateByType(
+				NotificationTemplateType.from(daily.getGroupCode()),
+				daily
+			);
+
+		processReminder(didNotCertifyUserByPeriod, templateList);
+
+		log.info("Daily Reminder Process Ended");
+	}
+
+	@Override
+	public void sendWeeklyReminder() {
+		log.info("Weekly Reminder Process Started");
+		LocalDate today = LocalDate.now();
+
+		Map<Integer, NotificationSubTemplateType> dayMap = Map.of(
+			3, NotificationSubTemplateType.START_OF_WEEK,
+			5, NotificationSubTemplateType.MIDDLE_OF_WEEK,
+			7, NotificationSubTemplateType.END_OF_WEEK
+		);
+
+		for (var entry : dayMap.entrySet()) {
+			List<UserChallengeReminderDto> targets =
+				notificationRepository.findDidNotCertifyUserWeekly(today, entry.getKey());
+
+			if (CollectionUtils.isEmpty(targets)) {
+				continue;
+			}
+
+			List<UserFcmDto> targetUserFcmDtoList = targets.stream()
+				.map(reminderDto ->
+					new UserFcmDto(reminderDto.userId(), reminderDto.fcmToken(), reminderDto.challengeId()))
+				.toList();
+
+			List<NotificationTemplate> templates = notificationTemplateRepository
+				.findTemplateByType(NotificationTemplateType.ENCOURAGE, entry.getValue());
+
+			processReminder(targetUserFcmDtoList, templates);
+		}
+
+		log.info("Weekly Reminder Process Ended");
+	}
+
+	private void processReminder(List<UserFcmDto> targetUserFcmDtoList, List<NotificationTemplate> templateList) {
+		if (CollectionUtils.isEmpty(targetUserFcmDtoList)) {
 			return;
 		}
 
-		// 실제 푸시알림 발송할 템플릿
-		List<NotificationTemplate> notificationTemplate =
-			notificationTemplateRepository.findTemplateByType(NotificationTemplateType.ENCOURAGE);
-
-		if (CollectionUtils.isEmpty(notificationTemplate)) {
+		if (CollectionUtils.isEmpty(templateList)) {
 			throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
 		}
 
-		Random random = new Random();
+		List<Notification> allNotifications = initNotifications(targetUserFcmDtoList, templateList);
 
-		Map<NotificationTemplate, List<UserFcmDto>> groupedTargets =
-			userFcmList.stream()
-				.collect(
-					Collectors.groupingBy(
-						userFcmDto -> notificationTemplate.get(random.nextInt(notificationTemplate.size()))));
+		sendInBatches(allNotifications);
+	}
 
-		// 템플릿
-		List<Notification> allNotificationList = initNotifications(userFcmList, notificationTemplate);
-
-		// FCM은 500개가 넘어가면 성능상 좋지 않기 때문에 최대 500건 씩 발송
-		List<List<Notification>> partitions = Lists.partition(allNotificationList, partitionSize);
-
-		for (List<Notification> partition : partitions) {
-			List<FcmSendCommand> fcmSendCommandList = partition.stream()
+	private void sendInBatches(List<Notification> notifications) {
+		log.info("sendInBatches Started");
+		Lists.partition(notifications, partitionSize).forEach(partition -> {
+			List<FcmSendCommand> commands = partition.stream()
 				.map(FcmSendCommand::from)
 				.toList();
 
-			pushSendService.sendMessage(fcmSendCommandList)
+			pushSendService.sendMessage(commands)
 				.thenAccept(results -> {
 					notificationManager.updateResults(partition, results);
 				})
@@ -89,8 +128,8 @@ public class NotificationServiceImpl implements NotificationService {
 					notificationManager.markAsFailed(partition, ex.getMessage());
 					return null;
 				});
-		}
-		log.info("schedulePush Ended");
+		});
+		log.info("sendInBatches Ended");
 	}
 
 	@Override
@@ -123,10 +162,11 @@ public class NotificationServiceImpl implements NotificationService {
 
 		List<Notification> list = targets.stream()
 			.map(target -> {
-				if(!StringUtils.hasText(target.fcmToken())) {
+				if (!StringUtils.hasText(target.fcmToken())) {
 					return null;
 				}
 				NotificationTemplate selectedTemplate = templates.get(random.nextInt(templates.size()));
+
 				// PENDING 상태 생성
 				return Notification.create(target.userId(), target.fcmToken(), selectedTemplate, target.challengeId());
 			})
@@ -135,17 +175,4 @@ public class NotificationServiceImpl implements NotificationService {
 
 		return notificationManager.saveNotifications(list);
 	}
-
-	/**
-	 * TODO 사용자 설정에서 설정 true인 유저만 알림 보내게 설정해야 됨
-	 * 오늘 인증하지 않은 사용자 정보를 조회
-	 * @return
-	 */
-	private List<UserFcmDto> getTodayDidNotCertifyUser() {
-		LocalDateTime start = LocalDate.now().atStartOfDay();
-		LocalDateTime end = start.plusDays(1).minusNanos(1);
-
-		return notificationRepository.findTodayDidNotCertifyUser(start, end);
-	}
-
 }
