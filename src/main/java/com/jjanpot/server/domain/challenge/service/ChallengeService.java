@@ -19,6 +19,7 @@ import com.jjanpot.server.domain.certification.repository.CertificationRepositor
 import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.jjanpot.server.domain.challenge.dto.response.ChallengeHistoryResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeMembersResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeResultResponse;
 import com.jjanpot.server.domain.challenge.dto.response.ChallengeStatsResponse;
@@ -128,6 +129,16 @@ public class ChallengeService {
 		}
 
 		challenge.updateStatus(ChallengeStatus.CANCELLED);
+	}
+
+	/** 유저의 완료/실패 챌린지 이력 목록 조회 **/
+	public List<ChallengeHistoryResponse> getChallengeHistory(Long userId) {
+		findUser(userId);
+		return challengeRepository.findAllByUserIdAndStatusIn(
+				userId, List.of(ChallengeStatus.COMPLETED, ChallengeStatus.FAILED))
+			.stream()
+			.map(ChallengeHistoryResponse::from)
+			.toList();
 	}
 
 	/** 챌린지 결과 조회 (COMPLETED/FAILED) **/
