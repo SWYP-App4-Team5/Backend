@@ -12,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +21,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "report_reason")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class ReportReasonEntity {
 
     @Id
@@ -35,9 +39,9 @@ public class ReportReasonEntity {
     private ReportReason reason;
 
     public static ReportReasonEntity of(Report report, ReportReason reason) {
-        ReportReasonEntity entity = new ReportReasonEntity();
-        entity.report = report;
-        entity.reason = reason;
-        return entity;
+        return ReportReasonEntity.builder()
+            .report(report)
+            .reason(reason)
+            .build();
     }
 }

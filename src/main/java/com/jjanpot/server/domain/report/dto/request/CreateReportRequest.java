@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 public record CreateReportRequest(
     @NotNull Long reportedUserId,
     @NotNull Long challengeId,
-    @NotEmpty(message = "신고 사유를 하나 이상 선택해야 합니다.") @Valid List<ReportReasonRequest> reasons
+    @NotEmpty(message = "신고 사유를 하나 이상 선택해야 합니다.")
+    List<@NotNull @Valid ReportReasonRequest> reasons
 ) {
 }
