@@ -23,7 +23,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 			)
 			FROM UserDevice ud
 			INNER JOIN User u
-				ON ud.user = u AND u.notificationDailyEnabled = true
+				ON ud.user = u
+			INNER JOIN UserNotificationSetting uns
+				ON uns.user = u AND uns.dailyEnabled = true
 			INNER JOIN TeamMembers tm
 				ON u = tm.user
 			INNER JOIN Team t
@@ -63,12 +65,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 			)
 			FROM UserDevice ud
 			JOIN ud.user u
+			JOIN UserNotificationSetting uns
+				ON uns.user = u AND uns.weeklyEnabled = true
 			JOIN TeamMembers tm
 				ON tm.user = u
 			JOIN Challenge c
 				ON c.team = tm.team
-			WHERE u.notificationWeeklyEnabled = true
-				AND c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
+			WHERE c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
 				AND c.startDate BETWEEN :startDateTime AND :endDateTime
 				AND NOT EXISTS (
 					SELECT 1 FROM Certification cert

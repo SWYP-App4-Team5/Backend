@@ -136,7 +136,7 @@ public class CertificationService {
 		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
 			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
 
-		return certificationRepository.findAllByChallengeOrderByCreatedAtDesc(challenge)
+		return certificationRepository.findFeedExcludingBlocked(challenge, userId)
 			.stream()
 			.map(cert -> CertificationFeedResponse.from(
 				cert,
