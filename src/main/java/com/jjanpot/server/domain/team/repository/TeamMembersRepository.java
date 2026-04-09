@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
@@ -31,4 +33,15 @@ public interface TeamMembersRepository extends JpaRepository<TeamMembers, TeamMe
 
 	/** 유저의 팀 멤버십 일괄 삭제 (회원 탈퇴용) */
 	void deleteAllByUser(User user);
+
+	/** 특정 챌린지에 특정 유저가 참여 중인지 확인 (team → team_members → challenge 관계) */
+	@Query(
+		"SELECT COUNT(tm) > 0 FROM TeamMembers tm "
+		+ "JOIN Challenge c ON c.team = tm.team "
+		+ "WHERE tm.user.userId = :userId AND c.challengeId = :challengeId"
+	)
+	boolean existsByUserIdAndChallengeId(
+		@Param("userId") Long userId,
+		@Param("challengeId") Long challengeId
+	);
 }

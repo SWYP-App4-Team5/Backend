@@ -1,6 +1,6 @@
 package com.jjanpot.server.domain.user.dto.response;
 
-import com.jjanpot.server.domain.user.entity.User;
+import com.jjanpot.server.domain.user.entity.UserNotificationSetting;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -16,11 +16,11 @@ public record NotificationSettingResponse(
 	@Schema(description = "마케팅 수신 동의 여부", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
 	boolean marketingConsent
 ) {
-	public static NotificationSettingResponse of(User user) {
+	public static NotificationSettingResponse of(UserNotificationSetting setting) {
 		return new NotificationSettingResponse(
-			user.isNotificationDailyEnabled(),
-			user.isNotificationWeeklyEnabled(),
-			user.isMarketingConsentEnabled()
+			setting.isDailyEnabled(),
+			setting.isWeeklyEnabled(),
+			setting.isMarketingConsentEnabled()
 		);
 	}
 }
