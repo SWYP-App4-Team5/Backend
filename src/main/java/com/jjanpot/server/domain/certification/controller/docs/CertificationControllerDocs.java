@@ -111,6 +111,7 @@ public interface CertificationControllerDocs {
 			- 내가 차단한 유저의 게시글은 자동으로 제외됩니다.
 			- 신고되어 비노출(숨김) 처리된 게시글은 모든 유저에게 제외됩니다.
 			- isMe 필드로 본인 게시글 여부를 구분합니다.
+			- userId: 작성자 유저 ID (사용자 신고/차단 시 reportedUserId/blockedUserId로 활용)
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "인증 피드 조회 성공")
