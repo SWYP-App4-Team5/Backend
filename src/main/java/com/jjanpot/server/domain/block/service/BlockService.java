@@ -17,7 +17,9 @@ import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,11 +54,16 @@ public class BlockService {
 
         blockRepository.save(Block.of(blocker, blocked, challenge));
 
+        log.info("[사용자 차단] blockerId={}, blockedId={}, challengeId={}",
+            blockerId, request.blockedUserId(), request.challengeId());
+
         // 2인 챌린지인 경우 강제 종료
         Team team = challenge.getTeam();
         if (team.getCurrentMemberCount() == 2
             && (challenge.getStatus() == ChallengeStatus.WAITING || challenge.getStatus() == ChallengeStatus.ONGOING)) {
             challenge.updateStatus(ChallengeStatus.CANCELLED);
+            log.info("[2인 챌린지 강제 종료] challengeId={}, blockerId={}, blockedId={}",
+                challenge.getChallengeId(), blockerId, request.blockedUserId());
         }
     }
 

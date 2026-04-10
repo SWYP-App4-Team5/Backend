@@ -18,7 +18,9 @@ import com.jjanpot.server.global.exception.BusinessException;
 import com.jjanpot.server.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -51,6 +53,9 @@ public class ReportService {
 		Report report = Report.ofUser(reporter, reported, challenge);
 		report.addReason(request.reason());
 		reportRepository.save(report);
+
+		log.info("[사용자 신고] reporterId={}, reportedId={}, challengeId={}, reason={}",
+			reporterId, request.reportedUserId(), request.challengeId(), request.reason());
 	}
 
 	/** 게시글(인증) 신고 */
@@ -79,6 +84,10 @@ public class ReportService {
 
 		// 즉시 비노출 처리
 		certification.hide();
+
+		log.info("[게시글 신고] reporterId={}, certificationId={}, certOwnerId={}, challengeId={}, reason={}, 비노출처리=true",
+			reporterId, request.certificationId(), certification.getUser().getUserId(),
+			challengeId, request.reason());
 	}
 
 	private void validateSameChallenge(Long userId1, Long userId2, Long challengeId) {

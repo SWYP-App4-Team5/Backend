@@ -38,6 +38,9 @@ public record ChallengeMembersResponse(
 		@Schema(description = "프로필 이미지 URL (차단한 유저는 null)", example = "https://example.com/profile.jpg", nullable = true)
 		String profileImageUrl,
 
+		@Schema(description = "팀 역할 (LEADER: 팀장, MEMBER: 팀원)", example = "LEADER")
+		String role,
+
 		@Schema(description = "개인 절약 금액", example = "36500")
 		int savedAmount,
 
