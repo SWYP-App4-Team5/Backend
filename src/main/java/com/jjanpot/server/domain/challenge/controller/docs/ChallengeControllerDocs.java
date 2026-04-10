@@ -226,6 +226,11 @@ public interface ChallengeControllerDocs {
 			- isMe 필드로 본인 여부를 구분합니다.
 			- 절약 금액은 인증 데이터 실시간 합산(SUM) 방식입니다.
 
+			**팀 역할 (role):**
+			- `LEADER`: 팀장 (프론트에서 왕관 아이콘 표시)
+			- `MEMBER`: 팀원
+			- 대기 중인 챌린지 상세보기의 팀원 소개에도 이 API를 활용합니다.
+
 			**차단 유저 처리:**
 			- 내가 차단한 유저는 `isBlocked: true`로 반환됩니다.
 			- 닉네임은 "차단한 사용자", 프로필 이미지는 null로 마스킹됩니다.

@@ -110,6 +110,9 @@ public class ChallengeService {
 		// 7. Category 조회 + ChallengeCategory 저장
 		List<ChallengeCategory> challengeCategories = saveChallengeCategories(challenge, request.categories());
 
+		log.info("[챌린지 생성] userId={}, challengeId={}, teamId={}, goalAmount={}",
+			userId, challenge.getChallengeId(), team.getTeamId(), request.goalAmount());
+
 		return CreateChallengeResponse.from(challenge, team, challengeCategories);
 	}
 
@@ -132,6 +135,8 @@ public class ChallengeService {
 		}
 
 		challenge.updateStatus(ChallengeStatus.CANCELLED);
+
+		log.info("[챌린지 취소] userId={}, challengeId={}", userId, challengeId);
 	}
 
 	/** 유저의 완료/실패 챌린지 이력 목록 조회 **/
@@ -341,6 +346,7 @@ public class ChallengeService {
 					memberUser.getUserId(),
 					isBlocked ? "차단한 사용자" : memberUser.getNickname(),
 					isBlocked ? null : memberUser.getProfileImageUrl(),
+					member.getRole().name(),
 					savedAmountMap.getOrDefault(memberUser.getUserId(), 0),
 					memberUser.getUserId().equals(userId),
 					isBlocked
