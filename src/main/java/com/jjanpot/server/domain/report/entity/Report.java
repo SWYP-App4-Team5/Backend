@@ -70,13 +70,13 @@ public class Report extends BaseEntity {
     }
 
     /** 게시글(인증) 신고 */
-    public static Report ofCertification(User reporter, Certification certification, Challenge challenge) {
+    public static Report ofCertification(User reporter, Certification certification) {
         Report report = new Report();
         report.targetType = ReportTargetType.CERTIFICATION;
         report.reporter = reporter;
         report.certification = certification;
         report.reported = certification.getUser();
-        report.challenge = challenge;
+        report.challenge = certification.getChallenge();
         return report;
     }
 

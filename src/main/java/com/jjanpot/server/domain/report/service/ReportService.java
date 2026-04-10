@@ -73,7 +73,7 @@ public class ReportService {
 			throw new BusinessException(ErrorCode.NOT_SAME_CHALLENGE_PARTICIPANT);
 		}
 
-		Report report = Report.ofCertification(reporter, certification, certification.getChallenge());
+		Report report = Report.ofCertification(reporter, certification);
 		report.addReason(request.reason());
 		reportRepository.save(report);
 
