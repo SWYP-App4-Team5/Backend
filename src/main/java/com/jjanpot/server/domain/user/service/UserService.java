@@ -110,6 +110,9 @@ public class UserService {
 		teamMembersRepository.save(TeamMembers.ofMember(team, user));
 		team.increaseMemberCount();
 
+		log.info("[초대코드 참여] userId={}, teamId={}, challengeId={}, inviteCode={}",
+			userId, team.getTeamId(), challenge.getChallengeId(), inviteCode);
+
 		return InviteCodeResponse.from(team, challenge);
 	}
 
@@ -164,6 +167,8 @@ public class UserService {
 		userAgreementRepository.deleteByUser(user);
 		refreshTokenRepository.deleteByUser(user);
 		userRepository.delete(user);
+
+		log.info("[회원 탈퇴] userId={}", userId);
 	}
 
 	private User getUserByUserId(Long userId) {
