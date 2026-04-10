@@ -12,6 +12,9 @@ public record CertificationFeedResponse(
 	@Schema(description = "인증 ID", example = "1")
 	Long certificationId,
 
+	@Schema(description = "작성자 유저 ID", example = "5")
+	Long userId,
+
 	@Schema(description = "지출 유형 한국어 (지출 | 무지출)", example = "지출")
 	String spendType,
 
@@ -47,6 +50,7 @@ public record CertificationFeedResponse(
 	public static CertificationFeedResponse from(Certification cert, int likeCount, Long currentUserId) {
 		return new CertificationFeedResponse(
 			cert.getCertificationId(),
+			cert.getUser().getUserId(),
 			cert.getSpendType().getDisplayName(),
 			cert.getCategory().getName().getDisplayName(),
 			cert.getUser().getNickname(),
