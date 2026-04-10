@@ -346,6 +346,7 @@ public class ChallengeService {
 					memberUser.getUserId(),
 					isBlocked ? "차단한 사용자" : memberUser.getNickname(),
 					isBlocked ? null : memberUser.getProfileImageUrl(),
+					member.getRole().name(),
 					savedAmountMap.getOrDefault(memberUser.getUserId(), 0),
 					memberUser.getUserId().equals(userId),
 					isBlocked
