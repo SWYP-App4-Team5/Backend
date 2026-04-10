@@ -32,17 +32,20 @@ public record ChallengeMembersResponse(
 		@Schema(description = "유저 ID", example = "1")
 		Long userId,
 
-		@Schema(description = "닉네임", example = "오므라이스최고")
+		@Schema(description = "닉네임 (차단한 유저는 '차단한 사용자'로 표시)", example = "오므라이스최고")
 		String nickname,
 
-		@Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg", nullable = true)
+		@Schema(description = "프로필 이미지 URL (차단한 유저는 null)", example = "https://example.com/profile.jpg", nullable = true)
 		String profileImageUrl,
 
 		@Schema(description = "개인 절약 금액", example = "36500")
 		int savedAmount,
 
 		@Schema(description = "본인 여부", example = "false")
-		boolean isMe
+		boolean isMe,
+
+		@Schema(description = "내가 차단한 유저 여부 (true면 프론트에서 회색 처리)", example = "false")
+		boolean isBlocked
 	) {
 	}
 }

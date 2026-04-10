@@ -7,7 +7,9 @@ import com.jjanpot.server.domain.block.dto.request.CreateBlockRequest;
 import com.jjanpot.server.domain.block.entity.Block;
 import com.jjanpot.server.domain.block.repository.BlockRepository;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
+import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
+import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.repository.UserRepository;
@@ -49,6 +51,13 @@ public class BlockService {
         }
 
         blockRepository.save(Block.of(blocker, blocked, challenge));
+
+        // 2인 챌린지인 경우 강제 종료
+        Team team = challenge.getTeam();
+        if (team.getCurrentMemberCount() == 2
+            && (challenge.getStatus() == ChallengeStatus.WAITING || challenge.getStatus() == ChallengeStatus.ONGOING)) {
+            challenge.updateStatus(ChallengeStatus.CANCELLED);
+        }
     }
 
     private void validateSameChallenge(Long userId1, Long userId2, Long challengeId) {
