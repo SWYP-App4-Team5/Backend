@@ -164,6 +164,7 @@ public class UserService {
 		notificationRepository.deleteAllByUserId(userId);
 		teamMembersRepository.deleteAllByUser(user);
 		userDeviceRepository.deleteAllByUser(user);
+		userNotificationSettingRepository.deleteById(userId);
 		userAgreementRepository.deleteByUser(user);
 		refreshTokenRepository.deleteByUser(user);
 		userRepository.delete(user);
