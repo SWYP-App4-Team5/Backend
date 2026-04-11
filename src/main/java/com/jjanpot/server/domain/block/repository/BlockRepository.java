@@ -18,4 +18,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     /** 특정 유저가 특정 챌린지에서 차단한 유저 ID 목록 조회 */
     @Query("SELECT b.blocked.userId FROM Block b WHERE b.blocker.userId = :blockerId AND b.challenge = :challenge")
     Set<Long> findBlockedUserIdsByBlockerAndChallenge(@Param("blockerId") Long blockerId, @Param("challenge") Challenge challenge);
+
+    /** 유저가 차단한 또는 차단당한 기록 삭제 (회원 탈퇴용) */
+    void deleteAllByBlockerOrBlocked(User blocker, User blocked);
 }
