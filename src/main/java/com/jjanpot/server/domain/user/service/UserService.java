@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
+import com.jjanpot.server.domain.block.repository.BlockRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationLikeRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationRepository;
 import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
@@ -12,6 +13,7 @@ import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.notification.repository.NotificationRepository;
+import com.jjanpot.server.domain.report.repository.ReportRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
@@ -59,6 +61,8 @@ public class UserService {
 	private final CertificationLikeRepository certificationLikeRepository;
 	private final CertificationRepository certificationRepository;
 	private final NotificationRepository notificationRepository;
+	private final ReportRepository reportRepository;
+	private final BlockRepository blockRepository;
 	private final ImageUploadService imageUploadService;
 
 	//프로필 생성
@@ -157,6 +161,8 @@ public class UserService {
 		}
 
 		// FK 자식 테이블부터 순서대로 삭제
+		reportRepository.deleteAll(reportRepository.findAllByReporterOrReported(user, user));
+		blockRepository.deleteAllByBlockerOrBlocked(user, user);
 		certificationLikeRepository.deleteAllByUser(user);
 		certificationLikeRepository.deleteByCertificationUser(user);
 		certificationRepository.deleteAllByUser(user);
