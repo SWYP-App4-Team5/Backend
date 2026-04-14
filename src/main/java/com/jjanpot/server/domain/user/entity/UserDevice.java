@@ -79,8 +79,8 @@ public class UserDevice extends BaseEntity {
 
 	public void update(User user, String deviceUuid, String fcmToken) {
 		this.user = user;
-		this.deviceUuid = StringUtils.hasText(deviceUuid) ? deviceUuid : this.deviceUuid;
-		this.fcmToken = StringUtils.hasText(fcmToken) ? fcmToken : this.fcmToken;
+		this.deviceUuid = deviceUuid;
+		this.fcmToken = fcmToken;
 	}
 
 	public void activate() {
