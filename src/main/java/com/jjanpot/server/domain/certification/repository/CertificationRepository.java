@@ -29,8 +29,19 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 		@Param("end") LocalDateTime end
 	);
 
-	/** 챌린지 전체 인증 피드 조회 (최신순) */
-	List<Certification> findAllByChallengeOrderByCreatedAtDesc(Challenge challenge);
+	/** 챌린지 전체 인증 피드 조회 (최신순, 차단 사용자 제외, 신고 비노출 제외) */
+	@Query("SELECT c FROM Certification c "
+		+ "WHERE c.challenge = :challenge "
+		+ "AND c.isHidden = false "
+		+ "AND NOT EXISTS ("
+		+ "  SELECT b FROM com.jjanpot.server.domain.block.entity.Block b "
+		+ "  WHERE b.blocker.userId = :viewerId AND b.blocked = c.user AND b.challenge = :challenge"
+		+ ") "
+		+ "ORDER BY c.createdAt DESC")
+	List<Certification> findFeedExcludingBlocked(
+		@Param("challenge") Challenge challenge,
+		@Param("viewerId") Long viewerId
+	);
 
 	/** 챌린지 내 팀원별 절약 금액 합산 조회 */
 	@Query("SELECT c.user.userId, COALESCE(SUM(c.savedAmount), 0) "

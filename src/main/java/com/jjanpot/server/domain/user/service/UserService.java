@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
+import com.jjanpot.server.domain.block.repository.BlockRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationLikeRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationRepository;
 import com.jjanpot.server.domain.challenge.dto.ChallengeStatsDto;
@@ -12,6 +13,7 @@ import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.challenge.repository.ChallengeMemberResultRepository;
 import com.jjanpot.server.domain.challenge.repository.ChallengeRepository;
 import com.jjanpot.server.domain.notification.repository.NotificationRepository;
+import com.jjanpot.server.domain.report.repository.ReportRepository;
 import com.jjanpot.server.domain.team.entity.Team;
 import com.jjanpot.server.domain.team.entity.TeamMembers;
 import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
@@ -26,8 +28,10 @@ import com.jjanpot.server.domain.user.dto.response.ProfileCreateResponse;
 import com.jjanpot.server.domain.user.dto.response.UserProfileResponse;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserAgreement;
+import com.jjanpot.server.domain.user.entity.UserNotificationSetting;
 import com.jjanpot.server.domain.user.repository.UserAgreementRepository;
 import com.jjanpot.server.domain.user.repository.UserDeviceRepository;
+import com.jjanpot.server.domain.user.repository.UserNotificationSettingRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.common.service.ImageUploadService;
 import com.jjanpot.server.global.exception.BusinessException;
@@ -52,10 +56,13 @@ public class UserService {
 	private final ChallengeMemberResultRepository challengeMemberResultRepository;
 	private final UserAgreementRepository userAgreementRepository;
 	private final UserDeviceRepository userDeviceRepository;
+	private final UserNotificationSettingRepository userNotificationSettingRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final CertificationLikeRepository certificationLikeRepository;
 	private final CertificationRepository certificationRepository;
 	private final NotificationRepository notificationRepository;
+	private final ReportRepository reportRepository;
+	private final BlockRepository blockRepository;
 	private final ImageUploadService imageUploadService;
 
 	//프로필 생성
@@ -107,6 +114,9 @@ public class UserService {
 		teamMembersRepository.save(TeamMembers.ofMember(team, user));
 		team.increaseMemberCount();
 
+		log.info("[초대코드 참여] userId={}, teamId={}, challengeId={}, inviteCode={}",
+			userId, team.getTeamId(), challenge.getChallengeId(), inviteCode);
+
 		return InviteCodeResponse.from(team, challenge);
 	}
 
@@ -125,8 +135,11 @@ public class UserService {
 			throw new BusinessException(ErrorCode.ALREADY_AGREED_TERMS);
 		}
 
-		// 마케팅 동의 users 테이블에 저장
-		user.updateMarketingConsent(Boolean.TRUE.equals(request.marketingConsent()));
+		// 마케팅 동의 알림 설정 테이블에 저장
+		UserNotificationSetting setting = userNotificationSettingRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		setting.update(setting.isDailyEnabled(), setting.isWeeklyEnabled(),
+			Boolean.TRUE.equals(request.marketingConsent()));
 
 		userAgreementRepository.save(UserAgreement.from(
 			request.ageVerified(),
@@ -148,6 +161,8 @@ public class UserService {
 		}
 
 		// FK 자식 테이블부터 순서대로 삭제
+		reportRepository.deleteAll(reportRepository.findAllByReporterOrReported(user, user));
+		blockRepository.deleteAllByBlockerOrBlocked(user, user);
 		certificationLikeRepository.deleteAllByUser(user);
 		certificationLikeRepository.deleteByCertificationUser(user);
 		certificationRepository.deleteAllByUser(user);
@@ -155,9 +170,12 @@ public class UserService {
 		notificationRepository.deleteAllByUserId(userId);
 		teamMembersRepository.deleteAllByUser(user);
 		userDeviceRepository.deleteAllByUser(user);
+		userNotificationSettingRepository.deleteById(userId);
 		userAgreementRepository.deleteByUser(user);
 		refreshTokenRepository.deleteByUser(user);
 		userRepository.delete(user);
+
+		log.info("[회원 탈퇴] userId={}", userId);
 	}
 
 	private User getUserByUserId(Long userId) {
@@ -178,13 +196,15 @@ public class UserService {
 	}
 
 	public NotificationSettingResponse getNotification(Long userId) {
-		User user = getUserByUserId(userId);
-		return NotificationSettingResponse.of(user);
+		UserNotificationSetting setting = userNotificationSettingRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		return NotificationSettingResponse.of(setting);
 	}
 
 	@Transactional
 	public void updateNotification(Long userId, NotificationSettingUpdateRequest request) {
-		User user = getUserByUserId(userId);
-		user.updateNotification(request.dailyEnabled(), request.weeklyEnabled(), request.marketingConsent());
+		UserNotificationSetting setting = userNotificationSettingRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		setting.update(request.dailyEnabled(), request.weeklyEnabled(), request.marketingConsent());
 	}
 }

@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jjanpot.server.domain.category.entity.Category;
 import com.jjanpot.server.domain.category.repository.CategoryRepository;
+import com.jjanpot.server.domain.block.repository.BlockRepository;
 import com.jjanpot.server.domain.certification.repository.CertificationRepository;
 import com.jjanpot.server.domain.challenge.dto.request.ChallengeCategoryRequest;
 import com.jjanpot.server.domain.challenge.dto.request.CreateChallengeRequest;
@@ -74,6 +76,7 @@ public class ChallengeService {
 	private final CertificationRepository certificationRepository;
 	private final ChallengeTeamResultRepository challengeTeamResultRepository;
 	private final ChallengeMemberResultRepository challengeMemberResultRepository;
+	private final BlockRepository blockRepository;
 
 	/** 챌린지 생성 **/
 	@Transactional
@@ -107,6 +110,9 @@ public class ChallengeService {
 		// 7. Category 조회 + ChallengeCategory 저장
 		List<ChallengeCategory> challengeCategories = saveChallengeCategories(challenge, request.categories());
 
+		log.info("[챌린지 생성] userId={}, challengeId={}, teamId={}, goalAmount={}",
+			userId, challenge.getChallengeId(), team.getTeamId(), request.goalAmount());
+
 		return CreateChallengeResponse.from(challenge, team, challengeCategories);
 	}
 
@@ -129,6 +135,8 @@ public class ChallengeService {
 		}
 
 		challenge.updateStatus(ChallengeStatus.CANCELLED);
+
+		log.info("[챌린지 취소] userId={}, challengeId={}", userId, challengeId);
 	}
 
 	/** 유저의 완료/실패 챌린지 이력 목록 조회 **/
@@ -326,16 +334,22 @@ public class ChallengeService {
 			.mapToInt(Integer::intValue)
 			.sum();
 
-		// 팀원 정보 매핑
+		// 내가 차단한 유저 목록 조회
+		Set<Long> blockedUserIds = blockRepository.findBlockedUserIdsByBlockerAndChallenge(userId, challenge);
+
+		// 팀원 정보 매핑 (차단 유저 프로필 마스킹)
 		List<ChallengeMembersResponse.MemberSavingInfo> memberInfos = members.stream()
 			.map(member -> {
 				User memberUser = member.getUser();
+				boolean isBlocked = blockedUserIds.contains(memberUser.getUserId());
 				return new ChallengeMembersResponse.MemberSavingInfo(
 					memberUser.getUserId(),
-					memberUser.getNickname(),
-					memberUser.getProfileImageUrl(),
+					isBlocked ? "차단한 사용자" : memberUser.getNickname(),
+					isBlocked ? null : memberUser.getProfileImageUrl(),
+					member.getRole().name(),
 					savedAmountMap.getOrDefault(memberUser.getUserId(), 0),
-					memberUser.getUserId().equals(userId)
+					memberUser.getUserId().equals(userId),
+					isBlocked
 				);
 			})
 			.toList();

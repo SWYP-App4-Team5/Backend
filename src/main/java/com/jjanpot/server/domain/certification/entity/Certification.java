@@ -74,6 +74,10 @@ public class Certification extends BaseEntity {
 	@JoinColumn(name = "week_id", nullable = false)
 	private ChallengeWeek challengeWeek;
 
+	@Builder.Default
+	@Column(name = "is_hidden", nullable = false)
+	private boolean isHidden = false;
+
 	public static Certification create(Challenge challenge, User user, Category category, ChallengeWeek challengeWeek,
 		SpendType spendType, int spendAmount, int savedAmount, String memo, String imageUrl,
 		LocalDateTime spentAt) {
@@ -100,5 +104,9 @@ public class Certification extends BaseEntity {
 		this.memo = memo;
 		this.imageUrl = imageUrl;
 		this.spentAt = spentAt;
+	}
+
+	public void hide() {
+		this.isHidden = true;
 	}
 }

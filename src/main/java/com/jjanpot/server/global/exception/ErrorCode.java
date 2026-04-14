@@ -67,12 +67,18 @@ public enum ErrorCode {
 	CERTIFICATION_NOT_OWNER(HttpStatus.FORBIDDEN, "본인의 인증만 수정/삭제할 수 있습니다."),
 	CERTIFICATION_SPENT_AT_FUTURE(HttpStatus.BAD_REQUEST, "지출 일시는 현재 시간보다 이후일 수 없습니다."),
 	CERTIFICATION_SPENT_AT_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "지출 일시는 챌린지 기간 내여야 합니다."),
+	CERTIFICATION_SELF_REPORT(HttpStatus.BAD_REQUEST, "본인의 게시글은 신고할 수 없습니다."),
 
 	// Image
 	IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 크기가 제한을 초과했습니다. (최대 10MB)"),
 	IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다. (JPEG, PNG, WEBP만 허용)"),
 	IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
-	IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 삭제에 실패했습니다.")
+	IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 삭제에 실패했습니다."),
+
+	// Report & Block
+	SELF_REPORT_OR_BLOCK(HttpStatus.BAD_REQUEST, "자기 자신을 신고/차단할 수 없습니다."),
+	NOT_SAME_CHALLENGE_PARTICIPANT(HttpStatus.FORBIDDEN, "동일한 챌린지 참여자만 신고/차단할 수 있습니다."),
+	ALREADY_BLOCKED(HttpStatus.CONFLICT, "이미 차단한 사용자입니다.")
 	;
 
 	private final HttpStatus status;

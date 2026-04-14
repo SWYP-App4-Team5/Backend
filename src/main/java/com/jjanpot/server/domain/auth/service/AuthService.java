@@ -20,7 +20,9 @@ import com.jjanpot.server.domain.auth.repository.RefreshTokenRepository;
 import com.jjanpot.server.domain.user.entity.Provider;
 import com.jjanpot.server.domain.user.entity.User;
 import com.jjanpot.server.domain.user.entity.UserDevice;
+import com.jjanpot.server.domain.user.entity.UserNotificationSetting;
 import com.jjanpot.server.domain.user.repository.UserDeviceRepository;
+import com.jjanpot.server.domain.user.repository.UserNotificationSettingRepository;
 import com.jjanpot.server.domain.user.repository.UserRepository;
 import com.jjanpot.server.global.auth.oauth.OAuthProperties;
 import com.jjanpot.server.global.config.AuthProperties;
@@ -43,6 +45,7 @@ public class AuthService {
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final AuthProperties authProperties;
 	private final UserDeviceRepository userDeviceRepository;
+	private final UserNotificationSettingRepository userNotificationSettingRepository;
 
 	@Transactional
 	public LoginResponse login(Provider provider, LoginRequest loginRequest) {
@@ -212,7 +215,9 @@ public class AuthService {
 			oauthUser.getEmail(),
 			oauthUser.getProfileImageUrl()
 		);
-		return userRepository.save(user);
+		userRepository.save(user);
+		userNotificationSettingRepository.save(UserNotificationSetting.defaultOf(user));
+		return user;
 	}
 
 	private void updateExistingToken(RefreshToken token, String tokenValue, LocalDateTime expiresAt) {

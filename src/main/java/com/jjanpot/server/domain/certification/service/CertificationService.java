@@ -124,6 +124,9 @@ public class CertificationService {
 		// 주차 절약 금액 누적
 		currentWeek.addSavedAmount(savedAmount);
 
+		log.info("[인증 생성] userId={}, challengeId={}, spendType={}, savedAmount={}",
+			userId, request.challengeId(), request.spendType(), savedAmount);
+
 		return CreateCertificationResponse.from(certification);
 	}
 
@@ -136,7 +139,7 @@ public class CertificationService {
 		teamMembersRepository.findByTeamAndUser(challenge.getTeam(), user)
 			.orElseThrow(() -> new BusinessException(ErrorCode.FORBIDDEN));
 
-		return certificationRepository.findAllByChallengeOrderByCreatedAtDesc(challenge)
+		return certificationRepository.findFeedExcludingBlocked(challenge, userId)
 			.stream()
 			.map(cert -> CertificationFeedResponse.from(
 				cert,
@@ -226,6 +229,9 @@ public class CertificationService {
 			request.spentAt()
 		);
 
+		log.info("[인증 수정] userId={}, certificationId={}, newSavedAmount={}",
+			userId, certificationId, newSavedAmount);
+
 		return CreateCertificationResponse.from(certification);
 	}
 
@@ -257,6 +263,9 @@ public class CertificationService {
 		// 좋아요 삭제 후 인증 삭제
 		certificationLikeRepository.deleteByCertification(certification);
 		certificationRepository.delete(certification);
+
+		log.info("[인증 삭제] userId={}, certificationId={}, challengeId={}",
+			userId, certificationId, certification.getChallenge().getChallengeId());
 	}
 
 	private int resolveSpendAmount(CreateCertificationRequest request) {

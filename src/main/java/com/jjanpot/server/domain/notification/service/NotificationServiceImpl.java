@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.google.common.collect.Lists;
+import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.notification.dto.FcmSendCommand;
 import com.jjanpot.server.domain.notification.dto.UserChallengeReminderDto;
 import com.jjanpot.server.domain.notification.dto.UserFcmDto;
@@ -52,7 +53,8 @@ public class NotificationServiceImpl implements NotificationService {
 		LocalDateTime start = LocalDate.now().atStartOfDay();
 		LocalDateTime end = start.plusDays(1).minusNanos(1);
 
-		List<UserFcmDto> didNotCertifyUserByPeriod = notificationRepository.findDidNotCertifyUserByToday(start, end);
+		List<UserFcmDto> didNotCertifyUserByPeriod = notificationRepository.findDidNotCertifyUserByToday(start, end,
+			ChallengeStatus.ONGOING);
 
 		NotificationSubTemplateType daily = NotificationSubTemplateType.DAILY;
 		List<NotificationTemplate> templateList =
@@ -88,7 +90,8 @@ public class NotificationServiceImpl implements NotificationService {
 			LocalDateTime nowTime = LocalDateTime.now();
 
 			List<UserChallengeReminderDto> targets =
-				notificationRepository.findDidNotCertifyUserWeekly(challengeStartDate, endDateTime, nowTime, day.longValue());
+				notificationRepository.findDidNotCertifyUserWeekly(challengeStartDate, endDateTime, nowTime, day.longValue(),
+					ChallengeStatus.ONGOING);
 
 			if (CollectionUtils.isEmpty(targets)) {
 				continue;

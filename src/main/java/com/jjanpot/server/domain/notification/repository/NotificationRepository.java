@@ -1,6 +1,5 @@
 package com.jjanpot.server.domain.notification.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -9,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.jjanpot.server.domain.challenge.entity.ChallengeStatus;
 import com.jjanpot.server.domain.notification.dto.UserChallengeReminderDto;
 import com.jjanpot.server.domain.notification.dto.UserFcmDto;
 import com.jjanpot.server.domain.notification.entity.Notification;
@@ -23,14 +23,16 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 			)
 			FROM UserDevice ud
 			INNER JOIN User u
-				ON ud.user = u AND u.notificationDailyEnabled = true
+				ON ud.user = u
+			INNER JOIN UserNotificationSetting uns
+				ON uns.user = u AND uns.dailyEnabled = true
 			INNER JOIN TeamMembers tm
 				ON u = tm.user
 			INNER JOIN Team t
 				ON tm.team = t
 			INNER JOIN Challenge c
 				ON t = c.team
-					AND c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
+					AND c.status = :ongoing
 			WHERE 1 = 1
 				AND NOT EXISTS (
 					SELECT 1
@@ -44,7 +46,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 		""")
 	List<UserFcmDto> findDidNotCertifyUserByToday(
 		@Param("startOfToday") LocalDateTime startOfToday,
-		@Param("endOfToday") LocalDateTime endOfToday
+		@Param("endOfToday") LocalDateTime endOfToday,
+		@Param("ongoing") ChallengeStatus ongoing
 	);
 
 	/**
@@ -63,12 +66,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 			)
 			FROM UserDevice ud
 			JOIN ud.user u
+			JOIN UserNotificationSetting uns
+				ON uns.user = u AND uns.weeklyEnabled = true
 			JOIN TeamMembers tm
 				ON tm.user = u
 			JOIN Challenge c
 				ON c.team = tm.team
-			WHERE u.notificationWeeklyEnabled = true
-				AND c.status = com.jjanpot.server.domain.challenge.entity.ChallengeStatus.ONGOING
+			WHERE c.status = :ongoing
 				AND c.startDate BETWEEN :startDateTime AND :endDateTime
 				AND NOT EXISTS (
 					SELECT 1 FROM Certification cert
@@ -81,7 +85,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 		@Param("startDateTime") LocalDateTime startDateTime,
 		@Param("endDateTime") LocalDateTime endDateTime,
 		@Param("now") LocalDateTime now,
-		@Param("day") Long day
+		@Param("day") Long day,
+		@Param("ongoing") ChallengeStatus ongoing
 	);
 
 	@Modifying
