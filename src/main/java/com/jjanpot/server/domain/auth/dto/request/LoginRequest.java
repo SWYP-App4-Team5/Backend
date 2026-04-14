@@ -7,7 +7,6 @@ public record LoginRequest(
 	String accessToken,
 	@NotBlank
 	String deviceUuid,
-	@NotBlank
 	String fcmToken
 ) {
 }

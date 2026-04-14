@@ -4,11 +4,14 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.jjanpot.server.domain.auth.client.OAuthClient;
 import com.jjanpot.server.domain.auth.client.OAuthClientRegistry;
+import com.jjanpot.server.domain.auth.dto.DevOAuthUser;
 import com.jjanpot.server.domain.auth.dto.LoginUserInfo;
 import com.jjanpot.server.domain.auth.dto.OAuthUser;
+import com.jjanpot.server.domain.auth.dto.UserCreateResult;
 import com.jjanpot.server.domain.auth.dto.request.LoginRequest;
 import com.jjanpot.server.domain.auth.dto.response.LoginResponse;
 import com.jjanpot.server.domain.auth.dto.response.RefreshResponse;
@@ -53,6 +56,7 @@ public class AuthService {
 		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
 		String fcmToken = loginRequest.fcmToken();
+		String deviceUuid = loginRequest.deviceUuid();
 
 		LocalDateTime expiresAt = LocalDateTime.now().plusDays(authProperties.getRefreshTokenExpiresDays());
 
@@ -62,20 +66,27 @@ public class AuthService {
 				() -> createNewToken(user, refreshToken, expiresAt)
 			);
 
-		userDeviceRepository.findByFcmToken(fcmToken)
-			.ifPresentOrElse(
-				device -> {
-					if (device.getUser().getUserId().equals(user.getUserId())
-						&& device.getDeviceUuid().equals(loginRequest.deviceUuid())
-						&& device.isActive()) {
-						return;
-					}
-					device.update(user, loginRequest.deviceUuid(), fcmToken);
-				},
-				() -> userDeviceRepository.save(
-					UserDevice.create(user, loginRequest.deviceUuid(), fcmToken)
-				)
-			);
+		if (StringUtils.hasText(fcmToken)) {
+			userDeviceRepository.findByFcmToken(fcmToken)
+				.ifPresentOrElse(
+			device -> device.update(user, deviceUuid, fcmToken), // 기존 기기 정보 갱신
+					() -> userDeviceRepository.save(UserDevice.create(user, deviceUuid, fcmToken))
+				);
+		} else {
+			// FCM 토큰이 없다면 기기 정보 저장하지 않음
+			log.warn("FCM Token is missing for user: {}", user.getUserId());
+			// userDeviceRepository.findByFcmToken(fcmToken)
+			// 	.ifPresent(
+			// 	device -> {
+			// 		if (device.getUser().getUserId().equals(user.getUserId())
+			// 			&& device.getDeviceUuid().equals(loginRequest.deviceUuid())
+			// 			&& device.isActive()) {
+			// 			return;
+			// 		}
+			// 		device.update(user, loginRequest.deviceUuid(), fcmToken);
+			// 	}
+			// );
+		}
 
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
 		return LoginResponse.of(accessToken, refreshToken, userInfo, userCreateResult.isNewUser());
@@ -250,41 +261,5 @@ public class AuthService {
 			);
 
 		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), isNewUser);
-	}
-
-	private record UserCreateResult(User user, boolean isNewUser) {
-	}
-
-	private record DevOAuthUser(
-		Provider provider,
-		String providerId,
-		String nickname,
-		String email,
-		String profileImageUrl
-	) implements OAuthUser {
-		@Override
-		public Provider getProvider() {
-			return provider;
-		}
-
-		@Override
-		public String getProviderId() {
-			return providerId;
-		}
-
-		@Override
-		public String getNickname() {
-			return nickname;
-		}
-
-		@Override
-		public String getEmail() {
-			return email;
-		}
-
-		@Override
-		public String getProfileImageUrl() {
-			return profileImageUrl;
-		}
 	}
 }
