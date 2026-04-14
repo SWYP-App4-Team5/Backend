@@ -1,8 +1,9 @@
 package com.jjanpot.server.domain.user.entity;
 
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.jjanpot.server.domain.notification_template.entity.NotificationTemplateType;
 import com.jjanpot.server.global.entity.BaseEntity;
 import com.jjanpot.server.global.util.CodeEnum;
 import com.jjanpot.server.global.util.EnumUtils;
@@ -78,8 +79,8 @@ public class UserDevice extends BaseEntity {
 
 	public void update(User user, String deviceUuid, String fcmToken) {
 		this.user = user;
-		this.deviceUuid = deviceUuid;
-		this.fcmToken = fcmToken;
+		this.deviceUuid = StringUtils.hasText(deviceUuid) ? deviceUuid : this.deviceUuid;
+		this.fcmToken = StringUtils.hasText(fcmToken) ? fcmToken : this.fcmToken;
 	}
 
 	public void activate() {
