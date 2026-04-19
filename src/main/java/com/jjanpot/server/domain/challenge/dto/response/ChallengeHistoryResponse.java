@@ -2,6 +2,7 @@ package com.jjanpot.server.domain.challenge.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,9 +26,11 @@ public record ChallengeHistoryResponse(
 	int goalAmount,
 
 	@Schema(description = "챌린지 시작일", example = "2026-03-25T00:00:00")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime startDate,
 
 	@Schema(description = "챌린지 종료일", example = "2026-04-01T00:00:00")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime endDate
 ) {
 

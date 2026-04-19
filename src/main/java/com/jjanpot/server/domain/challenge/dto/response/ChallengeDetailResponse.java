@@ -3,6 +3,7 @@ package com.jjanpot.server.domain.challenge.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeCategory;
 import com.jjanpot.server.domain.team.entity.Team;
@@ -38,9 +39,11 @@ public record ChallengeDetailResponse(
 	int minPersonalGoalAmount,
 
 	@Schema(description = "챌린지 시작 일시", example = "2026-07-15T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime startDate,
 
 	@Schema(description = "챌린지 종료 일시", example = "2026-07-21T00:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime endDate,
 
 	@Schema(description = "카테고리 목록 (1~3개)", requiredMode = Schema.RequiredMode.REQUIRED)

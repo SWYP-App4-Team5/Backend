@@ -21,12 +21,42 @@ public interface AuthControllerV1Docs {
 		summary = "소셜 로그인",
 		description = """
 			소셜 로그인 API 입니다.
-			
-			지원 플랫폼
+
+			**지원 플랫폼**
 			- kakao
-			
+			- google
+			- apple
+
 			클라이언트에서 받은 accessToken을 전달하면
 			서버에서 사용자 정보를 조회하고 로그인 처리 후 JWT 토큰을 발급합니다.
+
+			---
+
+			**응답 필드 설명**
+
+			| 필드 | 설명 |
+			|---|---|
+			| `accessToken` | API 인증에 사용하는 JWT |
+			| `refreshToken` | 액세스 토큰 재발급용 토큰 |
+			| `user.userId` | 유저 고유 ID |
+			| `user.nickname` | 유저 닉네임 |
+			| `newUser` | `true`이면 온보딩 미완료 → 온보딩 화면으로 이동 |
+			| `reviewMode` | `true`이면 앱 심사 계정 → 심사용 버튼 노출 |
+
+			---
+
+			**reviewMode 상세**
+
+			심사 계정으로 로그인하면 `reviewMode: true`가 반환됩니다.
+			앱은 이 값을 보고 심사 전용 버튼(챌린지 즉시 시작 / 즉시 종료)의 노출 여부를 결정합니다.
+
+			심사 계정 목록:
+			- 카카오 `jjanpot0220@gmail.com`
+			- 구글 `jjanpod.swyp4@gmail.com`
+
+			심사 버튼 연결 API:
+			- `POST /api/auth/v1/review/challenge/{id}/start` — 즉시 시작 (가짜 참가자/포스트 자동 생성 포함)
+			- `POST /api/auth/v1/review/challenge/{id}/finish` — 즉시 종료 + 결과 생성
 			"""
 	)
 	@ApiResponse(responseCode = "200", description = "로그인 성공")

@@ -96,4 +96,9 @@ public class Challenge extends BaseEntity {
 	public void updateGoalAmount(int goalAmount) {
 		this.goalAmount = goalAmount;
 	}
+
+	public void updateDates(LocalDateTime startDate, LocalDateTime endDate) {
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
 }

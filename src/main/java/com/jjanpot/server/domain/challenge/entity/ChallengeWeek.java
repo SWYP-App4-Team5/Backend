@@ -91,6 +91,11 @@ public class ChallengeWeek extends BaseEntity {
 	public void subtractSavedAmount(int amount) {
 		this.weekSavedAmount -= amount;
 	}
+
+	public void updateDates(LocalDateTime startDate, LocalDateTime endDate) {
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
 }
 
 /*
