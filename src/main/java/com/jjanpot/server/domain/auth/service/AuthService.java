@@ -93,7 +93,7 @@ public class AuthService {
 
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
 		boolean isNewUser = !user.isOnboardingCompleted();
-		return LoginResponse.of(accessToken, refreshToken, userInfo, isNewUser);
+		return LoginResponse.of(accessToken, refreshToken, userInfo, isNewUser, isReviewAccount(user));
 	}
 
 	@Transactional
@@ -253,6 +253,14 @@ public class AuthService {
 		refreshToken.updateToken(newRefreshToken, newExpireTime);
 	}
 
+	private static final String REVIEW_ACCOUNT_KAKAO_EMAIL = "jjanpot0220@gmail.com";
+	private static final String REVIEW_ACCOUNT_GOOGLE_EMAIL = "jjanpod.swyp4@gmail.com";
+
+	private boolean isReviewAccount(User user) {
+		return (Provider.KAKAO.equals(user.getProvider()) && REVIEW_ACCOUNT_KAKAO_EMAIL.equals(user.getEmail()))
+			|| (Provider.GOOGLE.equals(user.getProvider()) && REVIEW_ACCOUNT_GOOGLE_EMAIL.equals(user.getEmail()));
+	}
+
 	private LoginResponse issueLoginResponse(User user) {
 		user.updateLastLoginAt();
 
@@ -266,6 +274,7 @@ public class AuthService {
 				() -> createNewToken(user, refreshToken, expiresAt)
 			);
 
-		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), !user.isOnboardingCompleted());
+		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), !user.isOnboardingCompleted(),
+			isReviewAccount(user));
 	}
 }
