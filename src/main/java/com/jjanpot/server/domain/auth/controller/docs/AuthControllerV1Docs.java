@@ -55,7 +55,7 @@ public interface AuthControllerV1Docs {
 			- 구글 `jjanpod.swyp4@gmail.com`
 
 			심사 버튼 연결 API:
-			- `POST /api/auth/v1/review/challenge/{id}/start` — 즉시 시작 (가짜 참가자/포스트 자동 생성 포함)
+			- `POST /api/auth/v1/review/challenge/{id}/start` — 즉시 시작 (리뷰용 참가자/인증 포스트 자동 생성 포함)
 			- `POST /api/auth/v1/review/challenge/{id}/finish` — 즉시 종료 + 결과 생성
 			"""
 	)
