@@ -3,6 +3,7 @@ package com.jjanpot.server.domain.report.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jjanpot.server.domain.block.service.BlockService;
 import com.jjanpot.server.domain.certification.entity.Certification;
 import com.jjanpot.server.domain.certification.repository.CertificationRepository;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
@@ -31,6 +32,7 @@ public class ReportService {
 	private final ChallengeRepository challengeRepository;
 	private final CertificationRepository certificationRepository;
 	private final TeamMembersRepository teamMembersRepository;
+	private final BlockService blockService;
 
 	/** 사용자 신고 */
 	@Transactional
@@ -54,7 +56,10 @@ public class ReportService {
 		report.addReason(request.reason());
 		reportRepository.save(report);
 
-		log.info("[사용자 신고] reporterId={}, reportedId={}, challengeId={}, reason={}",
+		// 즉시 차단 + 신고 대상의 모든 게시물 비노출
+		blockService.applyBlockAndHide(reporter, reported, challenge);
+
+		log.info("[사용자 신고] reporterId={}, reportedId={}, challengeId={}, reason={}, 차단+비노출처리=true",
 			reporterId, request.reportedUserId(), request.challengeId(), request.reason());
 	}
 
@@ -73,7 +78,8 @@ public class ReportService {
 		}
 
 		// 동일 챌린지 참여자 검증
-		Long challengeId = certification.getChallenge().getChallengeId();
+		Challenge challenge = certification.getChallenge();
+		Long challengeId = challenge.getChallengeId();
 		if (!teamMembersRepository.existsByUserIdAndChallengeId(reporterId, challengeId)) {
 			throw new BusinessException(ErrorCode.NOT_SAME_CHALLENGE_PARTICIPANT);
 		}
@@ -82,11 +88,13 @@ public class ReportService {
 		report.addReason(request.reason());
 		reportRepository.save(report);
 
-		// 즉시 비노출 처리
+		// 즉시 해당 인증 비노출 + 작성자 차단 + 작성자 전체 게시물 비노출
 		certification.hide();
+		User certOwner = certification.getUser();
+		blockService.applyBlockAndHide(reporter, certOwner, challenge);
 
-		log.info("[게시글 신고] reporterId={}, certificationId={}, certOwnerId={}, challengeId={}, reason={}, 비노출처리=true",
-			reporterId, request.certificationId(), certification.getUser().getUserId(),
+		log.info("[게시글 신고] reporterId={}, certificationId={}, certOwnerId={}, challengeId={}, reason={}, 차단+비노출처리=true",
+			reporterId, request.certificationId(), certOwner.getUserId(),
 			challengeId, request.reason());
 	}
 
