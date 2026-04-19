@@ -2,6 +2,7 @@ package com.jjanpot.server.domain.certification.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjanpot.server.domain.certification.entity.Certification;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,6 +39,7 @@ public record CertificationFeedResponse(
 	String imageUrl,
 
 	@Schema(description = "인증 생성 일시", example = "2027-08-15T09:35:00")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime createdAt,
 
 	@Schema(description = "좋아요 수", example = "0")
