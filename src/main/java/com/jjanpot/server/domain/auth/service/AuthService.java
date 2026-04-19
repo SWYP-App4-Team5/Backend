@@ -257,8 +257,13 @@ public class AuthService {
 	private static final String REVIEW_ACCOUNT_GOOGLE_EMAIL = "jjanpod.swyp4@gmail.com";
 
 	private boolean isReviewAccount(User user) {
-		return (Provider.KAKAO.equals(user.getProvider()) && REVIEW_ACCOUNT_KAKAO_EMAIL.equals(user.getEmail()))
+		boolean isReview = (Provider.KAKAO.equals(user.getProvider()) && REVIEW_ACCOUNT_KAKAO_EMAIL.equals(user.getEmail()))
 			|| (Provider.GOOGLE.equals(user.getProvider()) && REVIEW_ACCOUNT_GOOGLE_EMAIL.equals(user.getEmail()));
+
+		if (isReview) {
+			log.info("[ReviewMode] 심사 계정 로그인: userId={}, provider={}", user.getUserId(), user.getProvider());
+		}
+		return isReview;
 	}
 
 	private LoginResponse issueLoginResponse(User user) {

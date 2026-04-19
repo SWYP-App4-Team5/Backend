@@ -84,7 +84,7 @@ public class BlockService {
         List<Certification> certifications = certificationRepository.findAllByChallengeAndUser(challenge, blocked);
         certifications.forEach(Certification::hide);
 
-        log.info("[DEV-ALERT][사용자 차단] blockerId={}, blockedId={}, challengeId={}, hiddenCertCount={}",
+        log.info("[사용자 차단] blockerId={}, blockedId={}, challengeId={}, hiddenCertCount={}",
             blocker.getUserId(), blocked.getUserId(), challenge.getChallengeId(), certifications.size());
     }
 
