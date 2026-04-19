@@ -2,6 +2,7 @@ package com.jjanpot.server.domain.challenge.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjanpot.server.domain.challenge.entity.Challenge;
 import com.jjanpot.server.domain.challenge.entity.ChallengeWeek;
 import com.jjanpot.server.domain.team.entity.Team;
@@ -53,9 +54,11 @@ public record CurrentChallengeResponse(
 		int goalAmount,
 
 		@Schema(description = "챌린지 시작 일시 - '26.07.15 - 26.07.21' 표시", example = "2026-07-15T00:00:00")
+		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 		LocalDateTime startDate,
 
 		@Schema(description = "챌린지 종료 일시", example = "2026-07-21T00:00:00")
+		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 		LocalDateTime endDate,
 
 		@Schema(description = "팀장 여부 - true면 '취소하기' 버튼 노출", example = "false")
@@ -100,6 +103,7 @@ public record CurrentChallengeResponse(
 		String challengeStatus,
 
 		@Schema(description = "챌린지 종료 일시 - D-day 계산용", example = "2026-07-21T00:00:00")
+		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 		LocalDateTime endDate,
 
 		// @Schema(description = "팀 이름 - '{팀 이름} 팀은 ... 절약했어요!' 문구", example = "배달을 아껴요")

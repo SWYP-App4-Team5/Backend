@@ -357,7 +357,7 @@ public class ChallengeService {
 		return new ChallengeMembersResponse(
 			challenge.getChallengeId(),
 			challenge.getTitle(),
-			challenge.getStartDate().toString(),
+			challenge.getStartDate(),
 			totalSavedAmount,
 			challenge.getGoalAmount(),
 			memberInfos

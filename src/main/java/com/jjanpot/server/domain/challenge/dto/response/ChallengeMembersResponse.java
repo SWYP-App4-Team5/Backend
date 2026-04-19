@@ -1,6 +1,9 @@
 package com.jjanpot.server.domain.challenge.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -14,7 +17,8 @@ public record ChallengeMembersResponse(
 	String title,
 
 	@Schema(description = "챌린지 시작일", example = "2026-03-25T00:00:00")
-	String startDate,
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	LocalDateTime startDate,
 
 	@Schema(description = "현재까지 팀 전체 절약 금액", example = "261000")
 	int totalSavedAmount,

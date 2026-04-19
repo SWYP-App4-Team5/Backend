@@ -92,7 +92,8 @@ public class AuthService {
 		}
 
 		LoginUserInfo userInfo = LoginUserInfo.from(user);
-		return LoginResponse.of(accessToken, refreshToken, userInfo, userCreateResult.isNewUser());
+		boolean isNewUser = !user.isOnboardingCompleted();
+		return LoginResponse.of(accessToken, refreshToken, userInfo, isNewUser, isReviewAccount(user));
 	}
 
 	@Transactional
@@ -104,11 +105,11 @@ public class AuthService {
 		String profileImageUrl
 	) {
 		return userRepository.findByProviderAndProviderId(provider, providerId)
-			.map(user -> issueLoginResponse(user, false))
+			.map(this::issueLoginResponse)
 			.orElseGet(() -> {
 				User user = createUser(provider,
 					new DevOAuthUser(provider, providerId, nickname, email, profileImageUrl));
-				return issueLoginResponse(user, true);
+				return issueLoginResponse(user);
 			});
 	}
 
@@ -252,7 +253,20 @@ public class AuthService {
 		refreshToken.updateToken(newRefreshToken, newExpireTime);
 	}
 
-	private LoginResponse issueLoginResponse(User user, boolean isNewUser) {
+	private static final String REVIEW_ACCOUNT_KAKAO_EMAIL = "jjanpot0220@gmail.com";
+	private static final String REVIEW_ACCOUNT_GOOGLE_EMAIL = "jjanpod.swyp4@gmail.com";
+
+	private boolean isReviewAccount(User user) {
+		boolean isReview = (Provider.KAKAO.equals(user.getProvider()) && REVIEW_ACCOUNT_KAKAO_EMAIL.equals(user.getEmail()))
+			|| (Provider.GOOGLE.equals(user.getProvider()) && REVIEW_ACCOUNT_GOOGLE_EMAIL.equals(user.getEmail()));
+
+		if (isReview) {
+			log.info("[ReviewMode] 심사 계정 로그인: userId={}, provider={}", user.getUserId(), user.getProvider());
+		}
+		return isReview;
+	}
+
+	private LoginResponse issueLoginResponse(User user) {
 		user.updateLastLoginAt();
 
 		String accessToken = jwtTokenProvider.generateToken(user.getUserId());
@@ -265,6 +279,7 @@ public class AuthService {
 				() -> createNewToken(user, refreshToken, expiresAt)
 			);
 
-		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), isNewUser);
+		return LoginResponse.of(accessToken, refreshToken, LoginUserInfo.from(user), !user.isOnboardingCompleted(),
+			isReviewAccount(user));
 	}
 }
