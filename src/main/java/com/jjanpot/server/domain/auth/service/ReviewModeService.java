@@ -39,7 +39,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ReviewModeService {
 
 	private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Seoul");
-	private static final String FAKE_PROFILE_IMAGE = "https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com/images/profile/defaultImg.png";
+	private static final String DEFAULT_PROFILE_IMAGE = "https://jjanpot-s3-bucket.s3.ap-northeast-2.amazonaws.com/images/profile/defaultImg.png";
+	private static final String[] REVIEW_NICKNAMES = {"너구리", "여우토끼", "윤뭉이"};
+	private static final String[] REVIEW_MEMOS = {"카공", "결국 배달", "오늘도 성공"};
 
 	private final ChallengeRepository challengeRepository;
 	private final ChallengeWeekRepository challengeWeekRepository;
@@ -50,7 +52,7 @@ public class ReviewModeService {
 	private final CertificationRepository certificationRepository;
 	private final ChallengeScheduler challengeScheduler;
 
-	/** 챌린지 즉시 시작 (WAITING → ONGOING) + 가짜 참가자/포스트 자동 생성 */
+	/** 챌린지 즉시 시작 (WAITING → ONGOING) + 리뷰용 참가자/인증 자동 생성 */
 	@Transactional
 	public void startChallenge(Long challengeId) {
 		Challenge challenge = findChallenge(challengeId);
@@ -69,10 +71,10 @@ public class ReviewModeService {
 		challengeWeekRepository.findByChallengeAndWeekNumber(challenge, 1)
 			.ifPresent(week -> week.updateDates(now, now.plusWeeks(1)));
 
-		// 가짜 참가자 3명 + 신고용 포스트 자동 생성
-		seedFakeData(challengeId);
+		// 리뷰용 참가자 3명 + 인증 포스트 자동 생성
+		seedReviewData(challengeId);
 
-		log.info("[ReviewMode] 챌린지 즉시 시작 + 가짜 데이터 생성: id={}", challengeId);
+		log.info("[ReviewMode] 챌린지 즉시 시작 + 리뷰 시드 데이터 생성: id={}", challengeId);
 	}
 
 	/** 챌린지 즉시 종료 (ONGOING → COMPLETED/FAILED, 결과 생성) */
@@ -96,9 +98,9 @@ public class ReviewModeService {
 		log.info("[ReviewMode] 챌린지 즉시 종료: id={}", challengeId);
 	}
 
-	/** 가짜 참가자 3명 + 가짜 인증 포스트 3개 생성 (신고/차단 테스트용) */
+	/** 리뷰용 참가자 3명 + 인증 포스트 3개 생성 (신고/차단 시연용) */
 	@Transactional
-	public void seedFakeData(Long challengeId) {
+	public void seedReviewData(Long challengeId) {
 		Challenge challenge = findChallenge(challengeId);
 		if (challenge.getStatus() != ChallengeStatus.ONGOING || challenge.getStartDate() == null) {
 			throw new BusinessException(ErrorCode.CHALLENGE_NOT_ONGOING);
@@ -115,35 +117,32 @@ public class ReviewModeService {
 		ChallengeWeek week = challengeWeekRepository.findByChallengeAndWeekNumber(challenge, 1)
 			.orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
-		String[] fakeNames = {"신고테스트유저A", "신고테스트유저B", "신고테스트유저C"};
-		String[] fakeMemos = {"부적절한 내용 테스트 포스트입니다", "신고용 가짜 인증 포스트입니다", "차단 테스트를 위한 포스트입니다"};
-
-		List<User> fakeUsers = new ArrayList<>();
+		List<User> reviewUsers = new ArrayList<>();
 
 		for (int i = 0; i < 3; i++) {
 			final int index = i;
-			// 가짜 유저 생성 (이미 있으면 재사용)
-			String providerId = "review_fake_user_" + (index + 1);
-			User fakeUser = userRepository.findByProviderAndProviderId(Provider.KAKAO, providerId)
+			// 리뷰용 유저 (이미 있으면 재사용)
+			String providerId = "review_user_" + (index + 1);
+			User reviewUser = userRepository.findByProviderAndProviderId(Provider.KAKAO, providerId)
 				.orElseGet(() -> userRepository.save(
-					User.create(Provider.KAKAO, providerId, fakeNames[index], "fake" + (index + 1) + "@review.test",
-						FAKE_PROFILE_IMAGE)));
-			fakeUsers.add(fakeUser);
+					User.create(Provider.KAKAO, providerId, REVIEW_NICKNAMES[index],
+						"review" + (index + 1) + "@example.com", DEFAULT_PROFILE_IMAGE)));
+			reviewUsers.add(reviewUser);
 
 			// 팀 멤버로 추가 (이미 있으면 skip)
-			if (!teamMembersRepository.existsByTeamAndUser(team, fakeUser)) {
-				teamMembersRepository.save(TeamMembers.ofMember(team, fakeUser));
+			if (!teamMembersRepository.existsByTeamAndUser(team, reviewUser)) {
+				teamMembersRepository.save(TeamMembers.ofMember(team, reviewUser));
 				team.increaseMemberCount();
 			}
 
-			// 가짜 인증 포스트 생성
+			// 인증 포스트 생성
 			LocalDateTime spentAt = challenge.getStartDate().plusDays(index).plusHours(12);
-			Certification fakeCert = Certification.create(challenge, fakeUser, category, week, SpendType.SPEND, 10000,
-				5000, fakeMemos[index], null, spentAt);
-			certificationRepository.save(fakeCert);
+			Certification reviewCert = Certification.create(challenge, reviewUser, category, week, SpendType.SPEND,
+				10000, 5000, REVIEW_MEMOS[index], null, spentAt);
+			certificationRepository.save(reviewCert);
 		}
 
-		log.info("[ReviewMode] 가짜 데이터 생성 완료: challengeId={}, fakeUsers={}", challengeId, fakeUsers.size());
+		log.info("[ReviewMode] 리뷰 시드 데이터 생성 완료: challengeId={}, userCount={}", challengeId, reviewUsers.size());
 	}
 
 	private Challenge findChallenge(Long challengeId) {
