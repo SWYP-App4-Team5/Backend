@@ -70,22 +70,21 @@ public class BlockService {
     }
 
     /**
-     * 차단 + 피차단자의 챌린지 내 전체 인증 비노출 + 개발자 알림 로그.
-     * 이미 차단된 경우 조용히 종료(멱등). 신고 → 차단 플로우에서 공용으로 사용.
+     * 차단(멱등) + 피차단자의 챌린지 내 전체 인증 비노출 + 개발자 알림 로그.
+     * 기존 차단이 있어도 이후 추가된 인증을 놓치지 않도록 비노출 처리는 항상 수행. 신고 → 차단 플로우에서 공용으로 사용.
      */
     @Transactional
     public void applyBlockAndHide(User blocker, User blocked, Challenge challenge) {
-        if (blockRepository.existsByBlockerAndBlockedAndChallenge(blocker, blocked, challenge)) {
-            return;
+        boolean alreadyBlocked = blockRepository.existsByBlockerAndBlockedAndChallenge(blocker, blocked, challenge);
+        if (!alreadyBlocked) {
+            blockRepository.save(Block.of(blocker, blocked, challenge));
         }
-
-        blockRepository.save(Block.of(blocker, blocked, challenge));
 
         List<Certification> certifications = certificationRepository.findAllByChallengeAndUser(challenge, blocked);
         certifications.forEach(Certification::hide);
 
-        log.info("[사용자 차단] blockerId={}, blockedId={}, challengeId={}, hiddenCertCount={}",
-            blocker.getUserId(), blocked.getUserId(), challenge.getChallengeId(), certifications.size());
+        log.info("[사용자 차단] blockerId={}, blockedId={}, challengeId={}, alreadyBlocked={}, targetCertCount={}",
+            blocker.getUserId(), blocked.getUserId(), challenge.getChallengeId(), alreadyBlocked, certifications.size());
     }
 
     private void validateSameChallenge(Long userId1, Long userId2, Long challengeId) {
