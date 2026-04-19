@@ -68,32 +68,40 @@ public class ChallengeScheduler {
 		List<Challenge> toFinish = challengeRepository.findAllByStatusAndEndDateBefore(ChallengeStatus.ONGOING, now);
 
 		for (Challenge challenge : toFinish) {
-			// 이미 결과가 생성된 챌린지는 skip (중복 실행 방지)
-			if (challengeTeamResultRepository.findByChallenge(challenge).isPresent()) {
-				log.info("[ChallengeScheduler] 이미 결과 존재, skip: id={}", challenge.getChallengeId());
-				continue;
-			}
-
-			List<TeamMembers> members = teamMembersRepository.findAllByTeam(challenge.getTeam());
-
-			List<ChallengeMemberResult> memberResults = members.stream()
-				.map(m -> buildMemberResult(challenge, m.getUser()))
-				.toList();
-
-			challengeMemberResultRepository.saveAll(memberResults);
-
-			ChallengeTeamResult teamResult = buildTeamResult(challenge, memberResults);
-			challengeTeamResultRepository.save(teamResult);
-
-			ChallengeStatus newStatus = teamResult.isTeamSuccess()
-				? ChallengeStatus.COMPLETED
-				: ChallengeStatus.FAILED;
-			challenge.updateStatus(newStatus);
-
-			log.info("[ChallengeScheduler] 챌린지 종료: id={}, status={}", challenge.getChallengeId(), newStatus);
+			finalizeChallenge(challenge);
 		}
 
 		log.info("[ChallengeScheduler] ONGOING → 종료 처리: {}건", toFinish.size());
+	}
+
+	/**
+	 * 단일 챌린지 결과 산출 + 상태 전환. 심사 모드 등 특정 챌린지만 즉시 종료할 때 사용.
+	 * 이미 결과가 생성된 경우 skip (멱등).
+	 */
+	@Transactional
+	public void finalizeChallenge(Challenge challenge) {
+		if (challengeTeamResultRepository.findByChallenge(challenge).isPresent()) {
+			log.info("[ChallengeScheduler] 이미 결과 존재, skip: id={}", challenge.getChallengeId());
+			return;
+		}
+
+		List<TeamMembers> members = teamMembersRepository.findAllByTeam(challenge.getTeam());
+
+		List<ChallengeMemberResult> memberResults = members.stream()
+			.map(m -> buildMemberResult(challenge, m.getUser()))
+			.toList();
+
+		challengeMemberResultRepository.saveAll(memberResults);
+
+		ChallengeTeamResult teamResult = buildTeamResult(challenge, memberResults);
+		challengeTeamResultRepository.save(teamResult);
+
+		ChallengeStatus newStatus = teamResult.isTeamSuccess()
+			? ChallengeStatus.COMPLETED
+			: ChallengeStatus.FAILED;
+		challenge.updateStatus(newStatus);
+
+		log.info("[ChallengeScheduler] 챌린지 종료: id={}, status={}", challenge.getChallengeId(), newStatus);
 	}
 
 	private ChallengeMemberResult buildMemberResult(Challenge challenge, User user) {
