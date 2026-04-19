@@ -1,6 +1,7 @@
 package com.jjanpot.server.domain.auth.service;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -253,12 +254,15 @@ public class AuthService {
 		refreshToken.updateToken(newRefreshToken, newExpireTime);
 	}
 
-	private static final String REVIEW_ACCOUNT_KAKAO_EMAIL = "jjanpot0220@gmail.com";
-	private static final String REVIEW_ACCOUNT_GOOGLE_EMAIL = "jjanpod.swyp4@gmail.com";
+	private static final Set<String> REVIEW_ACCOUNT_EMAILS = Set.of(
+		"jjanpot0220@gmail.com",
+		"jjanpod.swyp4@gmail.com",
+		"ueong1016@gmail.com",
+		"n95g7hkhx9@privaterelay.appleid.com"
+	);
 
 	private boolean isReviewAccount(User user) {
-		boolean isReview = (Provider.KAKAO.equals(user.getProvider()) && REVIEW_ACCOUNT_KAKAO_EMAIL.equals(user.getEmail()))
-			|| (Provider.GOOGLE.equals(user.getProvider()) && REVIEW_ACCOUNT_GOOGLE_EMAIL.equals(user.getEmail()));
+		boolean isReview = REVIEW_ACCOUNT_EMAILS.contains(user.getEmail());
 
 		if (isReview) {
 			log.info("[ReviewMode] 심사 계정 로그인: userId={}, provider={}", user.getUserId(), user.getProvider());
