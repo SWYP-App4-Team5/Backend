@@ -1,0 +1,21 @@
+package com.jjanpot.server.domain.user.dto.request;
+
+import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
+
+@Schema(description = "프로필 수정 요청")
+public record ProfileUpdateRequest(
+
+	@Schema(description = "닉네임 (미입력 시 기존 값 유지)", example = "절약왕", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
+	@Size(max = 10, message = "닉네임은 10자 이하여야 합니다.")
+	String nickname,
+
+	@Schema(description = "생년월일 (미입력 시 기존 값 유지)", example = "2000-01-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
+	LocalDate birthDate,
+
+	@Schema(description = "프로필 이미지 URL (Presigned URL로 업로드 후 전달, 미입력 시 기존 값 유지)", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
+	String profileImageUrl
+) {
+}
