@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.user.dto.response;
 
+import java.time.LocalDate;
+
 import com.jjanpot.server.domain.user.entity.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,13 +21,17 @@ public record UserProfileResponse(
 		requiredMode = Schema.RequiredMode.REQUIRED,
 		nullable = true
 	)
-	String profileUrl
+	String profileUrl,
+
+	@Schema(description = "생년월일", example = "2000-01-15", requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
+	LocalDate birthDate
 ) {
 	public static UserProfileResponse from(User user) {
 		return new UserProfileResponse(
 			user.getUserId(),
 			user.getNickname(),
-			user.getProfileImageUrl()
+			user.getProfileImageUrl(),
+			user.getBirthDate()
 		);
 	}
 }

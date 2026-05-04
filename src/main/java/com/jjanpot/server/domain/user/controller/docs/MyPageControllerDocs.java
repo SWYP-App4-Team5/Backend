@@ -1,5 +1,6 @@
 package com.jjanpot.server.domain.user.controller.docs;
 
+import com.jjanpot.server.domain.user.dto.request.ProfileUpdateRequest;
 import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.UserProfileResponse;
 import com.jjanpot.server.global.common.dto.SuccessResponse;
@@ -21,6 +22,27 @@ public interface MyPageControllerDocs {
 	@Operation(summary = "프로필 조회", description = "로그인한 사용자의 프로필 정보를 조회합니다.")
 	@ApiResponse(responseCode = "200", description = "프로필 조회 성공")
 	SuccessResponse<UserProfileResponse> getProfile(@Parameter(hidden = true) Long userId);
+
+	@Operation(
+		summary = "프로필 수정",
+		description = """
+			로그인한 사용자의 프로필 정보를 수정합니다.
+
+			- `nickname`: 최대 10자, 미입력 시 기존 값 유지
+			- `birthDate`: yyyy-MM-dd 형식, 미입력 시 기존 값 유지
+			- `profileImageUrl`: Presigned URL로 업로드한 이미지 URL, 미입력/null 시 기존 값 유지, 빈 문자열은 허용하지 않음
+
+			## 프로필 이미지 수정 흐름
+			1. `GET /api/images/v1/presigned-url?directory=profile/&contentType=image/jpeg`로 업로드 URL 발급
+			2. 응답의 `uploadUrl`로 S3에 PUT 업로드
+			3. 응답의 `imageUrl`을 이 API의 `profileImageUrl`에 담아 전송
+			"""
+	)
+	@ApiResponse(responseCode = "200", description = "프로필 수정 성공")
+	SuccessResponse<UserProfileResponse> updateProfile(
+		@Parameter(hidden = true) Long userId,
+		ProfileUpdateRequest request
+	);
 
 	@Operation(
 		summary = "회원 탈퇴",

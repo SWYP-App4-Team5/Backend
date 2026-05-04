@@ -93,4 +93,10 @@ public class User extends BaseEntity {
 		this.birthDate = birthDate;
 		this.onboardingCompleted = true;
 	}
+
+	public void updateProfile(String profileImageUrl, String nickname, LocalDate birthDate) {
+		this.profileImageUrl = profileImageUrl;
+		this.nickname = nickname;
+		this.birthDate = birthDate;
+	}
 }

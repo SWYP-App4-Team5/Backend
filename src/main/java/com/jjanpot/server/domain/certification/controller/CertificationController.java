@@ -45,9 +45,12 @@ public class CertificationController implements CertificationControllerDocs {
 		@CurrentUserId Long userId,
 		@PathVariable Long certificationId,
 		@Valid @RequestPart("request") CreateCertificationRequest request,
-		@RequestPart(value = "image", required = false) MultipartFile image
+		@RequestPart(value = "image", required = false) MultipartFile image,
+		@RequestPart(value = "deleteImage", required = false) Boolean deleteImage
 	) {
-		return SuccessResponse.ok(certificationService.updateCertification(userId, certificationId, request, image));
+		return SuccessResponse.ok(
+			certificationService.updateCertification(userId, certificationId, request, image, Boolean.TRUE.equals(deleteImage))
+		);
 	}
 
 	@DeleteMapping("/{certificationId}")

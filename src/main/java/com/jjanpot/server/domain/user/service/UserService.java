@@ -1,5 +1,7 @@
 package com.jjanpot.server.domain.user.service;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import com.jjanpot.server.domain.team.repository.TeamMembersRepository;
 import com.jjanpot.server.domain.team.repository.TeamRepository;
 import com.jjanpot.server.domain.user.dto.request.NotificationSettingUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.ProfileCreateRequest;
+import com.jjanpot.server.domain.user.dto.request.ProfileUpdateRequest;
 import com.jjanpot.server.domain.user.dto.request.UserAgreementRequest;
 import com.jjanpot.server.domain.user.dto.response.ChallengeStatsResponse;
 import com.jjanpot.server.domain.user.dto.response.InviteCodeResponse;
@@ -86,6 +89,24 @@ public class UserService {
 			user.getNickname(),
 			user.getBirthDate()
 		);
+	}
+
+	// 프로필 수정
+	@Transactional
+	public UserProfileResponse updateProfile(Long userId, ProfileUpdateRequest request) {
+		User user = getUserByUserId(userId);
+
+		String nickname = resolveProfileNickname(user, request.nickname());
+		String imageUrl = resolveProfileImageUrl(user, request.profileImageUrl());
+		LocalDate birthDate = request.birthDate() != null ? request.birthDate() : user.getBirthDate();
+
+		user.updateProfile(
+			imageUrl,
+			nickname,
+			birthDate
+		);
+
+		return UserProfileResponse.from(user);
 	}
 
 	// 초대코드 기반 팀 참여 (온보딩 흐름)
@@ -186,6 +207,26 @@ public class UserService {
 	public UserProfileResponse getProfile(Long userId) {
 		User user = getUserByUserId(userId);
 		return UserProfileResponse.from(user);
+	}
+
+	private String resolveProfileNickname(User user, String nickname) {
+		if (nickname == null) {
+			return user.getNickname();
+		}
+		if (nickname.isBlank()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT, "닉네임은 공백일 수 없습니다.");
+		}
+		return nickname;
+	}
+
+	private String resolveProfileImageUrl(User user, String profileImageUrl) {
+		if (profileImageUrl == null) {
+			return user.getProfileImageUrl();
+		}
+		if (profileImageUrl.isBlank()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT, "프로필 이미지 URL은 공백일 수 없습니다.");
+		}
+		return profileImageUrl;
 	}
 
 	public ChallengeStatsResponse getChallengeStats(Long userId) {
