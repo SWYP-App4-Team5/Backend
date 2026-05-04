@@ -153,6 +153,13 @@ public class CertificationService {
 	@Transactional
 	public CreateCertificationResponse updateCertification(Long userId, Long certificationId,
 		CreateCertificationRequest request, MultipartFile image) {
+		return updateCertification(userId, certificationId, request, image, false);
+	}
+
+	/** 인증 수정 **/
+	@Transactional
+	public CreateCertificationResponse updateCertification(Long userId, Long certificationId,
+		CreateCertificationRequest request, MultipartFile image, boolean deleteImage) {
 		User user = findUser(userId);
 		Certification certification = findCertification(certificationId);
 
@@ -207,7 +214,7 @@ public class CertificationService {
 		currentWeek.subtractSavedAmount(certification.getSavedAmount());
 		currentWeek.addSavedAmount(newSavedAmount);
 
-		// 이미지 처리: 새 이미지가 있으면 업로드 후 기존 이미지는 커밋 후 삭제
+		// 이미지 처리: 새 이미지가 있으면 교체, deleteImage=true면 기존 이미지만 삭제
 		String imageUrl = certification.getImageUrl();
 		if (image != null && !image.isEmpty()) {
 			String oldImageUrl = imageUrl;
@@ -215,6 +222,9 @@ public class CertificationService {
 			if (oldImageUrl != null) {
 				imageUploadService.deleteImageAfterCommit(oldImageUrl);
 			}
+		} else if (deleteImage && imageUrl != null) {
+			imageUploadService.deleteImageAfterCommit(imageUrl);
+			imageUrl = null;
 		}
 
 		// 인증 업데이트
