@@ -220,8 +220,11 @@ public class UserService {
 	}
 
 	private String resolveProfileImageUrl(User user, String profileImageUrl) {
-		if (profileImageUrl == null || profileImageUrl.isBlank()) {
+		if (profileImageUrl == null) {
 			return user.getProfileImageUrl();
+		}
+		if (profileImageUrl.isBlank()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT, "프로필 이미지 URL은 공백일 수 없습니다.");
 		}
 		return profileImageUrl;
 	}
