@@ -70,7 +70,9 @@ public class SecurityConfig {
 					"/api/auth/v1/dev-login",
 					"/api/auth/v1/run-scheduler",
 					"/api/auth/v1/review/**",
-						"/api/terms/v1"
+					"/api/terms/v1",
+					"/actuator/prometheus",
+					"/actuator/health"
 				).permitAll()
 				.anyRequest().authenticated());
 		return http.build();
